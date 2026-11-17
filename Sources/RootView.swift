@@ -17,7 +17,7 @@ struct RootView: View {
                 .tabItem { Label("Filmer", systemImage: "film") }
             NavigationStack { PlaceholderScreen(title: "Serier", symbol: "tv", detail: "Serier, säsonger och avsnitt från hela ditt bibliotek.") }
                 .tabItem { Label("Serier", systemImage: "rectangle.stack") }
-            NavigationStack { PlaceholderScreen(title: "Live", symbol: "dot.radiowaves.left.and.right", detail: "Kanaler, favoriter och en komplett programguide.") }
+            NavigationStack { LiveView() }
                 .tabItem { Label("Live", systemImage: "dot.radiowaves.left.and.right") }
             NavigationStack { PlaceholderScreen(title: "Min lista", symbol: "bookmark", detail: "Allt du sparat på ett ställe.") }
                 .tabItem { Label("Min lista", systemImage: "bookmark") }
