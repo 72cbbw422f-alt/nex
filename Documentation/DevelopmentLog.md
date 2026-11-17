@@ -41,3 +41,16 @@
 - Infuse URL hand-off and callback behavior, including reliable progress and completion reporting.
 - BingeLog repository architecture, stable media identifiers and sync endpoint/backend.
 - Build/signing workflow for iOS, iPadOS and tvOS from the available PC-based workflow.
+
+
+## 2026-11-18 — Visual direction approved and locked
+
+- User selected the supplied NEXUS concept images as the definitive target appearance.
+- Approved visual identity: deep navy/near-black cinematic surfaces, blue-purple atmosphere and vivid violet accents. The earlier lime-green concept is superseded.
+- iPhone home: compact top bar, horizontal primary navigation, cinematic hero, Live nu shelf, continue-watching and popular shelves.
+- Film/series detail: rich metadata, synopsis, cast/crew, related titles; series include season selector and episode list.
+- Apple TV: wide cinematic hero, clear navigation, prominent Live nu row and remote-friendly violet focus states.
+- Live TV is a first-class section with channel groups, favourites, now/next and a full EPG timeline/grid; the home screen also shows a Live nu shelf.
+- The design reference is the visual acceptance baseline. Adapt responsively for iPhone, iPad and Apple TV without arbitrary redesign.
+- Added `Documentation/DesignDirection.md` as the source of truth for colors, layouts, reusable components and acceptance criteria.
+- These are approved design requirements, not yet implemented production UI. Existing scaffold remains an early placeholder until rebuilt to this specification.
