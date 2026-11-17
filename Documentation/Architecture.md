@@ -67,7 +67,9 @@ NEXUS is the playback event source; BingeLog is the user's viewing-history and t
 - Persist an outbox locally so events survive app termination and network loss. Use idempotency keys to prevent duplicate watch history.
 - Keep "in progress", "completed" and "abandoned/unknown" distinct. Completion requires a verified threshold or authoritative player completion signal, not just a start event.
 - Sync progress periodically and on lifecycle transitions; avoid excessive writes.
-- Use a documented, versioned integration API between NEXUS and BingeLog. Do not assume two apps can share a local database. Evaluate a shared backend or CloudKit-based sync after inspecting BingeLog's actual architecture.
+- BingeLog currently uses local-first SwiftData models: `BingeEntry` (TMDB ID + movie/TV kind), `BingeEpisodeProgress` (series TMDB ID + season/episode) and `BingeWatchEvent` (local activity). It has no implemented remote sync transport today.
+- Map NEXUS media to BingeLog using TMDB ID and media kind; map episodes using series TMDB ID + season + episode. Do not title-match automatically when stable IDs are missing or ambiguous.
+- Use a documented, versioned integration contract between NEXUS and BingeLog. Do not assume two apps can share a local database. A shared backend or CloudKit-based sync must be designed and implemented before cross-device app-to-app sync can work.
 - Cross-device resume must reconcile timestamps and positions deterministically. Define conflict rules before enabling multi-device writes.
 - Infuse progress is best-effort and must be marked with its provenance and confidence.
 
