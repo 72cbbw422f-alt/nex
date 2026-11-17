@@ -73,7 +73,8 @@ struct HomeView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 14) {
-                    ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                    ForEach(Array(items.enumerated()), id: \.offset) { entry in
+                        let item = entry.element
                         PosterTile(title: item.0, subtitle: item.1, seed: item.2)
                             .frame(width: 132)
                     }
