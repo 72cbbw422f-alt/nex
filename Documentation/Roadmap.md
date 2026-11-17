@@ -11,7 +11,8 @@
 
 ## Phase 1 — Design shell
 - [ ] Define NEXUS design tokens and typography
-- [ ] Present complete design direction for approval before major UI implementation
+- [x] Present complete design direction for approval before major UI implementation
+- [x] Lock approved NEXUS visual direction (deep navy, violet accent, cinematic layouts) from user-supplied reference images
 - [ ] Build adaptive navigation for iPhone and iPad
 - [ ] Build focus-driven tvOS navigation
 - [ ] Build reusable poster, backdrop, shelf and detail components
