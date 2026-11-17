@@ -1,0 +1,24 @@
+name: Build NEXUS
+
+on:
+  push:
+    branches: [main, project-foundation]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Build iOS Simulator
+        run: xcodebuild -project NEXUS.xcodeproj -scheme NEXUS-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - name: Build tvOS Simulator
+        run: xcodebuild -project NEXUS.xcodeproj -scheme NEXUS-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
