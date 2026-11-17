@@ -26,7 +26,9 @@
 - Infuse is the planned external-player integration. Progress/completion must only be recorded when reliable callback data is returned; opening an external app is not proof of playback or completion.
 - Add a shared subtitle-preference service: ordered language priority, embedded-track preference, OpenSubtitles lookup, conservative media/release matching, local cache and manual override. OpenSubtitles API access, authentication, quotas and terms remain to be validated.
 - NEXUS should publish normalized playback events to BingeLog: start, pause, resume, periodic progress, stop, completion and hand-off. Use stable media/episode IDs, durable local outbox, idempotency keys and explicit in-progress/completed states.
-- Do not assume the two apps can share a local database. Inspect BingeLog's actual repository and persistence/sync design before choosing a shared backend or CloudKit contract.
+- Inspected `72cbbw422f-alt/binge`: BingeLog is currently local-first and uses SwiftData. `BingeEntry` stores TMDB ID and movie/TV kind; `BingeEpisodeProgress` stores series TMDB ID, season and episode; `BingeWatchEvent` stores local status/episode activity. No remote sync transport is currently implemented.
+- Use TMDB IDs + media kind for film/series identity, and series TMDB ID + season + episode for episode identity. Avoid title-only auto-matching.
+- A shared backend or CloudKit-based contract is still required; the apps cannot directly share their separate local SwiftData stores.
 - These are architecture decisions and planned capabilities only; no player, subtitle provider or BingeLog sync has been implemented yet.
 
 ## Decisions to validate
