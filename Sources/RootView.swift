@@ -11,39 +11,23 @@ struct RootView: View {
 
     private var mobileRoot: some View {
         TabView {
-            NavigationStack {
-                HomeView()
-            }
-            .tabItem { Label("Hem", systemImage: "house") }
-
-            NavigationStack {
-                PlaceholderScreen(title: "Upptäck", symbol: "safari", detail: "Ett gemensamt bibliotek från alla anslutna källor.")
-            }
-            .tabItem { Label("Upptäck", systemImage: "safari") }
-
-            NavigationStack {
-                PlaceholderScreen(title: "Live-TV", symbol: "tv", detail: "Dina kanaler och din programguide samlas här.")
-            }
-            .tabItem { Label("Live-TV", systemImage: "tv") }
-
-            NavigationStack {
-                PlaceholderScreen(title: "Sök", symbol: "magnifyingglass", detail: "Sök efter filmer och serier i alla källor.")
-            }
-            .tabItem { Label("Sök", systemImage: "magnifyingglass") }
-
-            NavigationStack {
-                PlaceholderScreen(title: "Inställningar", symbol: "gearshape", detail: "Anslutningar, uppspelning och utseende.")
-            }
-            .tabItem { Label("Inställningar", systemImage: "gearshape") }
+            NavigationStack { HomeView() }
+                .tabItem { Label("Hem", systemImage: "house.fill") }
+            NavigationStack { PlaceholderScreen(title: "Filmer", symbol: "film", detail: "Ett gemensamt filmbibliotek från alla dina källor.") }
+                .tabItem { Label("Filmer", systemImage: "film") }
+            NavigationStack { PlaceholderScreen(title: "Serier", symbol: "tv", detail: "Serier, säsonger och avsnitt från hela ditt bibliotek.") }
+                .tabItem { Label("Serier", systemImage: "rectangle.stack") }
+            NavigationStack { PlaceholderScreen(title: "Live", symbol: "dot.radiowaves.left.and.right", detail: "Kanaler, favoriter och en komplett programguide.") }
+                .tabItem { Label("Live", systemImage: "dot.radiowaves.left.and.right") }
+            NavigationStack { PlaceholderScreen(title: "Min lista", symbol: "bookmark", detail: "Allt du sparat på ett ställe.") }
+                .tabItem { Label("Min lista", systemImage: "bookmark") }
         }
-        .tint(NexusTheme.accent)
+        .tint(NexusTheme.accentLight)
     }
 
     private var tvRoot: some View {
-        NavigationStack {
-            HomeView()
-        }
-        .tint(NexusTheme.accent)
+        NavigationStack { HomeView() }
+            .tint(NexusTheme.accentLight)
     }
 }
 
@@ -56,10 +40,8 @@ private struct PlaceholderScreen: View {
         VStack(spacing: 14) {
             Image(systemName: symbol)
                 .font(.system(size: 38, weight: .light))
-                .foregroundStyle(NexusTheme.accent)
-            Text(title)
-                .font(.title2.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(NexusTheme.accentLight)
+            Text(title).font(.title2.bold()).foregroundStyle(.white)
             Text(detail)
                 .font(.body)
                 .foregroundStyle(NexusTheme.secondaryText)
