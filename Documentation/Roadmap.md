@@ -11,9 +11,11 @@
 
 ## Phase 1 — Design shell
 - [ ] Define NEXUS design tokens and typography
+- [ ] Present complete design direction for approval before major UI implementation
 - [ ] Build adaptive navigation for iPhone and iPad
 - [ ] Build focus-driven tvOS navigation
 - [ ] Build reusable poster, backdrop, shelf and detail components
+- [ ] Design player, subtitle picker, playback settings and connection flows
 - [ ] Add preview fixtures (no real credentials)
 
 ## Phase 2 — Xtream connector
@@ -39,21 +41,34 @@
 - [ ] Source provenance and source picker
 - [ ] Unified search, favourites and continue watching
 
-## Phase 5 — Playback
-- [ ] AVPlayer integration
-- [ ] Resume and progress reporting
-- [ ] Audio and subtitle selection
-- [ ] AirPlay behavior validation
-- [ ] MPV feasibility spike and decision
+## Phase 5 — Playback and subtitles
+- [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
+- [ ] Implement engine-independent PlaybackCoordinator
+- [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
+- [ ] Infuse external-player hand-off and callback validation
+- [ ] Subtitle preferences with ordered language priority
+- [ ] Embedded subtitle selection and external OpenSubtitles lookup
+- [ ] Subtitle matching, cache, manual selection and sync offset
+- [ ] Resume and periodic progress reporting
+- [ ] Audio track selection and AirPlay behavior validation
 - [ ] Device/codec compatibility matrix
 
-## Phase 6 — Live TV
+## Phase 6 — BingeLog integration
+- [ ] Inspect BingeLog repository and current persistence/sync architecture
+- [ ] Agree on versioned playback-event contract and canonical media IDs
+- [ ] Implement durable local event outbox and idempotent delivery
+- [ ] Sync started/in-progress/completed state and episode history
+- [ ] Reconcile resume positions across devices
+- [ ] Validate external-player progress reporting separately
+- [ ] End-to-end tests with both apps
+
+## Phase 7 — Live TV
 - [ ] Channel browser and favourites
 - [ ] EPG grid and now/next
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
 
-## Phase 7 — Polish and release
+## Phase 8 — Polish and release
 - [ ] iPhone and iPad responsive refinement
 - [ ] tvOS focus and remote refinement
 - [ ] Offline/error/empty states
