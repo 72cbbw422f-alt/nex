@@ -54,7 +54,7 @@
 - [ ] Device/codec compatibility matrix
 
 ## Phase 6 — BingeLog integration
-- [ ] Inspect BingeLog repository and current persistence/sync architecture
+- [x] Inspect BingeLog repository and current persistence/sync architecture
 - [ ] Agree on versioned playback-event contract and canonical media IDs
 - [ ] Implement durable local event outbox and idempotent delivery
 - [ ] Sync started/in-progress/completed state and episode history
