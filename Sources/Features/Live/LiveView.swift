@@ -231,12 +231,17 @@ struct LiveView: View {
 
         var laneEndTimes: [Date] = []
         var placements: [TimelineProgramPlacement] = []
+        // Reserve enough horizontal space for a readable compact card. This is a
+        // visual collision interval only; the displayed programme duration stays true.
+        let minimumCardWidth: CGFloat = 76
+        let minimumCardDuration = TimeInterval(minimumCardWidth / timelineHourWidth * 3600)
         for (program, clippedStart, clippedEnd) in programs {
+            let visualEnd = min(windowEnd, max(clippedEnd, clippedStart.addingTimeInterval(minimumCardDuration)))
             let lane = laneEndTimes.firstIndex(where: { $0 <= clippedStart }) ?? laneEndTimes.count
             if lane == laneEndTimes.count {
-                laneEndTimes.append(clippedEnd)
+                laneEndTimes.append(visualEnd)
             } else {
-                laneEndTimes[lane] = clippedEnd
+                laneEndTimes[lane] = visualEnd
             }
             placements.append(TimelineProgramPlacement(program: program, start: clippedStart, end: clippedEnd, lane: lane))
         }
@@ -269,7 +274,7 @@ struct LiveView: View {
                 }
                 .padding(5)
                 .frame(
-                    width: max(2, CGFloat(placement.end.timeIntervalSince(placement.start) / 3600) * timelineHourWidth - 3),
+                    width: max(73, CGFloat(placement.end.timeIntervalSince(placement.start) / 3600) * timelineHourWidth - 3),
                     height: laneHeight - 2,
                     alignment: .leading
                 )
