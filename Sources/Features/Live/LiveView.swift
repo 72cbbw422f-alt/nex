@@ -22,6 +22,10 @@ private struct TimelineProgramPlacement: Identifiable {
 }
 
 struct LiveView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isCompactWidth: Bool { horizontalSizeClass == .compact }
+    private var channelColumnWidth: CGFloat { isCompactWidth ? 94 : 112 }
+    private var minimumProgrammeCardWidth: CGFloat { isCompactWidth ? 68 : 76 }
     @State private var selectedGroup = "Alla"
     @State private var favoriteIDs: Set<Int> = [1, 3]
     @State private var liveCategories: [XtreamLiveCategory] = []
@@ -83,13 +87,13 @@ struct LiveView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: isCompactWidth ? 16 : 22) {
                 header
                 groupPicker
                 timelineSection
                 guide
             }
-            .padding(20)
+            .padding(isCompactWidth ? 14 : 20)
         }
         .background(NexusTheme.background.ignoresSafeArea())
         .navigationTitle("Live TV")
@@ -145,7 +149,7 @@ struct LiveView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("PROGRAMGUIDE").font(.caption.weight(.bold)).tracking(1.2).foregroundStyle(NexusTheme.accentLight)
-                    Text("Tidslinje · \(timelineStart.formatted(date: .abbreviated, time: .omitted))").font(.title3.bold()).foregroundStyle(.white)
+                    Text("Tidslinje · \(timelineStart.formatted(date: .abbreviated, time: .omitted))") .font(isCompactWidth ? .headline : .title3).bold().foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.8)
                 }
                 Spacer()
                 HStack(spacing: 7) {
@@ -178,7 +182,7 @@ struct LiveView: View {
                 ScrollView(.horizontal, showsIndicators: true) {
                     VStack(alignment: .leading, spacing: 7) {
                         HStack(spacing: 0) {
-                            Text("KANAL").font(.caption2.bold()).foregroundStyle(NexusTheme.secondaryText).frame(width: 112, alignment: .leading)
+                            Text("KANAL").font(.caption2.bold()).foregroundStyle(NexusTheme.secondaryText).frame(width: channelColumnWidth, alignment: .leading)
                             HStack(spacing: 0) {
                                 ForEach(0..<7, id: \.self) { hour in
                                     Text(timelineStart.addingTimeInterval(Double(hour) * 3600).formatted(date: .omitted, time: .shortened))
@@ -215,7 +219,7 @@ struct LiveView: View {
         Task { await loadTimeline() }
     }
 
-    private let timelineHourWidth: CGFloat = 120
+    private var timelineHourWidth: CGFloat { isCompactWidth ? 96 : 120 }
     private var timelineWidth: CGFloat { timelineHourWidth * 6 }
 
     private func timelinePlacements(for channel: GuideChannel) -> [TimelineProgramPlacement] {
@@ -233,7 +237,7 @@ struct LiveView: View {
         var placements: [TimelineProgramPlacement] = []
         // Reserve enough horizontal space for a readable compact card. This is a
         // visual collision interval only; the displayed programme duration stays true.
-        let minimumCardWidth: CGFloat = 76
+        let minimumCardWidth = minimumProgrammeCardWidth
         let minimumCardDuration = TimeInterval(minimumCardWidth / timelineHourWidth * 3600)
         for (program, clippedStart, clippedEnd) in programs {
             let visualEnd = min(windowEnd, max(clippedEnd, clippedStart.addingTimeInterval(minimumCardDuration)))
@@ -274,7 +278,7 @@ struct LiveView: View {
                 }
                 .padding(5)
                 .frame(
-                    width: max(73, CGFloat(placement.end.timeIntervalSince(placement.start) / 3600) * timelineHourWidth - 3),
+                    width: max(minimumProgrammeCardWidth - 3, CGFloat(placement.end.timeIntervalSince(placement.start) / 3600) * timelineHourWidth - 3),
                     height: laneHeight - 2,
                     alignment: .leading
                 )
@@ -393,7 +397,7 @@ struct LiveView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(favoriteIDs.contains(channel.id) ? "Ta bort favorit" : "Lägg till favorit")
             }
-            .frame(width: 102, alignment: .leading)
+            .frame(width: isCompactWidth ? 94 : 102, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(usingProviderData ? "Visa programguide" : "Exempelkanal")
