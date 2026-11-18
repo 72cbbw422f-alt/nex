@@ -38,8 +38,8 @@
 - [x] Refine expanded channel EPG rows with start/end times and explicit loading/empty states (CI pending)
 - [x] Decode EPG IDs and timestamps from string or numeric JSON values with deterministic fallback identity
 - [ ] Full EPG timeline/grid and catch-up capability detection
-- [x] Add explicit Xtream live-stream playback locator with provider-supplied container extension (CI pending)
-- [ ] Playback locator tests
+- [x] Add explicit Xtream live-stream playback locator with provider-supplied container extension (iOS/tvOS simulator CI passed)
+- [ ] Playback locator unit tests (automated coverage still to add)
 
 ## Phase 3 — Jellyfin / AIOMetadata connector
 - [ ] Validate actual server API and authentication mode
@@ -132,4 +132,4 @@ A phase is complete only when its code is committed, builds successfully for the
 - Added a dedicated locator builder for the documented `/live/{username}/{password}/{stream_id}.{extension}` path shape.
 - The builder requires an explicit, validated extension from provider data; it does not guess TS/HLS format when the provider omits it.
 - Username and password are percent-encoded as individual path segments. The resulting secret-bearing URL must remain runtime-only and must never be logged or persisted.
-- This is URL construction only: no channel player, stream probe, KSPlayer dependency or playback support claim has been added. CI and real-provider URL verification pending.
+- This is URL construction only: no channel player, stream probe, KSPlayer dependency or playback support claim has been added. iOS/tvOS simulator CI passed; real-provider URL verification remains pending.
