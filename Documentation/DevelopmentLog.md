@@ -201,3 +201,10 @@
 - Programme cards are clipped to the visible six-hour window and their widths follow the returned programme duration.
 - The timeline still only shows channels whose on-demand short EPG has been loaded, with the existing maximum of eight channel requests per load.
 - Remaining work: paging/scrolling across time windows, handling overlaps and gaps more gracefully, real-provider validation, and testing on device sizes. The current marker is a visual clock indicator; it does not infer whether a programme is actually live when provider EPG data is missing.
+
+
+## 2026-11-18 — EPG timeline build correction
+
+- The first CI build of the shared six-hour timeline exposed an incorrectly escaped Swift key-path expression in the hour ruler (`ForEach` identity).
+- Corrected the expression to the native Swift key-path form.
+- A new CI run is required to validate the correction; no successful build is claimed yet.
