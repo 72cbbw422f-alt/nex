@@ -52,6 +52,7 @@ struct HomeView: View {
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 NavigationLink { SearchView() } label: { Image(systemName: "magnifyingglass") }
+                NavigationLink { ConnectionsView() } label: { Image(systemName: "server.rack") }
                 Button {} label: { Image(systemName: "bell") }
             }
         }
