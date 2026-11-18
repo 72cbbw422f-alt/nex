@@ -77,7 +77,8 @@
 
 ## Phase 7 — Live TV
 - [x] Load live channels and provider categories into the channel browser
-- [ ] Persist channel favourites and support selecting among multiple saved provider profiles
+- [x] Persist channel favourites separately per provider profile (CI/device validation pending)
+- [ ] Support selecting among multiple saved provider profiles
 - [x] Add first multi-channel EPG timeline prototype (on-demand, capped at 8 channels; provider validation pending)
 - [x] Align programme blocks to a shared six-hour clock axis and show a current-time marker (initial implementation; provider validation pending)
 - [ ] Add scrolling/paging across time windows and improve overlap/EPG-gap handling
