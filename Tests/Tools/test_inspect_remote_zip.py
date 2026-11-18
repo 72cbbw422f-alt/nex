@@ -35,7 +35,7 @@ class RemoteZipInspectorTests(unittest.TestCase):
 
     def test_rejects_zip64_sentinel(self):
         # EOCD with the ZIP64 entry-count sentinel.
-        eocd = struct.pack("<4s4H2IH", b"PK\\x05\\x06", 0, 0, 0xFFFF, 0xFFFF, 0, 0, 0)
+        eocd = struct.pack("<4s4H2IH", b"PK\x05\x06", 0, 0, 0xFFFF, 0xFFFF, 0, 0, 0)
         with self.assertRaises(InspectionError):
             find_eocd(eocd, 0)
 
