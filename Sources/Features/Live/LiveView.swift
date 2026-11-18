@@ -1,6 +1,6 @@
 import SwiftUI
 
-private struct GuideChannel: Identifiable {
+private struct LivePlaybackItem: Identifiable {\n    let id = UUID()\n    let url: URL\n    let title: String\n}\n\nprivate struct GuideChannel: Identifiable {
     let id: Int
     let name: String
     let logo: URL?
@@ -51,6 +51,7 @@ struct LiveView: View {
     @State private var timelineRequestID: UUID?
     @State private var timelineMessage: String?
     @State private var timelineOffsetHours = 0
+    @State private var playbackItem: LivePlaybackItem?
 
     private let sampleChannels: [GuideChannel] = [
         GuideChannel(id: 1, name: "SVT1", logo: nil, groupID: "Svenska"),
@@ -122,6 +123,9 @@ struct LiveView: View {
         }
         .background(NexusTheme.background.ignoresSafeArea())
         .navigationTitle("Live TV")
+        .fullScreenCover(item: $playbackItem) { item in
+            PlaybackView(url: item.url, title: item.title)
+        }
         .task { await loadProviderChannels() }
     }
 
@@ -444,13 +448,27 @@ struct LiveView: View {
                     }
                 }
                 .buttonStyle(.plain)
-                Button { toggleFavorite(channel.id) } label: {
-                    Image(systemName: favoriteIDs.contains(channel.id) ? "star.fill" : "star")
-                        .font(.caption)
-                        .foregroundStyle(favoriteIDs.contains(channel.id) ? NexusTheme.accentLight : NexusTheme.secondaryText)
+                HStack(spacing: 12) {
+                    Button { toggleFavorite(channel.id) } label: {
+                        Image(systemName: favoriteIDs.contains(channel.id) ? "star.fill" : "star")
+                            .font(.caption)
+                            .foregroundStyle(favoriteIDs.contains(channel.id) ? NexusTheme.accentLight : NexusTheme.secondaryText)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(favoriteIDs.contains(channel.id) ? "Ta bort favorit" : "Lägg till favorit")
+
+                    if usingProviderData {
+                        Button { openPlayback(for: channel) } label: {
+                            Image(systemName: "play.fill")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 28, height: 28)
+                                .background(NexusTheme.accent, in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Spela \(channel.name)")
+                    }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(favoriteIDs.contains(channel.id) ? "Ta bort favorit" : "Lägg till favorit")
             }
             .frame(width: channelColumnWidth, alignment: .leading)
 
@@ -590,6 +608,34 @@ struct LiveView: View {
         if epgRequestID == requestID {
             epgLoadingChannel = nil
             epgRequestID = nil
+        }
+    }
+
+    @MainActor
+    private func openPlayback(for channel: GuideChannel) {
+        guard usingProviderData,
+              let profile = activeProfile,
+              let stream = liveStreams.first(where: { $0.streamID == channel.id }) else {
+            loadMessage = "Kanalen saknar en aktiv Xtream-källa."
+            return
+        }
+        guard let password = try? KeychainCredentialStore.shared.password(
+            provider: profile.provider, baseURL: profile.baseURL, username: profile.username
+        ), !password.isEmpty else {
+            loadMessage = "Lösenord saknas i nyckelringen. Spara anslutningen igen."
+            return
+        }
+        do {
+            let url = try XtreamPlaybackLocator.liveStreamURL(
+                baseURL: profile.baseURL,
+                username: profile.username,
+                password: password,
+                streamID: stream.streamID,
+                containerExtension: stream.containerExtension
+            )
+            playbackItem = LivePlaybackItem(url: url, title: stream.name)
+        } catch {
+            loadMessage = error.localizedDescription
         }
     }
 
