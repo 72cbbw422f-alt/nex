@@ -1,6 +1,6 @@
 import Foundation
 
-enum ConnectionProvider: String, CaseIterable, Identifiable, Equatable, Codable {
+enum ConnectionProvider: String, CaseIterable, Identifiable, Equatable, Codable, Sendable {
     case xtream = "Xtream"
     case jellyfin = "Jellyfin"
 
@@ -13,13 +13,13 @@ enum ConnectionProvider: String, CaseIterable, Identifiable, Equatable, Codable 
     }
 }
 
-struct ProviderConnectionConfiguration: Equatable {
+struct ProviderConnectionConfiguration: Equatable, Sendable {
     let provider: ConnectionProvider
     let baseURL: URL
     let username: String
 }
 
-struct ProviderCredentials {
+struct ProviderCredentials: Sendable {
     let password: String
 }
 
