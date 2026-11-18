@@ -99,3 +99,12 @@
 - Updated the movie library, series library and global search to consume the same fixture records, including consistent title, type, subtitle and artwork seed.
 - This removes duplicate sample lists and establishes a seam for replacing fixtures with repository-backed catalogue data.
 - The catalogue remains local preview data; no Xtream, Jellyfin/AIOStreams or TMDB requests are made.
+
+
+## 2026-11-18 — Provider connection setup shell
+
+- Added an Anslutningar screen with separate Xtream and Jellyfin setup modes.
+- Added server address, username and password fields, with a secure password field and a home-toolbar entry point.
+- The form currently holds only an in-memory draft while the view is open. Its action explicitly reports that no connection has been tested or securely saved.
+- No credentials are transmitted, persisted or logged. Keychain storage, provider-specific API validation and real connection tests remain unimplemented.
+- This UI is a setup shell only; endpoint details and authentication flows must be validated against the actual provider/server APIs before networking is added.
