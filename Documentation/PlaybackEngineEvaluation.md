@@ -110,3 +110,13 @@ Do not add any playback package to the production NEXUS targets until the spike 
 - The manifest's August 31 archive is listed at approximately 920.6 MB. The November 9 archive is approximately 910.2 MB. This is a substantial dependency download and increases CI/cache, distribution and update costs.
 - The public index confirms the artifacts exist and their approximate sizes, but does not prove their XCFramework contents or platform slices. iOS device/simulator and tvOS device/simulator support still must be inspected from the actual archive.
 - Current conclusion: VLCKit remains the best candidate for an isolated test, but the SPM artifact is not yet cleared for integration. Next gate is archive integrity/checksum plus XCFramework slice inspection and a minimal CI package-resolution/build spike. Keep AVPlayer untouched.
+
+
+## 2026-11-18 — Additional libVLC wrapper candidate: SwiftVLC
+
+- Identified harflabs/SwiftVLC, a newer native-Swift wrapper around libVLC, advertising iOS, tvOS, macOS, visionOS and Mac Catalyst support. This is a separate project from VideoLAN's Objective-C VLCKit wrapper; it still uses libVLC and does not remove libVLC licensing obligations.
+- Inspected its current Package.swift: Swift tools 6.3, Swift language mode 6, and minimum iOS/tvOS 18.0. NEXUS currently targets Swift 5.9 and iOS/tvOS 17.0, so this package is not compatible with the current project baseline without a significant toolchain and deployment-target change.
+- Its v1.1.0-rc.1 binary is a static libVLC XCFramework with a published checksum. The package index explicitly labels the artifact not release-qualified because its physical-device matrix and required feature policy have not both been satisfied. It must not be treated as production-ready merely because it has a package and binary release.
+- The repository is actively maintained (latest visible update in November 2026) and has a substantial qualification harness. It is worth retaining as a watch-list candidate, but not as the immediate NEXUS spike while our baseline remains Swift 5.9 / iOS 17.
+- This reinforces the current decision: keep VLCKit 4.x as the first candidate to validate against our existing deployment baseline; keep SwiftVLC as a possible future alternative only if NEXUS deliberately raises its baseline and the upstream artifact completes device qualification.
+- No player package has been added to NEXUS. No engine decision has changed.
