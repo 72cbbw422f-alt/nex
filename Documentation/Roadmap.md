@@ -27,7 +27,7 @@
 - [ ] Add preview fixtures (no real credentials)
 
 ## Phase 2 — Xtream connector
-- [x] Persist non-secret connection profiles and passwords separately in Keychain (CI/device validation pending)\n- [ ] Server-side authentication test and provider connection verification
+- [x] Persist non-secret connection profiles and passwords separately in Keychain (CI/device validation pending)\n- [x] Add Xtream Player API authentication test and live category/channel fetch adapter (CI and real-provider validation pending)\n- [ ] Wire live category/channel results into the Live TV interface\n- [ ] Validate authentication and response compatibility against real Xtream providers
 - [ ] Live categories and channels
 - [ ] VOD movies and categories
 - [ ] Series, seasons and episodes
