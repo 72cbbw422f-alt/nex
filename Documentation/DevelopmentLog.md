@@ -208,3 +208,12 @@
 - The first CI build of the shared six-hour timeline exposed an incorrectly escaped Swift key-path expression in the hour ruler (`ForEach` identity).
 - Corrected the expression to the native Swift key-path form.
 - A new CI run is required to validate the correction; no successful build is claimed yet.
+
+
+## 2026-11-18 — Persisted Live TV favourites
+
+- Replaced the provider-backed Live TV favourites' view-only behavior with UserDefaults persistence.
+- Favourite sets are scoped by provider type, normalized server address and username, so different Xtream profiles do not share channel IDs accidentally.
+- When no provider profile exists, the sample preview retains its two illustrative favourites; loading a provider profile restores only that profile's saved favourites.
+- Favourite channel IDs are stored as a sorted integer array. No credentials are included in the preference key or stored value.
+- CI validation is pending. Real-provider testing and profile-switching verification remain outstanding.
