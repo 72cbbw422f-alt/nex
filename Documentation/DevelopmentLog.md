@@ -400,3 +400,13 @@
 - KSPlayer is described upstream as based on AVPlayer and FFmpeg; it should be evaluated as a richer engine/framework layer, not assumed to be a wholly separate replacement for Apple's media stack.
 - Decision: retain the engine abstraction and current native prototype while evaluating a legally usable KSPlayer distribution or alternative engine. No package dependency was added. Next engineering work should be to define the engine capability surface (tracks, subtitle selection, seek/live state and playback errors) without leaking engine-specific types into feature views.
 - Real Xtream provider playback and physical-device codec compatibility remain unverified.
+
+
+## 2026-11-18 — Embedded audio and subtitle selection in the player
+
+- Added AVPlayer media-selection loading for embedded audible and legible tracks, with stable per-item IDs and selected-state metadata.
+- Added audio and subtitle selection through the engine-neutral playback coordinator. Subtitle selection supports explicitly disabling the selected embedded subtitle track.
+- Connected the track list to the full-screen player UI. The controls appear after track discovery, show available track counts, and provide explicit status labels when the source exposes no audio alternatives or no subtitle tracks.
+- The first menu UI CI run exposed an incorrectly escaped Swift key-path expression. The expression was corrected using an explicit closure; the corrected branch-head workflow passed Xcode project generation, iOS Simulator build, tvOS Simulator build and all iOS unit tests.
+- This verifies compilation and existing coordinator tests, not actual track switching against a live Xtream provider or on physical hardware. Track availability remains dependent on the media source exposing AVPlayer-compatible media-selection groups.
+- External subtitle-file loading, subtitle search/download, synchronization offset and provider-specific playback compatibility are not implemented by this change.
