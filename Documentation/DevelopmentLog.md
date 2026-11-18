@@ -363,3 +363,10 @@
 - Added an AVPlayer-backed engine behind the engine-independent playback coordinator.
 - CI exposed a Swift actor-isolation error caused by constructing the default AVPlayer engine in a default argument. Replaced that default argument with a dedicated main-actor initializer and retained explicit engine injection for tests.
 - The initial CI run confirmed the actor-isolation issue. The follow-up workflow run was cancelled before a usable build/test result was produced; the corrected code is therefore not yet marked CI-verified.
+
+
+## 2026-11-18 — Xtream locator test findings and absolute-path fix
+
+- The first XCTest execution ran all four cases: two passed and two failed because the locator returned `invalidURL` for valid server URLs.
+- Root cause: assigning a relative value to `URLComponents.percentEncodedPath` produced an invalid URL. The builder now explicitly prefixes the assembled path with `/`, while preserving any existing server base path.
+- The corrected source is committed on `project-foundation`. The follow-up iOS/tvOS build and XCTest run is queued; this fix is not yet marked verified.
