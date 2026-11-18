@@ -84,3 +84,10 @@
 - Added local title search and navigation from each card to the media detail shell.
 - Connected both mobile tabs and Apple TV library destinations to the new screens.
 - The screens currently use fixture entries; provider catalogue ingestion, real artwork and metadata remain unimplemented.
+
+
+## 2026-11-18 — Global search shell
+
+- Added a global search destination reachable from the home toolbar.
+- Search filters a shared sample catalogue across film and series, shows result count and an empty/no-results state, and opens the selected detail shell.
+- This is local fixture search only. Unified provider search across Xtream/Jellyfin/AIOStreams and metadata indexing remain future connector work.
