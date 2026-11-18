@@ -62,6 +62,22 @@ struct XtreamConnector: ProviderConnector {
         catch { throw ConnectionError.invalidResponse }
     }
 
+    func shortEPG(configuration: ProviderConnectionConfiguration, credentials: ProviderCredentials, streamID: Int, limit: Int = 10) async throws -> [XtreamEPGProgram] {
+        let payload = try await request(
+            configuration: configuration,
+            credentials: credentials,
+            action: "get_short_epg",
+            extra: ["stream_id": String(streamID), "limit": String(max(1, min(limit, 50)))]
+        )
+        guard let root = payload as? [String: Any],
+              let listings = root["epg_listings"],
+              let data = try? JSONSerialization.data(withJSONObject: listings) else {
+            throw ConnectionError.invalidResponse
+        }
+        do { return try JSONDecoder().decode([XtreamEPGProgram].self, from: data) }
+        catch { throw ConnectionError.invalidResponse }
+    }
+
     private func request(
         configuration: ProviderConnectionConfiguration,
         credentials: ProviderCredentials,
@@ -138,5 +154,41 @@ struct XtreamLiveStream: Decodable, Identifiable, Equatable {
         epgChannelID = try container.decodeIfPresent(String.self, forKey: .epgChannelID)
         categoryID = try container.decodeIfPresent(String.self, forKey: .categoryID)
         streamType = try container.decodeIfPresent(String.self, forKey: .streamType)
+    }
+}
+
+
+struct XtreamEPGProgram: Decodable, Identifiable, Equatable {
+    let id: String
+    let title: String
+    let description: String
+    let startTimestamp: Date?
+    let endTimestamp: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "id"
+        case title = "title"
+        case description = "description"
+        case startTimestamp = "start_timestamp"
+        case endTimestamp = "stop_timestamp"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = (try? container.decode(String.self, forKey: .id)) ?? UUID().uuidString
+        title = Self.decodeBase64(try container.decodeIfPresent(String.self, forKey: .title)) ?? "Okänt program"
+        description = Self.decodeBase64(try container.decodeIfPresent(String.self, forKey: .description)) ?? ""
+        startTimestamp = Self.decodeTimestamp(try container.decodeIfPresent(String.self, forKey: .startTimestamp))
+        endTimestamp = Self.decodeTimestamp(try container.decodeIfPresent(String.self, forKey: .endTimestamp))
+    }
+
+    private static func decodeBase64(_ value: String?) -> String? {
+        guard let value, let data = Data(base64Encoded: value) else { return value }
+        return String(data: data, encoding: .utf8) ?? value
+    }
+
+    private static func decodeTimestamp(_ value: String?) -> Date? {
+        guard let value, let seconds = TimeInterval(value) else { return nil }
+        return Date(timeIntervalSince1970: seconds)
     }
 }
