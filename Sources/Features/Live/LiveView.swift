@@ -193,7 +193,7 @@ struct LiveView: View {
             catch { epgByChannel[channel.id] = [] }
         }
         let available = channelsToLoad.filter { !(epgByChannel[$0.id]?.isEmpty ?? true) }.count
-        timelineMessage = "Visar programdata för \\(available) av \\(channelsToLoad.count) kanaler. Högst 8 kanaler hämtas per omgång."
+        timelineMessage = "Visar programdata för \(available) av \(channelsToLoad.count) kanaler. Högst 8 kanaler hämtas per omgång."
     }
     private var guide: some View {
         VStack(alignment: .leading, spacing: 0) {
