@@ -7,6 +7,7 @@ struct ConnectionsView: View {
     @State private var password = ""
     @State private var draftMessage: String?
     @State private var isValidDraft = false
+    @State private var isPasswordSaved = false
 
     var body: some View {
         ScrollView {
@@ -62,10 +63,22 @@ struct ConnectionsView: View {
                     .disabled(serverAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty)
                     .opacity(serverAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty ? 0.45 : 1)
 
+                    if isValidDraft {
+                        Button(action: savePassword) {
+                            Label("Spara lösenord säkert", systemImage: "lock.shield")
+                                .font(.subheadline.bold())
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 13)
+                                .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 13))
+                                .foregroundStyle(NexusTheme.accentLight)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     if let draftMessage {
-                        Label(draftMessage, systemImage: isValidDraft ? "checkmark.circle" : "info.circle")
+                        Label(draftMessage, systemImage: isPasswordSaved ? "checkmark.shield.fill" : (isValidDraft ? "checkmark.circle" : "info.circle"))
                             .font(.caption)
-                            .foregroundStyle(isValidDraft ? NexusTheme.accentLight : NexusTheme.secondaryText)
+                            .foregroundStyle(isPasswordSaved ? NexusTheme.accentLight : NexusTheme.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -73,7 +86,7 @@ struct ConnectionsView: View {
                 .background(NexusTheme.surface, in: RoundedRectangle(cornerRadius: 18))
                 .overlay(RoundedRectangle(cornerRadius: 18).stroke(NexusTheme.border, lineWidth: 1))
 
-                Text("Detta kontrollerar bara att uppgifterna har ett rimligt format. Ingen server kontaktas och inget sparas ännu. Riktig anslutning och säker Keychain-lagring kommer i nästa steg.")
+                Text("Adress och användarnamn sparas inte ännu. Lösenord kan sparas separat i enhetens nyckelring. Ingen server kontaktas förrän API-anslutningen är implementerad.")
                     .font(.caption)
                     .foregroundStyle(NexusTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -93,10 +106,33 @@ struct ConnectionsView: View {
                 password: password
             )
             isValidDraft = true
-            draftMessage = "Formatet ser korrekt ut. Servern är inte kontaktad och uppgifterna är inte sparade."
+            isPasswordSaved = false
+            draftMessage = "Formatet ser korrekt ut. Servern är inte kontaktad."
         } catch {
             isValidDraft = false
+            isPasswordSaved = false
             draftMessage = error.localizedDescription
+        }
+    }
+
+    private func savePassword() {
+        do {
+            _ = try ProviderConnectionValidator.validate(
+                provider: selectedProvider,
+                address: serverAddress,
+                username: username,
+                password: password
+            )
+            try KeychainCredentialStore.shared.save(
+                password: password,
+                provider: selectedProvider,
+                username: username
+            )
+            isPasswordSaved = true
+            draftMessage = "Lösenordet är sparat i enhetens nyckelring. Serveradress och användarnamn är ännu inte sparade."
+        } catch {
+            isPasswordSaved = false
+            draftMessage = "Kunde inte spara lösenordet: \(error.localizedDescription)"
         }
     }
 
@@ -108,6 +144,7 @@ struct ConnectionsView: View {
             password = ""
             draftMessage = nil
             isValidDraft = false
+            isPasswordSaved = false
         } label: {
             VStack(alignment: .leading, spacing: 9) {
                 Image(systemName: provider.symbol)
