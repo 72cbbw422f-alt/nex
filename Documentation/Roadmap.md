@@ -93,6 +93,7 @@
 
 ## Phase 8 — Polish and release
 - [ ] iPhone and iPad responsive refinement
+- [x] Add compact-width Live TV spacing and EPG sizing (CI/device validation pending)
 - [ ] tvOS focus and remote refinement
 - [ ] Offline/error/empty states
 - [ ] Performance and memory profiling
