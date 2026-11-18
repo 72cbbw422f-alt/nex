@@ -442,3 +442,11 @@
 - This successful run validates the existing NEXUS baseline only; it does not download or inspect the 910 MB VLCKit archive and does not validate physical-device playback.
 - Next gate remains a bounded HTTP Range/ZIP metadata inspection of the exact pinned archive. The inspection must fail closed if the server does not honor byte-range requests, so CI never falls back to downloading the full archive unintentionally. If the archive can be inspected safely, verify the actual XCFramework platform/architecture slices before considering a minimal isolated package-resolution/build spike.
 - No playback dependency was added, no engine was selected, and the AVPlayer implementation remains unchanged.
+
+
+## 2026-11-19 — Bounded ZIP inspector and parser tests
+
+- Added a Python standard-library tool that reads the ZIP end-of-central-directory record and central-directory listing through bounded HTTP Range requests. It requires HTTP 206 and validates Content-Range, response length and stable total size; HTTP 200 is treated as Range refusal and the response is closed without a full-download fallback.
+- The first-stage tool has a 65,557-byte tail limit and a 32 MiB central-directory limit. ZIP64 and multi-disk archives fail closed. It inventories XCFramework-related paths but does not yet prove architectures or supported platforms from Info.plist.
+- Added offline unit tests for ZIP central-directory parsing, invalid ZIP data, ZIP64 rejection and corrupt directory rejection. The GitHub Actions workflow now runs these Python tests before the Xcode builds.
+- The real VideoLAN endpoint has not yet been tested by this script. The latest workflow run will validate the local parser tests and normal app builds only; no VLCKit archive download is part of CI.
