@@ -1,6 +1,11 @@
 name: VLCKit archive audit
 
 on:
+  push:
+    branches: [project-foundation]
+    paths:
+      - "Scripts/inspect_remote_zip.py"
+      - ".github/workflows/vlckit-audit.yml"
   workflow_dispatch:
 
 permissions:
