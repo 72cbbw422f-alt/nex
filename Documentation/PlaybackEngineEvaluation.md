@@ -131,3 +131,14 @@ Do not add any playback package to the production NEXUS targets until the spike 
 - The upstream manifest declares Swift tools 5.9 and iOS/tvOS minimum 12, so its manifest-level toolchain/platform declaration is compatible with NEXUS's Swift 5.9 / iOS and tvOS 17 baseline.
 - Manifest declarations do not prove the archive contains all required XCFramework variants. The archive's actual iOS device, iOS Simulator, tvOS device and tvOS Simulator slices remain unverified.
 - Do not make CI download the 910 MB archive until a lightweight metadata/range check establishes a sensible inspection path. Do not add the package to production targets. AVPlayer remains untouched.
+
+
+## 2026-11-19 — Bounded remote ZIP inspector added
+
+- Added `Scripts/inspect_remote_zip.py` to inspect the remote archive's ZIP central directory without saving the full binary.
+- The tool requests only the final ZIP metadata window (at most 65,557 bytes) and then the central directory (hard-capped at 32 MiB).
+- Every response must be HTTP 206 with a matching `Content-Range`, exact body length and consistent total archive size. A server that ignores Range and returns HTTP 200 is rejected immediately; the response is closed after reading no more than the requested window plus one byte. There is no fallback to a full download.
+- ZIP64 and multi-disk archives are explicitly rejected rather than guessed. This is a first-stage inventory tool: it lists XCFramework-related paths but does not yet read each framework's Info.plist or prove architecture/platform slices.
+- Usage: `python3 Scripts/inspect_remote_zip.py`. An alternate URL can be supplied with `--url`.
+- The script has been committed, but the actual VideoLAN endpoint has not yet been tested from the CI runner. Do not treat archive support for HTTP Range as confirmed until the script completes successfully against the pinned URL.
+- Next step after a successful inventory: extend the inspector to fetch only the small XCFramework Info.plist entries using their local ZIP offsets, then report iOS/tvOS platform and simulator/device variant metadata. Keep the 910 MB archive out of normal build CI and do not add VLCKit to production targets.
