@@ -60,11 +60,14 @@ Create a shared SubtitleService and SubtitlePreference model, independent of pla
 
 - User-configurable ordered language preferences (for example Swedish, then English).
 - Prefer compatible embedded tracks when configured; otherwise search external sources such as OpenSubtitles.
-- Match by stable media identifiers, episode metadata and release/file hash when available; rank uncertain matches conservatively.
+- Match by stable media identifiers, episode metadata and release/file hash when available; rank uncertain matches conservatively. Never auto-select an unverified title-only match.
 - Cache downloaded subtitle assets with bounded storage and source attribution.
 - Support manual selection, sync offset and supported styling controls.
-- Pass the selected subtitle to the active engine using its supported API. For Infuse hand-off, pass a subtitle URL only where the integration supports it.
+- Pass the selected subtitle to the active engine using its supported API. The engine must explicitly advertise external subtitle support; a downloaded file is not playable merely because it exists locally.
+- For Infuse hand-off, pass a subtitle URL only where the integration supports it.
 - Validate OpenSubtitles API access, authentication, quotas and terms before implementation. Never commit API credentials.
+
+Current foundation: SubtitleService protocol, SRT/WebVTT format model, search query/candidate/asset value types, ordered language preferences and conservative candidate ranking are implemented and unit-tested. No provider adapter, downloader/cache, subtitle injection into a player engine or OpenSubtitles integration exists yet.
 
 ### Watch tracking and BingeLog integration
 NEXUS is the playback event source; BingeLog is the user's viewing-history and tracking destination.
