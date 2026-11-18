@@ -242,17 +242,23 @@ enum XtreamPlaybackLocator {
             throw LocatorError.invalidExtension
         }
 
-        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
-        guard components != nil else { throw LocatorError.invalidURL }
-
-        var url = baseURL
-        url.appendPathComponent("live")
-        url.appendPathComponent(username)
-        url.appendPathComponent(password)
-        url.appendPathComponent("\(streamID).\(rawExtension.lowercased())")
-        guard let finalURL = URLComponents(url: url, resolvingAgainstBaseURL: false)?.url else {
+        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
             throw LocatorError.invalidURL
         }
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~"))
+        func encodeSegment(_ value: String) throws -> String {
+            guard let encoded = value.addingPercentEncoding(withAllowedCharacters: allowed) else {
+                throw LocatorError.invalidURL
+            }
+            return encoded
+        }
+
+        let basePath = components.percentEncodedPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let segments = try ["live", username, password, "\(streamID).\(rawExtension.lowercased())"].map(encodeSegment)
+        components.percentEncodedPath = ([basePath].filter { !$0.isEmpty } + segments).joined(separator: "/")
+        components.query = nil
+        components.fragment = nil
+        guard let finalURL = components.url else { throw LocatorError.invalidURL }
         return finalURL
     }
 }
