@@ -128,4 +128,15 @@ struct XtreamLiveStream: Decodable, Identifiable, Equatable {
         case categoryID = "category_id"
         case streamType = "stream_type"
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        streamID = try container.decode(Int.self, forKey: .streamID)
+        let iconValue = try container.decodeIfPresent(String.self, forKey: .streamIcon)
+        streamIcon = iconValue.flatMap(URL.init(string:))
+        epgChannelID = try container.decodeIfPresent(String.self, forKey: .epgChannelID)
+        categoryID = try container.decodeIfPresent(String.self, forKey: .categoryID)
+        streamType = try container.decodeIfPresent(String.self, forKey: .streamType)
+    }
 }
