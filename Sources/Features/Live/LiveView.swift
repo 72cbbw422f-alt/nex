@@ -31,6 +31,7 @@ struct LiveView: View {
     @State private var loadMessage: String?
     @State private var expandedEPGChannel: Int?
     @State private var epgByChannel: [Int: [XtreamEPGProgram]] = [:]
+    @State private var epgFetchedAt: [Int: Date] = [:]
     @State private var epgLoadingChannel: Int?
     @State private var isLoadingTimeline = false
     @State private var timelineMessage: String?
@@ -211,7 +212,6 @@ struct LiveView: View {
     private func shiftTimeline(by hours: Int) {
         guard !isLoadingTimeline else { return }
         timelineOffsetHours = hours == 0 ? 0 : timelineOffsetHours + hours
-        epgByChannel = [:]
         Task { await loadTimeline() }
     }
 
@@ -308,9 +308,15 @@ struct LiveView: View {
         let credentials = ProviderCredentials(password: password)
         let channelsToLoad = Array(visibleChannels.prefix(8))
         for channel in channelsToLoad {
-            if epgByChannel[channel.id] != nil { continue }
-            do { epgByChannel[channel.id] = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8) }
-            catch { epgByChannel[channel.id] = [] }
+            let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < 300 } ?? false
+            if cacheIsFresh { continue }
+            do {
+                epgByChannel[channel.id] = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
+                epgFetchedAt[channel.id] = Date()
+            } catch {
+                epgByChannel[channel.id] = []
+                epgFetchedAt[channel.id] = Date()
+            }
         }
         let available = channelsToLoad.filter { !(epgByChannel[$0.id]?.isEmpty ?? true) }.count
         timelineMessage = "Visar programdata för \(available) av \(channelsToLoad.count) kanaler. Högst 8 kanaler hämtas per omgång."
@@ -447,7 +453,8 @@ struct LiveView: View {
         }
         expandedEPGChannel = channel.id
         guard usingProviderData, let profile = activeProfile else { return }
-        if epgByChannel[channel.id] != nil { return }
+        let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < 300 } ?? false
+        if cacheIsFresh { return }
         guard let password = try? KeychainCredentialStore.shared.password(
             provider: profile.provider, baseURL: profile.baseURL, username: profile.username
         ), !password.isEmpty else { return }
@@ -458,8 +465,10 @@ struct LiveView: View {
             epgByChannel[channel.id] = try await XtreamConnector().shortEPG(
                 configuration: configuration, credentials: ProviderCredentials(password: password), streamID: channel.id
             )
+            epgFetchedAt[channel.id] = Date()
         } catch {
             epgByChannel[channel.id] = []
+            epgFetchedAt[channel.id] = Date()
             loadMessage = "EPG kunde inte hämtas för \(channel.name): \(error.localizedDescription)"
         }
     }
@@ -475,6 +484,11 @@ struct LiveView: View {
             return
         }
 
+        if activeProfile?.baseURL != profile.baseURL || activeProfile?.username != profile.username {
+            epgByChannel = [:]
+            epgFetchedAt = [:]
+            expandedEPGChannel = nil
+        }
         activeProfile = profile
         if let key = favoriteStorageKey {
             favoriteIDs = Set(UserDefaults.standard.array(forKey: key) as? [Int] ?? [])
