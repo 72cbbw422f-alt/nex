@@ -6,35 +6,18 @@ enum MediaLibraryKind: Equatable {
 
     var title: String { self == .movies ? "Filmer" : "Serier" }
     var emptyMessage: String { self == .movies ? "Inga filmer matchar sökningen." : "Inga serier matchar sökningen." }
-}
-
-private struct LibraryItem: Identifiable {
-    let id: Int
-    let title: String
-    let subtitle: String
-    let seed: Int
+    fileprivate var fixtureKind: NEXUSMediaFixture.Kind { self == .movies ? .movie : .series }
 }
 
 struct MediaLibraryView: View {
     let kind: MediaLibraryKind
     @State private var searchText = ""
 
-    private var items: [LibraryItem] {
-        let all = kind == .movies
-            ? [
-                LibraryItem(id: 1, title: "Dune: Part Two", subtitle: "Film · 2024", seed: 2),
-                LibraryItem(id: 2, title: "Oppenheimer", subtitle: "Film · 2023", seed: 1),
-                LibraryItem(id: 3, title: "Arrival", subtitle: "Film · 2016", seed: 0),
-                LibraryItem(id: 4, title: "Blade Runner 2049", subtitle: "Film · 2017", seed: 3)
-            ]
-            : [
-                LibraryItem(id: 5, title: "The Last of Us", subtitle: "Serie · 2 säsonger", seed: 0),
-                LibraryItem(id: 6, title: "Fallout", subtitle: "Serie · 1 säsong", seed: 1),
-                LibraryItem(id: 7, title: "House of the Dragon", subtitle: "Serie · 2 säsonger", seed: 3),
-                LibraryItem(id: 8, title: "Severance", subtitle: "Serie · 2 säsonger", seed: 2)
-            ]
-        guard !searchText.isEmpty else { return all }
-        return all.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+    private var items: [NEXUSMediaFixture] {
+        let matchingKind = NEXUSMediaFixture.all.filter { $0.kind == kind.fixtureKind }
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return matchingKind }
+        return matchingKind.filter { $0.title.localizedCaseInsensitiveContains(query) }
     }
 
     private let columns = [
@@ -73,9 +56,9 @@ struct MediaLibraryView: View {
                     LazyVGrid(columns: columns, alignment: .leading, spacing: 20) {
                         ForEach(items) { item in
                             NavigationLink {
-                                MediaDetailView(title: item.title, subtitle: item.subtitle, seed: item.seed)
+                                MediaDetailView(title: item.title, subtitle: item.subtitle, seed: item.artworkSeed)
                             } label: {
-                                PosterTile(title: item.title, subtitle: item.subtitle, seed: item.seed)
+                                PosterTile(title: item.title, subtitle: item.subtitle, seed: item.artworkSeed)
                             }
                             .buttonStyle(.plain)
                         }
