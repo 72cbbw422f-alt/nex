@@ -23,6 +23,8 @@ struct LiveView: View {
     @State private var expandedEPGChannel: Int?
     @State private var epgByChannel: [Int: [XtreamEPGProgram]] = [:]
     @State private var epgLoadingChannel: Int?
+    @State private var isLoadingTimeline = false
+    @State private var timelineMessage: String?
 
     private let sampleChannels: [GuideChannel] = [
         GuideChannel(id: 1, name: "SVT1", logo: nil, groupID: "Svenska"),
@@ -67,6 +69,7 @@ struct LiveView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 groupPicker
+                timelineSection
                 guide
             }
             .padding(20)
@@ -120,6 +123,78 @@ struct LiveView: View {
         }
     }
 
+    private var timelineSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("PROGRAMGUIDE").font(.caption.weight(.bold)).tracking(1.2).foregroundStyle(NexusTheme.accentLight)
+                    Text("Tidslinje").font(.title3.bold()).foregroundStyle(.white)
+                }
+                Spacer()
+                Button { Task { await loadTimeline() } } label: {
+                    HStack(spacing: 6) {
+                        if isLoadingTimeline { ProgressView().tint(.white) }
+                        Text(isLoadingTimeline ? "Hämtar…" : "Ladda guide")
+                    }.font(.caption.weight(.semibold)).padding(.horizontal, 12).padding(.vertical, 9)
+                     .background(NexusTheme.accent, in: Capsule()).foregroundStyle(.white)
+                }.buttonStyle(.plain).disabled(isLoadingTimeline || !usingProviderData)
+            }
+            Text(timelineMessage ?? "Hämtar program för upp till 8 synliga kanaler.").font(.caption).foregroundStyle(NexusTheme.secondaryText)
+            if !timelineChannels.isEmpty {
+                ScrollView(.horizontal, showsIndicators: true) {
+                    VStack(alignment: .leading, spacing: 7) {
+                        HStack(spacing: 0) {
+                            Text("KANAL").font(.caption2.bold()).foregroundStyle(NexusTheme.secondaryText).frame(width: 112, alignment: .leading)
+                            Text("PROGRAM").font(.caption2.bold()).foregroundStyle(NexusTheme.secondaryText).frame(width: timelineWidth, alignment: .leading)
+                        }
+                        ForEach(timelineChannels) { channel in
+                            HStack(spacing: 0) {
+                                Text(channel.name).font(.caption.weight(.semibold)).foregroundStyle(.white).lineLimit(2).frame(width: 112, alignment: .leading)
+                                HStack(spacing: 5) {
+                                    ForEach(epgByChannel[channel.id] ?? []) { program in
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(program.startTimestamp?.formatted(date: .omitted, time: .shortened) ?? "--:--").font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit()).foregroundStyle(NexusTheme.accentLight)
+                                            Text(program.title).font(.caption2.weight(.semibold)).foregroundStyle(.white).lineLimit(2)
+                                        }.padding(7).frame(width: timelineCardWidth(program), height: 54, alignment: .leading).background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 8))
+                                    }
+                                }.frame(height: 54, alignment: .leading)
+                            }
+                        }
+                    }
+                }
+            }
+        }.padding(14).background(NexusTheme.surface, in: RoundedRectangle(cornerRadius: 15)).overlay(RoundedRectangle(cornerRadius: 15).stroke(NexusTheme.border, lineWidth: 1))
+    }
+
+    private var timelineChannels: [GuideChannel] {
+        Array(visibleChannels.filter { epgByChannel[$0.id] != nil && !(epgByChannel[$0.id]?.isEmpty ?? true) }.prefix(8))
+    }
+
+    private var timelineWidth: CGFloat { max(520, CGFloat(timelineChannels.count) * 180) }
+
+    private func timelineCardWidth(_ program: XtreamEPGProgram) -> CGFloat {
+        guard let start = program.startTimestamp, let end = program.endTimestamp else { return 150 }
+        return min(280, max(105, CGFloat(end.timeIntervalSince(start) / 60) * 2.0))
+    }
+
+    @MainActor
+    private func loadTimeline() async {
+        guard usingProviderData, let profile = activeProfile else { timelineMessage = "Anslut en Xtream-källa för att läsa den riktiga programguiden."; return }
+        guard let password = try? KeychainCredentialStore.shared.password(provider: profile.provider, baseURL: profile.baseURL, username: profile.username), !password.isEmpty else { timelineMessage = "Lösenord saknas i nyckelringen. Spara anslutningen igen."; return }
+        isLoadingTimeline = true
+        timelineMessage = nil
+        defer { isLoadingTimeline = false }
+        let configuration = ProviderConnectionConfiguration(provider: profile.provider, baseURL: profile.baseURL, username: profile.username)
+        let credentials = ProviderCredentials(password: password)
+        let channelsToLoad = Array(visibleChannels.prefix(8))
+        for channel in channelsToLoad {
+            if epgByChannel[channel.id] != nil { continue }
+            do { epgByChannel[channel.id] = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8) }
+            catch { epgByChannel[channel.id] = [] }
+        }
+        let available = channelsToLoad.filter { !(epgByChannel[$0.id]?.isEmpty ?? true) }.count
+        timelineMessage = "Visar programdata för \\(available) av \\(channelsToLoad.count) kanaler. Högst 8 kanaler hämtas per omgång."
+    }
     private var guide: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
