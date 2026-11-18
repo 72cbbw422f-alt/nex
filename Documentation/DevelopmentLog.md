@@ -268,3 +268,11 @@
 - Paging the six-hour timeline no longer clears already fetched EPG data. Cached programme intervals are clipped against the selected window; this improves reuse but does not create historical listings that the provider has not returned.
 - Cache entries are invalidated when the active server address or username changes. Failed requests are also held for up to five minutes to avoid rapid repeated calls to an unavailable endpoint.
 - The fix and cache implementation are committed on `project-foundation`. CI validation is pending; no successful build is claimed yet.
+
+
+## 2026-11-18 — Compact iPhone Live TV layout
+
+- Added width-class-aware sizing to the Live TV screen while retaining the approved navy/violet visual direction.
+- On compact-width devices, reduced outer spacing and the channel label column, and tightened the six-hour timeline scale and minimum programme-card width so more guide content is visible without horizontal scrolling.
+- Kept the horizontal timeline scroll available for full programme detail; regular-width layouts retain the wider dimensions.
+- Simulator build validation is pending.
