@@ -422,3 +422,14 @@
 - CI for the initial subtitle foundation passed iOS Simulator build, tvOS Simulator build and iOS unit tests. The stricter matching safeguard and added test have a new CI run pending.
 - Kept external subtitle playback explicitly unimplemented. AVPlayer embedded media selection does not provide a generic sidecar SRT/VTT injection path; an engine must expose and implement that capability before downloaded files can be selected for playback.
 - No OpenSubtitles integration, download/cache implementation, subtitle sync UI or physical-device playback validation has been added.
+
+
+## 2026-11-18 — Playback engine research gate
+
+- Compared AVPlayer, VideoLAN VLCKit 4.x, KSPlayer 5.6.2 and libmpv/mpv-ios for iOS/iPadOS/tvOS support, external subtitles, codec breadth, package/toolchain fit and licensing.
+- Added Documentation/PlaybackEngineEvaluation.md with evidence, risks, comparison matrix and a proposed isolated technical spike.
+- Research points to VLCKit 4.x as the first candidate to test: VideoLAN explicitly documents iOS/tvOS and LGPL 2.1+, its current SPM manifest uses Swift tools 5.9, and the official VLC iOS app attaches external subtitles through libVLC's media-slave API. The current SPM artifact is an unstable 4.0 binary, so package stability and all device slices remain unverified.
+- KSPlayer remains a feature-rich alternative but its default distribution is GPL-3.0, the LGPL route is paid and not yet licensed, and its current Package.swift requires Swift tools 6.2 plus FFmpegKit.
+- mpv-ios is currently documented as an iOS implementation, not a complete tvOS target; its XCFramework requires a macOS/Xcode build and its libmpv dependency stack has separate GPL/LGPL obligations.
+- AVPlayer remains the native fallback for compatible media and embedded tracks; Apple marks the older external subtitle language properties deprecated.
+- No engine dependency was added and no final engine decision was made. Next step is an isolated VLCKit package/build/API spike, followed by real-device subtitle and stream tests and a distribution licence review.
