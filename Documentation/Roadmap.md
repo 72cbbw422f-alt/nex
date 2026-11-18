@@ -88,11 +88,11 @@
 - [x] Align the red current-time marker to the selected six-hour window and hide it outside the current-time range (CI pending)
 - [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI pending)
 - [x] Reuse short-EPG responses across timeline paging with a five-minute cache and profile-change invalidation (CI pending)
-- [x] Scope EPG programme, timestamp and error caches by provider/server/account/channel identity (CI passed; device validation pending)
-- [x] Guard in-flight EPG requests against stale profile/category/channel state (CI pending)
+- [x] Scope EPG programme, timestamp and error caches by provider/server/account/channel identity (iOS/tvOS CI passed; device validation pending)
+- [x] Guard in-flight EPG requests against stale profile/category/channel state (iOS/tvOS CI passed; device validation pending)
 - [x] Distinguish successful empty EPG responses from provider request failures; use shorter retry cooldown for failures (CI/provider validation pending)
 - [x] Display provider-supplied channel logos with neutral fallback (CI/device validation pending)
-- [ ] Channel zapping
+- [x] Guard overlapping channel refreshes against stale profile and request results (iOS/tvOS CI pending)\n- [ ] Channel zapping
 - [ ] Catch-up where provider supports it
 
 ## Phase 8 — Polish and release
