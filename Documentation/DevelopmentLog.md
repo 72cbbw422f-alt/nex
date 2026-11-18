@@ -251,3 +251,11 @@
 - Empty time remains visibly unoccupied on a subtle lane track rather than being filled with fabricated programme data. Invalid or zero-length intervals are excluded.
 - The lane allocator uses programme start/end timestamps and reuses a lane once its previous programme has ended.
 - CI validation and real-provider testing are pending. Dense schedules may increase row height; visual refinement on iPhone and iPad remains outstanding.
+
+
+## 2026-11-18 — Compact EPG programme card readability
+
+- Added a minimum readable width for short programme cards so brief listings do not collapse into near-zero-width blocks.
+- The lane allocator now reserves the same minimum visual interval when checking collisions, preventing compact cards from covering the next programme in the same lane.
+- Actual programme start/end timestamps and the displayed timeline duration remain unchanged; the extra width is a presentation aid only. Short programmes may therefore occupy an additional lane when needed.
+- CI and device-size validation are pending. The timeline remains horizontally scrollable on narrow screens.
