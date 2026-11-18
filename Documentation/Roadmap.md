@@ -83,6 +83,7 @@
 - [x] Align programme blocks to a shared six-hour clock axis and show a current-time marker (initial implementation; provider validation pending)
 - [x] Add six-hour previous/next timeline window controls and return-to-now action (CI/provider validation pending)
 - [ ] Improve overlap/EPG-gap handling and verify historical EPG availability per provider
+- [x] Align the red current-time marker to the selected six-hour window and hide it outside the current-time range (CI pending)
 - [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI pending)
 - [x] Display provider-supplied channel logos with neutral fallback (CI/device validation pending)
 - [ ] Channel zapping
