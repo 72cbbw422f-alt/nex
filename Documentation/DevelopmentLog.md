@@ -370,3 +370,12 @@
 - The first XCTest execution ran all four cases: two passed and two failed because the locator returned `invalidURL` for valid server URLs.
 - Root cause: assigning a relative value to `URLComponents.percentEncodedPath` produced an invalid URL. The builder now explicitly prefixes the assembled path with `/`, while preserving any existing server base path.
 - The corrected source is committed on `project-foundation`. The follow-up iOS/tvOS build and XCTest run is queued; this fix is not yet marked verified.
+
+
+## 2026-11-18 — Xtream locator tests pass; PlaybackCoordinator tests added
+
+- The corrected Xtream locator source passed the complete GitHub Actions workflow: iOS Simulator build, tvOS Simulator build and the four XCTest cases.
+- The URL builder now has CI-verified coverage for base-path preservation, reserved and Unicode credential encoding, extension validation and invalid input.
+- Added a fake PlaybackEngine test double and four PlaybackCoordinator tests covering URL load/play ordering, pause/resume forwarding, seek forwarding and state passthrough.
+- The new coordinator tests are committed on `project-foundation`; their CI run is pending.
+- These tests exercise orchestration only. They do not verify network stream acceptance, codec compatibility or real playback on a physical device.
