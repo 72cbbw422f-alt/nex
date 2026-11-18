@@ -27,11 +27,16 @@
 - [ ] Add preview fixtures (no real credentials)
 
 ## Phase 2 — Xtream connector
-- [x] Persist non-secret connection profiles and passwords separately in Keychain (CI/device validation pending)\n- [x] Add Xtream Player API authentication test and live category/channel fetch adapter (CI and real-provider validation pending)\n- [x] Wire live category/channel results into Live TV with category filters and loading/error states\n- [ ] Validate authentication and response compatibility against real Xtream providers
+- [x] Persist non-secret connection profiles and passwords separately in Keychain (CI/device validation pending)
+- [x] Add Xtream Player API authentication test and live category/channel fetch adapter (CI and real-provider validation pending)
+- [x] Wire live category/channel results into Live TV with category filters and loading/error states
+- [ ] Validate authentication and response compatibility against real Xtream providers
 - [ ] Live categories and channels
 - [ ] VOD movies and categories
 - [ ] Series, seasons and episodes
-- [x] Add on-demand short EPG retrieval and per-channel programme panel (provider validation pending)\n- [ ] Full EPG timeline/grid and catch-up capability detection
+- [x] Add on-demand short EPG retrieval and per-channel programme panel (provider validation pending)
+- [x] Decode EPG IDs and timestamps from string or numeric JSON values with deterministic fallback identity
+- [ ] Full EPG timeline/grid and catch-up capability detection
 - [ ] Playback locator tests
 
 ## Phase 3 — Jellyfin / AIOMetadata connector
@@ -71,7 +76,8 @@
 - [ ] End-to-end tests with both apps
 
 ## Phase 7 — Live TV
-- [x] Load live channels and provider categories into the channel browser\n- [ ] Persist channel favourites and support selecting among multiple saved provider profiles
+- [x] Load live channels and provider categories into the channel browser
+- [ ] Persist channel favourites and support selecting among multiple saved provider profiles
 - [ ] Full EPG grid with multi-channel now/next timeline
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
