@@ -284,3 +284,12 @@
 - Displayed both start and end times when the provider supplies them, while retaining safe placeholders for incomplete EPG records.
 - Added explicit loading, empty-provider-data and cached-state labels so opening a channel does not leave an ambiguous blank panel.
 - Kept the existing five-programme limit and the approved navy/violet design language. Build validation is pending.
+
+
+## 2026-11-18 — Live TV EPG error-state handling
+
+- Distinguished a successful empty EPG response from a failed provider request in the expanded channel panel.
+- Successful empty responses retain the five-minute cache lifetime; failed requests display the provider error and use a shorter one-minute retry window.
+- A successful retry clears the stored channel error. EPG error state is cleared together with cached programme data when the active Xtream profile changes.
+- Aligned the channel label column width across the compact channel list, guide header and timeline rows using the shared responsive width value.
+- The preceding alignment commit passed both iOS and tvOS simulator builds. The EPG error-state change is awaiting CI and real-provider validation.
