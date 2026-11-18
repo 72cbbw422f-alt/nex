@@ -38,6 +38,7 @@
 - [x] Refine expanded channel EPG rows with start/end times and explicit loading/empty states (CI pending)
 - [x] Decode EPG IDs and timestamps from string or numeric JSON values with deterministic fallback identity
 - [ ] Full EPG timeline/grid and catch-up capability detection
+- [x] Add explicit Xtream live-stream playback locator with provider-supplied container extension (CI pending)
 - [ ] Playback locator tests
 
 ## Phase 3 — Jellyfin / AIOMetadata connector
@@ -123,3 +124,12 @@ A phase is complete only when its code is committed, builds successfully for the
 - The Live TV timeline and expanded channel panel now await the same in-flight short-EPG task when they request the same channel concurrently, avoiding duplicate provider calls.
 - Completed responses continue to use the existing profile-scoped five-minute success / one-minute failure cache in the view.
 - Concurrent deduplication and Swift concurrency compatibility require iOS/tvOS CI validation and real-provider testing.
+
+
+## Xtream live playback locator foundation
+
+- The live-stream response model now captures the optional provider-supplied `container_extension`.
+- Added a dedicated locator builder for the documented `/live/{username}/{password}/{stream_id}.{extension}` path shape.
+- The builder requires an explicit, validated extension from provider data; it does not guess TS/HLS format when the provider omits it.
+- Username and password are percent-encoded as individual path segments. The resulting secret-bearing URL must remain runtime-only and must never be logged or persisted.
+- This is URL construction only: no channel player, stream probe, KSPlayer dependency or playback support claim has been added. CI and real-provider URL verification pending.
