@@ -9,6 +9,7 @@ struct ConnectionsView: View {
     @State private var isValidDraft = false
     @State private var isPasswordSaved = false
     @State private var savedConnections = ProviderConnectionStore.shared.load()
+    @State private var isTestingConnection = false
 
     var body: some View {
         ScrollView {
@@ -99,6 +100,18 @@ struct ConnectionsView: View {
                                 .foregroundStyle(NexusTheme.accentLight)
                         }
                         .buttonStyle(.plain)
+
+                        Button(action: testConnection) {
+                            HStack {
+                                if isTestingConnection { ProgressView().tint(.white) }
+                                Label("Testa serverinloggning", systemImage: "network")
+                            }
+                            .font(.subheadline.bold()).frame(maxWidth: .infinity).padding(.vertical, 13)
+                            .background(NexusTheme.accent.opacity(0.16), in: RoundedRectangle(cornerRadius: 13))
+                            .foregroundStyle(NexusTheme.accentLight)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isTestingConnection)
                     }
 
                     if let draftMessage {
@@ -140,6 +153,28 @@ struct ConnectionsView: View {
             provider: selectedProvider, address: serverAddress, username: username, password: password
         )
         return (result.configuration, result.credentials)
+    }
+
+    @MainActor
+    private func testConnection() {
+        guard selectedProvider == .xtream else {
+            draftMessage = "Jellyfin-test är inte implementerat ännu."
+            return
+        }
+        isTestingConnection = true
+        draftMessage = "Ansluter till Xtream-servern…"
+        Task {
+            defer { isTestingConnection = false }
+            do {
+                let result = try validatedDraft()
+                try await XtreamConnector().testConnection(configuration: result.0, credentials: result.1)
+                draftMessage = "Inloggningen lyckades. Xtream-servern accepterade kontot."
+                isPasswordSaved = true
+            } catch {
+                draftMessage = "Anslutningstestet misslyckades: \(error.localizedDescription)"
+                isPasswordSaved = false
+            }
+        }
     }
 
     private func saveConnection() {
