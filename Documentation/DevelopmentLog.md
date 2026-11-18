@@ -118,3 +118,13 @@
 - Added a provider connector protocol as the boundary for future API adapters.
 - Updated the connection form to report local format validation separately from a real server test.
 - No network requests or credential persistence are implemented. Credentials remain transient in the form; Keychain integration and provider-specific authentication still need implementation and tests.
+
+
+## 2026-11-18 — Keychain credential storage
+
+- Added a Security-framework Keychain store for provider passwords, scoped by provider and username.
+- Passwords use device-only, after-first-unlock accessibility; values are never written to UserDefaults or logs.
+- Added explicit user action in the connection form to save a password after local field/URL validation.
+- Added read and delete operations for future connection lifecycle management.
+- Server address and username are not yet persisted. No server API request or authentication test is performed.
+- The Keychain implementation still requires successful iOS and tvOS CI builds and device-level verification before it is considered validated.
