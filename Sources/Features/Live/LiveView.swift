@@ -36,6 +36,7 @@ struct LiveView: View {
     @State private var expandedEPGChannel: Int?
     @State private var epgByChannel: [Int: [XtreamEPGProgram]] = [:]
     @State private var epgFetchedAt: [Int: Date] = [:]
+    @State private var epgErrors: [Int: String] = [:]
     @State private var epgLoadingChannel: Int?
     @State private var isLoadingTimeline = false
     @State private var timelineMessage: String?
@@ -312,13 +313,15 @@ struct LiveView: View {
         let credentials = ProviderCredentials(password: password)
         let channelsToLoad = Array(visibleChannels.prefix(8))
         for channel in channelsToLoad {
-            let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < 300 } ?? false
+            let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < (epgErrors[channel.id] == nil ? 300 : 60) } ?? false
             if cacheIsFresh { continue }
             do {
                 epgByChannel[channel.id] = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
+                epgErrors[channel.id] = nil
                 epgFetchedAt[channel.id] = Date()
             } catch {
                 epgByChannel[channel.id] = []
+                epgErrors[channel.id] = error.localizedDescription
                 epgFetchedAt[channel.id] = Date()
             }
         }
@@ -474,7 +477,7 @@ struct LiveView: View {
                 }
                 .padding(.vertical, 5)
             } else if epgByChannel[channel.id] != nil {
-                Text("Leverantören har inte lämnat någon programinformation för kanalen.")
+                Text(epgErrors[channel.id].map { "Programguiden kunde inte hämtas: \\($0)" } ?? "Leverantören har inte lämnat någon programinformation för kanalen.")
                     .font(.caption)
                     .foregroundStyle(NexusTheme.secondaryText)
             } else {
@@ -514,9 +517,11 @@ struct LiveView: View {
             epgByChannel[channel.id] = try await XtreamConnector().shortEPG(
                 configuration: configuration, credentials: ProviderCredentials(password: password), streamID: channel.id
             )
+            epgErrors[channel.id] = nil
             epgFetchedAt[channel.id] = Date()
         } catch {
             epgByChannel[channel.id] = []
+            epgErrors[channel.id] = error.localizedDescription
             epgFetchedAt[channel.id] = Date()
             loadMessage = "EPG kunde inte hämtas för \(channel.name): \(error.localizedDescription)"
         }
@@ -536,6 +541,7 @@ struct LiveView: View {
         if activeProfile?.baseURL != profile.baseURL || activeProfile?.username != profile.username {
             epgByChannel = [:]
             epgFetchedAt = [:]
+            epgErrors = [:]
             expandedEPGChannel = nil
         }
         activeProfile = profile
