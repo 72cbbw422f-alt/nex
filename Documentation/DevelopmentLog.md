@@ -460,3 +460,13 @@
 - Corrected the ZIP64 sentinel unit test to encode the actual EOCD signature. The parser suite had already passed in the preceding runs; the corrected test is included in the next normal build run.
 - This is a directory-level finding only. The inspector has not yet extracted or validated XCFramework `Info.plist` metadata, checked Mach-O architectures, resolved VLCKit through SwiftPM, or linked it into an app target.
 - No playback engine was selected or integrated. AVPlayer remains unchanged; next gate is targeted `Info.plist` extraction and validation followed by an isolated package/build spike.
+
+## 2026-11-19 — VLCKit XCFramework Info.plist verified
+
+- Extended the bounded ZIP inspector to parse central-directory metadata (compression method, sizes, flags and local-header offset) and fetch selected members using bounded HTTP Range requests.
+- The inspector validates local/central ZIP header agreement, supports stored and deflate members, rejects encrypted or unsupported compression, and caps metadata reads at 1 MiB compressed / 4 MiB uncompressed.
+- The exact VideoLAN archive's `VLCKit.xcframework/Info.plist` was successfully fetched and parsed in the separate GitHub Actions audit.
+- `AvailableLibraries` declares: iOS device arm64; iOS simulator arm64 + x86_64; tvOS device arm64; tvOS simulator arm64 + x86_64. The same XCFramework also contains macOS, watchOS and visionOS variants.
+- This is now stronger evidence than directory-name matching: the package's XCFramework manifest declares all four NEXUS target variants. The actual Mach-O binary architecture headers have not yet been inspected, and the package has not yet been resolved/linked in NEXUS.
+- Added offline tests for XCFramework metadata fixture parsing and bounded deflate-member extraction. No production dependency was added and no playback engine was selected.
+- Next gate: inspect Mach-O headers from small bounded ranges or perform an isolated SwiftPM resolution/build spike, then assess runtime playback and LGPL distribution obligations.
