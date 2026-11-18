@@ -26,8 +26,19 @@ struct RootView: View {
     }
 
     private var tvRoot: some View {
-        NavigationStack { HomeView() }
-            .tint(NexusTheme.accentLight)
+        TabView {
+            NavigationStack { HomeView() }
+                .tabItem { Label("Hem", systemImage: "house.fill") }
+            NavigationStack { LiveView() }
+                .tabItem { Label("Live TV", systemImage: "dot.radiowaves.left.and.right") }
+            NavigationStack { PlaceholderScreen(title: "Filmer", symbol: "film", detail: "Ditt samlade filmbibliotek.") }
+                .tabItem { Label("Filmer", systemImage: "film") }
+            NavigationStack { PlaceholderScreen(title: "Serier", symbol: "tv", detail: "Serier, säsonger och avsnitt.") }
+                .tabItem { Label("Serier", systemImage: "rectangle.stack") }
+            NavigationStack { PlaceholderScreen(title: "Min lista", symbol: "bookmark", detail: "Dina sparade filmer och serier.") }
+                .tabItem { Label("Min lista", systemImage: "bookmark") }
+        }
+        .tint(NexusTheme.accentLight)
     }
 }
 
