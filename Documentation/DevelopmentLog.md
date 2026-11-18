@@ -162,3 +162,13 @@
 - Programme now/next and progress are deliberately not fabricated: the current screen labels EPG data as pending until a real EPG endpoint/parser is implemented.
 - This first pass loads the first saved Xtream profile only. Multi-profile source selection, persisted favourites, pagination/caching and real-device/provider compatibility tests remain open.
 - Latest Live TV integration commits are awaiting GitHub Actions results.
+
+
+## 2026-11-18 — On-demand Xtream EPG
+
+- Added `get_short_epg` support to the Xtream adapter, including bounded result limits and decoding of base64 programme title/description fields and Unix timestamps.
+- Tapping a provider channel name in Live TV now expands an on-demand programme panel and requests that channel's short EPG. Results are held in view memory for the current screen session to avoid repeated requests.
+- Added loading, empty and request-error feedback. The panel displays programme start times and available descriptions.
+- EPG is fetched per channel only when requested; the app does not issue one network request per channel during initial catalogue loading.
+- This is a short per-channel EPG view, not yet a full multi-channel timeline/grid. EPG coverage and response variations differ between Xtream panels and require real-provider validation.
+- CI runs for the new Xtream EPG and Live TV changes remain queued; no successful build result is available yet.
