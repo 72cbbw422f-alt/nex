@@ -138,3 +138,16 @@
 - Keychain credential identity now includes provider, normalized server URL and case-preserved username, preventing collisions when the same account name is used on different servers.
 - The form clearly distinguishes local validation and local persistence from a real server authentication test. No provider API request is made yet.
 - CI validation for these latest changes is pending; device-level Keychain verification remains outstanding.
+
+
+## 2026-11-18 — First Xtream API adapter
+
+- Added an Xtream Player API adapter using the documented `/player_api.php` authentication response and `get_live_categories` / `get_live_streams` actions.
+- Authentication checks the returned `user_info.auth` flag and reports inactive account status separately where the server supplies it.
+- Added typed live category and channel response models. Empty artwork URLs are tolerated.
+- Requests use URLComponents/URLQueryItem for parameter encoding, a bounded timeout and JSON response validation. Credentials are not written to application logs or persisted by the API adapter.
+- Added a real “Testa serverinloggning” action to the connection form for Xtream profiles. Jellyfin is explicitly not supported by this test yet.
+- The adapter can fetch live categories and streams, but those results are not yet wired into the Live TV UI. EPG, VOD, series and playback URL handling remain future work.
+- Xtream-compatible panels vary; validation against a real provider account and device testing are still required. HTTP servers are accepted by local validation, so users should prefer HTTPS where their provider supports it.
+- API shape reference used: Xtream Player API overview and live category/stream endpoint references (worldofiptvcom/xtream-codes-api).
+- CI for the new adapter and UI action is pending.
