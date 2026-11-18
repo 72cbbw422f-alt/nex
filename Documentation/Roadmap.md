@@ -19,7 +19,7 @@
 - [x] Add searchable movie and series library grids and connect them to navigation
 - [x] Add a global search screen and connect the home search action
 - [x] Add first Xtream/Jellyfin connection setup form shell (no persistence or API calls yet)
-- [ ] Design player, subtitle picker and playback settings
+- [x] Add first native AVPlayer player screen with channel launch from Live TV (stream/device validation pending)\n- [ ] Design subtitle picker and playback settings
 - [x] Add first cinematic film/series detail-view shell
 - [x] Add first Live TV guide screen shell and connect it to mobile navigation
 - [x] Make Live TV category filters and favourite-channel controls interactive
@@ -59,7 +59,7 @@
 ## Phase 5 — Playback and subtitles
 - [ ] Resolve KSPlayer GPL/LGPL licensing and distribution model before adoption
 - [ ] Pin an exact KSPlayer release and verify its Swift tools/Xcode compatibility
-- [ ] Build a minimal AVPlayer HLS proof-of-concept behind the playback abstraction
+- [x] Add first AVPlayer-backed playback surface behind the playback abstraction (real HLS/provider validation pending)
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
 - [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (iOS/tvOS build and all eight XCTest cases passed)
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
@@ -151,3 +151,12 @@ A phase is complete only when its code is committed, builds successfully for the
 - The successful run built iOS Simulator and tvOS Simulator targets and executed the iOS unit-test scheme.
 - All four Xtream locator tests and all four PlaybackCoordinator tests passed.
 - This validates URL construction and coordinator command forwarding only; it does not validate real provider streams, AVPlayer codec support or physical-device playback.
+
+
+## First Live TV playback surface
+
+- Added a full-screen SwiftUI playback view backed by AVPlayer and the existing PlaybackCoordinator abstraction.
+- Added a play action to provider-backed Live TV channel rows. The action resolves the selected channel's provider-supplied container extension, retrieves the password from Keychain at runtime and constructs the candidate Xtream live URL.
+- The candidate URL is held only in transient view state and is not written to preferences or logs.
+- The screen exposes Apple's native VideoPlayer controls and a NEXUS-styled title/close overlay.
+- This first integration is AVPlayer-only. It does not imply support for every Xtream container or codec. Real provider playback, audio/subtitle selection, stream error feedback, physical iPhone/iPad testing and tvOS remote controls remain pending.
