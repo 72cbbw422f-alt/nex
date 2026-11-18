@@ -27,7 +27,7 @@
 - [ ] Add preview fixtures (no real credentials)
 
 ## Phase 2 — Xtream connector
-- [x] Persist non-secret connection profiles and passwords separately in Keychain (CI/device validation pending)\n- [x] Add Xtream Player API authentication test and live category/channel fetch adapter (CI and real-provider validation pending)\n- [ ] Wire live category/channel results into the Live TV interface\n- [ ] Validate authentication and response compatibility against real Xtream providers
+- [x] Persist non-secret connection profiles and passwords separately in Keychain (CI/device validation pending)\n- [x] Add Xtream Player API authentication test and live category/channel fetch adapter (CI and real-provider validation pending)\n- [x] Wire live category/channel results into Live TV with category filters and loading/error states\n- [ ] Validate authentication and response compatibility against real Xtream providers
 - [ ] Live categories and channels
 - [ ] VOD movies and categories
 - [ ] Series, seasons and episodes
@@ -71,7 +71,7 @@
 - [ ] End-to-end tests with both apps
 
 ## Phase 7 — Live TV
-- [ ] Channel browser and favourites
+- [x] Load live channels and provider categories into the channel browser\n- [ ] Persist channel favourites and support selecting among multiple saved provider profiles
 - [ ] EPG grid and now/next
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
