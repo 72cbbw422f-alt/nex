@@ -12,6 +12,13 @@ private struct GuideGroup: Identifiable {
     let title: String
 }
 
+private struct LiveEPGCacheKey: Hashable {
+    let provider: String
+    let server: String
+    let username: String
+    let channelID: Int
+}
+
 private struct TimelineProgramPlacement: Identifiable {
     let program: XtreamEPGProgram
     let start: Date
@@ -34,9 +41,9 @@ struct LiveView: View {
     @State private var isLoading = false
     @State private var loadMessage: String?
     @State private var expandedEPGChannel: Int?
-    @State private var epgByChannel: [Int: [XtreamEPGProgram]] = [:]
-    @State private var epgFetchedAt: [Int: Date] = [:]
-    @State private var epgErrors: [Int: String] = [:]
+    @State private var epgByChannel: [LiveEPGCacheKey: [XtreamEPGProgram]] = [:]
+    @State private var epgFetchedAt: [LiveEPGCacheKey: Date] = [:]
+    @State private var epgErrors: [LiveEPGCacheKey: String] = [:]
     @State private var epgLoadingChannel: Int?
     @State private var isLoadingTimeline = false
     @State private var timelineMessage: String?
@@ -54,6 +61,16 @@ struct LiveView: View {
         guard let profile = activeProfile else { return nil }
         let server = profile.baseURL.absoluteString.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         return "nexus.live-favorites.\(profile.provider.rawValue).\(server).\(profile.username)"
+    }
+
+    private func epgCacheKey(for channelID: Int) -> LiveEPGCacheKey {
+        let server = activeProfile?.baseURL.absoluteString.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "preview"
+        return LiveEPGCacheKey(
+            provider: activeProfile?.provider.rawValue ?? "preview",
+            server: server,
+            username: activeProfile?.username ?? "",
+            channelID: channelID
+        )
     }
 
     private var usingProviderData: Bool { activeProfile != nil && !liveStreams.isEmpty }
@@ -206,7 +223,7 @@ struct LiveView: View {
     }
 
     private var timelineChannels: [GuideChannel] {
-        Array(visibleChannels.filter { epgByChannel[$0.id] != nil && !(epgByChannel[$0.id]?.isEmpty ?? true) }.prefix(8))
+        Array(visibleChannels.filter { epgByChannel[epgCacheKey(for: $0.id)] != nil && !(epgByChannel[$0.id]?.isEmpty ?? true) }.prefix(8))
     }
 
     private var timelineStart: Date {
@@ -225,7 +242,7 @@ struct LiveView: View {
 
     private func timelinePlacements(for channel: GuideChannel) -> [TimelineProgramPlacement] {
         let windowEnd = timelineStart.addingTimeInterval(6 * 3600)
-        let programs = (epgByChannel[channel.id] ?? []).compactMap { program -> (XtreamEPGProgram, Date, Date)? in
+        let programs = (epgByChannel[epgCacheKey(for: channel.id)] ?? []).compactMap { program -> (XtreamEPGProgram, Date, Date)? in
             guard let start = program.startTimestamp,
                   let end = program.endTimestamp,
                   end > start,
@@ -313,7 +330,7 @@ struct LiveView: View {
         let credentials = ProviderCredentials(password: password)
         let channelsToLoad = Array(visibleChannels.prefix(8))
         for channel in channelsToLoad {
-            let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < (epgErrors[channel.id] == nil ? 300 : 60) } ?? false
+            let cacheIsFresh = epgFetchedAt[epgCacheKey(for: channel.id)].map { Date().timeIntervalSince($0) < (epgErrors[epgCacheKey(for: channel.id)] == nil ? 300 : 60) } ?? false
             if cacheIsFresh { continue }
             do {
                 epgByChannel[channel.id] = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
