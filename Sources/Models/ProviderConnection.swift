@@ -1,6 +1,6 @@
 import Foundation
 
-enum ConnectionProvider: String, CaseIterable, Identifiable {
+enum ConnectionProvider: String, CaseIterable, Identifiable, Equatable {
     case xtream = "Xtream"
     case jellyfin = "Jellyfin"
 
