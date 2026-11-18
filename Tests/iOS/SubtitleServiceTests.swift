@@ -63,6 +63,13 @@ final class SubtitleServiceTests: XCTestCase {
         XCTAssertEqual(ranked.first?.id, "hash")
     }
 
+
+    func testDoesNotAutoMatchWithoutStableIdentityOrReleaseEvidence() {
+        let query = SubtitleSearchQuery(tmdbID: nil, mediaKind: .movie)
+        let unverified = candidate(id: "unverified", language: "sv", tmdbID: 550)
+        XCTAssertTrue(SubtitleMatching.rank([unverified], for: query, preferences: .init()).isEmpty)
+    }
+
     private func candidate(
         id: String,
         language: String,
