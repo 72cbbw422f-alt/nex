@@ -477,7 +477,7 @@ struct LiveView: View {
                 }
                 .padding(.vertical, 5)
             } else if epgByChannel[channel.id] != nil {
-                Text(epgErrors[channel.id].map { "Programguiden kunde inte hämtas: \\($0)" } ?? "Leverantören har inte lämnat någon programinformation för kanalen.")
+                Text(epgErrors[channel.id].map { "Programguiden kunde inte hämtas: \($0)" } ?? "Leverantören har inte lämnat någon programinformation för kanalen.")
                     .font(.caption)
                     .foregroundStyle(NexusTheme.secondaryText)
             } else {
@@ -505,7 +505,7 @@ struct LiveView: View {
         }
         expandedEPGChannel = channel.id
         guard usingProviderData, let profile = activeProfile else { return }
-        let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < 300 } ?? false
+        let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < (epgErrors[channel.id] == nil ? 300 : 60) } ?? false
         if cacheIsFresh { return }
         guard let password = try? KeychainCredentialStore.shared.password(
             provider: profile.provider, baseURL: profile.baseURL, username: profile.username
