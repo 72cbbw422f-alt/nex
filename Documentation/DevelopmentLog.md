@@ -302,3 +302,12 @@
 - Timeline loading captures the selected category and active profile before making requests. It stops applying results/status text if the profile or category changes while requests are in flight.
 - Expanded-channel EPG requests now use a request token and capture the profile-scoped cache key before awaiting the provider. Late responses cannot overwrite the active profile's cache, and a superseded request cannot clear the newer request's loading indicator.
 - The composite-cache implementation passed both iOS and tvOS simulator builds. The stale-request guard commit is awaiting CI and still needs real-provider/device validation.
+
+
+## 2026-11-18 — Live TV EPG request isolation and channel refresh guards
+
+- Confirmed the profile-scoped EPG cache and stale-request guard changes pass both iOS and tvOS simulator builds.
+- Added request identity to channel/category refreshes. When a newer refresh starts, an older response or error can no longer replace its channel list, category list or status message.
+- The loading indicator is now cleared only by the refresh that owns the current request token, preventing an older completion from making a newer refresh appear idle.
+- Profile changes clear EPG panel request/loading state as well as the profile-scoped EPG cache.
+- The restored Live TV view and refresh-guard commit are awaiting their own iOS/tvOS CI run. Real-provider testing and device validation remain outstanding.
