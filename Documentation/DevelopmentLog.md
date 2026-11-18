@@ -433,3 +433,12 @@
 - mpv-ios is currently documented as an iOS implementation, not a complete tvOS target; its XCFramework requires a macOS/Xcode build and its libmpv dependency stack has separate GPL/LGPL obligations.
 - AVPlayer remains the native fallback for compatible media and embedded tracks; Apple marks the older external subtitle language properties deprecated.
 - No engine dependency was added and no final engine decision was made. Next step is an isolated VLCKit package/build/API spike, followed by real-device subtitle and stream tests and a distribution licence review.
+
+
+## 2026-11-19 — VLCKit audit documentation cleanup and baseline CI confirmation
+
+- Reconciled the main VLCKit evidence section with the latest upstream Package.swift observation: the current manifest points to the November 9, 2026 unstable binary and checksum. The August 31 reference is retained only as historical audit context, not as the current manifest target.
+- Checked the GitHub Actions run for commit `86617d2104827c2de5f01cfcbf3e6d300f0500d1`: project generation, iOS Simulator build, tvOS Simulator build and iOS unit tests all completed successfully.
+- This successful run validates the existing NEXUS baseline only; it does not download or inspect the 910 MB VLCKit archive and does not validate physical-device playback.
+- Next gate remains a bounded HTTP Range/ZIP metadata inspection of the exact pinned archive. The inspection must fail closed if the server does not honor byte-range requests, so CI never falls back to downloading the full archive unintentionally. If the archive can be inspected safely, verify the actual XCFramework platform/architecture slices before considering a minimal isolated package-resolution/build spike.
+- No playback dependency was added, no engine was selected, and the AVPlayer implementation remains unchanged.
