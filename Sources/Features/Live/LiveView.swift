@@ -419,34 +419,82 @@ struct LiveView: View {
 
     @ViewBuilder
     private func epgPanel(for channel: GuideChannel) -> some View {
-        VStack(alignment: .leading, spacing: 9) {
-            HStack {
-                Text("PROGRAMGUIDE").font(.caption.weight(.bold)).foregroundStyle(NexusTheme.secondaryText)
+        VStack(alignment: .leading, spacing: 11) {
+            HStack(spacing: 7) {
+                Image(systemName: "list.bullet.rectangle")
+                    .foregroundStyle(NexusTheme.accentLight)
+                Text("PROGRAM FÖR \(channel.name.uppercased())")
+                    .font(.caption.weight(.bold))
+                    .tracking(0.6)
+                    .foregroundStyle(NexusTheme.secondaryText)
                 Spacer()
-                if epgLoadingChannel == channel.id { ProgressView().tint(NexusTheme.accentLight) }
+                if epgLoadingChannel == channel.id {
+                    ProgressView().tint(NexusTheme.accentLight)
+                } else if epgFetchedAt[channel.id] != nil {
+                    Text("Uppdaterad")
+                        .font(.caption2)
+                        .foregroundStyle(NexusTheme.secondaryText)
+                }
             }
+
             if let programs = epgByChannel[channel.id], !programs.isEmpty {
-                ForEach(programs.prefix(5)) { program in
-                    VStack(alignment: .leading, spacing: 3) {
-                        HStack {
-                            Text(program.startTimestamp.map { $0.formatted(date: .omitted, time: .shortened) } ?? "--:--")
-                                .font(.caption.monospacedDigit()).foregroundStyle(NexusTheme.accentLight)
-                            Text(program.title).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
-                        }
-                        if !program.description.isEmpty {
-                            Text(program.description).font(.caption).foregroundStyle(NexusTheme.secondaryText).lineLimit(2)
+                ForEach(Array(programs.prefix(5).enumerated()), id: \.element.id) { index, program in
+                    VStack(alignment: .leading, spacing: 5) {
+                        HStack(alignment: .firstTextBaseline, spacing: 9) {
+                            Text(programTimeRange(program))
+                                .font(.caption.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(NexusTheme.accentLight)
+                                .frame(width: 92, alignment: .leading)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(program.title)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.white)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                if !program.description.isEmpty {
+                                    Text(program.description)
+                                        .font(.caption)
+                                        .foregroundStyle(NexusTheme.secondaryText)
+                                        .lineLimit(2)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            Spacer(minLength: 0)
                         }
                     }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(NexusTheme.surface, in: RoundedRectangle(cornerRadius: 9))
+                    if index < min(programs.count, 5) - 1 {
+                        EmptyView()
+                    }
                 }
+            } else if epgLoadingChannel == channel.id {
+                HStack(spacing: 8) {
+                    ProgressView().tint(NexusTheme.accentLight)
+                    Text("Hämtar programinformation…")
+                        .font(.caption)
+                        .foregroundStyle(NexusTheme.secondaryText)
+                }
+                .padding(.vertical, 5)
             } else if epgByChannel[channel.id] != nil {
-                Text("Ingen programinformation tillgänglig.").font(.caption).foregroundStyle(NexusTheme.secondaryText)
-            } else if epgLoadingChannel != channel.id {
-                Text("Tryck på kanalnamnet för att hämta program.").font(.caption).foregroundStyle(NexusTheme.secondaryText)
+                Text("Leverantören har inte lämnat någon programinformation för kanalen.")
+                    .font(.caption)
+                    .foregroundStyle(NexusTheme.secondaryText)
+            } else {
+                Text("Programinformationen hämtas när kanalen öppnas.")
+                    .font(.caption)
+                    .foregroundStyle(NexusTheme.secondaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(13)
         .background(NexusTheme.elevatedSurface)
+    }
+
+    private func programTimeRange(_ program: XtreamEPGProgram) -> String {
+        let start = program.startTimestamp?.formatted(date: .omitted, time: .shortened) ?? "--:--"
+        let end = program.endTimestamp?.formatted(date: .omitted, time: .shortened) ?? "--:--"
+        return "\(start)–\(end)"
     }
 
     @MainActor
