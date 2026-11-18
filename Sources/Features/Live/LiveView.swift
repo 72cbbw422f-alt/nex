@@ -20,6 +20,9 @@ struct LiveView: View {
     @State private var activeProfile: SavedProviderConnection?
     @State private var isLoading = false
     @State private var loadMessage: String?
+    @State private var expandedEPGChannel: Int?
+    @State private var epgByChannel: [Int: [XtreamEPGProgram]] = [:]
+    @State private var epgLoadingChannel: Int?
 
     private let sampleChannels: [GuideChannel] = [
         GuideChannel(id: 1, name: "SVT1", logo: nil, groupID: "Svenska"),
@@ -144,9 +147,13 @@ struct LiveView: View {
     }
 
     private func channelRow(_ channel: GuideChannel) -> some View {
+        VStack(spacing: 0) {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 5) {
-                Text(channel.name).font(.headline.bold()).foregroundStyle(NexusTheme.accentLight).lineLimit(2)
+                Button { Task { await toggleEPG(channel) } } label: {
+                    Text(channel.name).font(.headline.bold()).foregroundStyle(NexusTheme.accentLight).lineLimit(2)
+                }
+                .buttonStyle(.plain)
                 Button { toggleFavorite(channel.id) } label: {
                     Image(systemName: favoriteIDs.contains(channel.id) ? "star.fill" : "star")
                         .font(.caption)
@@ -168,6 +175,68 @@ struct LiveView: View {
         .padding(13)
         .background(NexusTheme.surface)
         .overlay(alignment: .bottom) { Rectangle().fill(NexusTheme.border).frame(height: 1) }
+
+        if expandedEPGChannel == channel.id {
+            epgPanel(for: channel)
+        }
+        }
+    }
+
+    @ViewBuilder
+    private func epgPanel(for channel: GuideChannel) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                Text("PROGRAMGUIDE").font(.caption.weight(.bold)).foregroundStyle(NexusTheme.secondaryText)
+                Spacer()
+                if epgLoadingChannel == channel.id { ProgressView().tint(NexusTheme.accentLight) }
+            }
+            if let programs = epgByChannel[channel.id], !programs.isEmpty {
+                ForEach(programs.prefix(5)) { program in
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack {
+                            Text(program.startTimestamp.map { $0.formatted(date: .omitted, time: .shortened) } ?? "--:--")
+                                .font(.caption.monospacedDigit()).foregroundStyle(NexusTheme.accentLight)
+                            Text(program.title).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                        }
+                        if !program.description.isEmpty {
+                            Text(program.description).font(.caption).foregroundStyle(NexusTheme.secondaryText).lineLimit(2)
+                        }
+                    }
+                }
+            } else if epgByChannel[channel.id] != nil {
+                Text("Ingen programinformation tillgänglig.").font(.caption).foregroundStyle(NexusTheme.secondaryText)
+            } else if epgLoadingChannel != channel.id {
+                Text("Tryck på kanalnamnet för att hämta program.").font(.caption).foregroundStyle(NexusTheme.secondaryText)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(13)
+        .background(NexusTheme.elevatedSurface)
+    }
+
+    @MainActor
+    private func toggleEPG(_ channel: GuideChannel) async {
+        if expandedEPGChannel == channel.id {
+            expandedEPGChannel = nil
+            return
+        }
+        expandedEPGChannel = channel.id
+        guard usingProviderData, let profile = activeProfile else { return }
+        if epgByChannel[channel.id] != nil { return }
+        guard let password = try? KeychainCredentialStore.shared.password(
+            provider: profile.provider, baseURL: profile.baseURL, username: profile.username
+        ), !password.isEmpty else { return }
+        epgLoadingChannel = channel.id
+        defer { epgLoadingChannel = nil }
+        let configuration = ProviderConnectionConfiguration(provider: profile.provider, baseURL: profile.baseURL, username: profile.username)
+        do {
+            epgByChannel[channel.id] = try await XtreamConnector().shortEPG(
+                configuration: configuration, credentials: ProviderCredentials(password: password), streamID: channel.id
+            )
+        } catch {
+            epgByChannel[channel.id] = []
+            loadMessage = "EPG kunde inte hämtas för \\(channel.name): \\(error.localizedDescription)"
+        }
     }
 
     @MainActor
