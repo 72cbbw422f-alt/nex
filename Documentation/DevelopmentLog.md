@@ -151,3 +151,14 @@
 - Xtream-compatible panels vary; validation against a real provider account and device testing are still required. HTTP servers are accepted by local validation, so users should prefer HTTPS where their provider supports it.
 - API shape reference used: Xtream Player API overview and live category/stream endpoint references (worldofiptvcom/xtream-codes-api).
 - CI for the new adapter and UI action is pending.
+
+
+## 2026-11-18 — Live TV wired to Xtream catalogue
+
+- Live TV now checks the locally saved connection profiles for the first Xtream profile and reads its password from Keychain.
+- When credentials are available, the screen requests live categories and live streams through the new Xtream adapter and replaces the fixture channel list with returned provider channels.
+- Category chips are populated from the provider response; selecting a category filters the returned channel list. The favourites filter and per-channel favourite control remain available in this first integration pass.
+- Added loading, refresh, missing-profile, missing-credential and request-error states.
+- Programme now/next and progress are deliberately not fabricated: the current screen labels EPG data as pending until a real EPG endpoint/parser is implemented.
+- This first pass loads the first saved Xtream profile only. Multi-profile source selection, persisted favourites, pagination/caching and real-device/provider compatibility tests remain open.
+- Latest Live TV integration commits are awaiting GitHub Actions results.
