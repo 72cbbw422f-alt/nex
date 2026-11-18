@@ -250,12 +250,12 @@ struct LiveView: View {
 
     private func timelineRow(for channel: GuideChannel) -> some View {
         let placements = timelinePlacements(for: channel)
-        let laneCount = max(1, (placements.map(\\.lane).max() ?? 0) + 1)
+        let laneCount = max(1, (placements.map(\.lane).max() ?? 0) + 1)
         let laneHeight: CGFloat = 48
         let rowHeight = CGFloat(laneCount) * laneHeight
         return ZStack(alignment: .topLeading) {
             VStack(spacing: 1) {
-                ForEach(0..<laneCount, id: \\.self) { _ in
+                ForEach(0..<laneCount, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: 5)
                         .fill(NexusTheme.elevatedSurface.opacity(0.42))
                         .frame(height: laneHeight - 1)
