@@ -17,7 +17,7 @@ protocol PlaybackEngine: AnyObject {
 /// This adapter deliberately does not claim support for arbitrary containers/codecs.
 @MainActor
 final class AVPlayerPlaybackEngine: PlaybackEngine {
-    private let player: AVPlayer
+    let player: AVPlayer
 
     init(player: AVPlayer = AVPlayer()) {
         self.player = player
@@ -65,6 +65,7 @@ final class PlaybackCoordinator {
 
     var currentTime: TimeInterval { engine.currentTime }
     var isPlaying: Bool { engine.isPlaying }
+    var avPlayer: AVPlayer? { (engine as? AVPlayerPlaybackEngine)?.player }
 
     func start(url: URL) {
         engine.load(url)
