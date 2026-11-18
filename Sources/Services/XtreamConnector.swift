@@ -187,6 +187,7 @@ struct XtreamLiveStream: Decodable, Identifiable, Equatable, Sendable {
     let epgChannelID: String?
     let categoryID: String?
     let streamType: String?
+    let containerExtension: String?
 
     var id: Int { streamID }
 
@@ -197,6 +198,7 @@ struct XtreamLiveStream: Decodable, Identifiable, Equatable, Sendable {
         case epgChannelID = "epg_channel_id"
         case categoryID = "category_id"
         case streamType = "stream_type"
+        case containerExtension = "container_extension"
     }
 
     init(from decoder: Decoder) throws {
@@ -208,6 +210,50 @@ struct XtreamLiveStream: Decodable, Identifiable, Equatable, Sendable {
         epgChannelID = try container.decodeIfPresent(String.self, forKey: .epgChannelID)
         categoryID = try container.decodeIfPresent(String.self, forKey: .categoryID)
         streamType = try container.decodeIfPresent(String.self, forKey: .streamType)
+        containerExtension = try container.decodeIfPresent(String.self, forKey: .containerExtension)
+    }
+}
+
+
+/// Constructs a playback URL only when the provider supplies a recognized container extension.
+enum XtreamPlaybackLocator {
+    enum LocatorError: LocalizedError {
+        case invalidExtension
+        case invalidURL
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidExtension: return "Leverantören har inte angett ett giltigt videoformat för kanalen."
+            case .invalidURL: return "Kunde inte skapa en giltig uppspelningsadress."
+            }
+        }
+    }
+
+    static func liveStreamURL(
+        baseURL: URL,
+        username: String,
+        password: String,
+        streamID: Int,
+        containerExtension: String?
+    ) throws -> URL {
+        guard let rawExtension = containerExtension?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !rawExtension.isEmpty,
+              rawExtension.range(of: #"^[A-Za-z0-9]{2,8}$"#, options: .regularExpression) != nil else {
+            throw LocatorError.invalidExtension
+        }
+
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
+        guard components != nil else { throw LocatorError.invalidURL }
+
+        var url = baseURL
+        url.appendPathComponent("live")
+        url.appendPathComponent(username)
+        url.appendPathComponent(password)
+        url.appendPathComponent("\(streamID).\(rawExtension.lowercased())")
+        guard let finalURL = URLComponents(url: url, resolvingAgainstBaseURL: false)?.url else {
+            throw LocatorError.invalidURL
+        }
+        return finalURL
     }
 }
 
