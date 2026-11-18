@@ -66,7 +66,7 @@ def request_range(url: str, start: int | None, end: int | None, suffix: int | No
         if len(body) != actual_end - actual_start + 1:
             raise InspectionError("Body length does not match Content-Range")
         if suffix is not None:
-            if actual_end != total - 1 or len(body) > suffix:
+            if actual_end != total - 1 or actual_start != total - len(body) or len(body) > suffix:
                 raise InspectionError("Unexpected suffix range response")
         elif actual_start != start or actual_end != end:
             raise InspectionError("Server returned a different byte range")
