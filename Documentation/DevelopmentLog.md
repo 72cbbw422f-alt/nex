@@ -276,3 +276,11 @@
 - On compact-width devices, reduced outer spacing and the channel label column, and tightened the six-hour timeline scale and minimum programme-card width so more guide content is visible without horizontal scrolling.
 - Kept the horizontal timeline scroll available for full programme detail; regular-width layouts retain the wider dimensions.
 - Simulator build validation is pending.
+
+
+## 2026-11-18 — Live TV channel EPG panel refinement
+
+- Reworked the expanded channel programme panel into distinct, high-contrast programme rows with a fixed time column, title and optional two-line synopsis.
+- Displayed both start and end times when the provider supplies them, while retaining safe placeholders for incomplete EPG records.
+- Added explicit loading, empty-provider-data and cached-state labels so opening a channel does not leave an ambiguous blank panel.
+- Kept the existing five-programme limit and the approved navy/violet design language. Build validation is pending.
