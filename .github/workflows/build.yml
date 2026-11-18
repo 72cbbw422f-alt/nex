@@ -22,3 +22,5 @@ jobs:
         run: xcodebuild -project NEXUS.xcodeproj -scheme NEXUS-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
       - name: Build tvOS Simulator
         run: xcodebuild -project NEXUS.xcodeproj -scheme NEXUS-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - name: Test iOS unit tests
+        run: xcodebuild -project NEXUS.xcodeproj -scheme NEXUS-iOSTests -destination 'platform=iOS Simulator,name=iPhone 16' CODE_SIGNING_ALLOWED=NO test
