@@ -261,7 +261,8 @@ enum XtreamPlaybackLocator {
 
         let basePath = components.percentEncodedPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let segments = try ["live", username, password, "\(streamID).\(rawExtension.lowercased())"].map(encodeSegment)
-        components.percentEncodedPath = ([basePath].filter { !$0.isEmpty } + segments).joined(separator: "/")
+        let path = ([basePath].filter { !$0.isEmpty } + segments).joined(separator: "/")
+        components.percentEncodedPath = "/" + path
         components.query = nil
         components.fragment = nil
         guard let finalURL = components.url else { throw LocatorError.invalidURL }
