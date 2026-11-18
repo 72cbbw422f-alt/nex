@@ -48,6 +48,7 @@ struct LiveView: View {
     @State private var epgLoadingChannel: Int?
     @State private var epgRequestID: UUID?
     @State private var isLoadingTimeline = false
+    @State private var timelineRequestID: UUID?
     @State private var timelineMessage: String?
     @State private var timelineOffsetHours = 0
 
@@ -325,9 +326,16 @@ struct LiveView: View {
     private func loadTimeline() async {
         guard usingProviderData, let profile = activeProfile else { timelineMessage = "Anslut en Xtream-källa för att läsa den riktiga programguiden."; return }
         guard let password = try? KeychainCredentialStore.shared.password(provider: profile.provider, baseURL: profile.baseURL, username: profile.username), !password.isEmpty else { timelineMessage = "Lösenord saknas i nyckelringen. Spara anslutningen igen."; return }
+        let requestID = UUID()
+        timelineRequestID = requestID
         isLoadingTimeline = true
         timelineMessage = nil
-        defer { isLoadingTimeline = false }
+        defer {
+            if timelineRequestID == requestID {
+                isLoadingTimeline = false
+                timelineRequestID = nil
+            }
+        }
         let configuration = ProviderConnectionConfiguration(provider: profile.provider, baseURL: profile.baseURL, username: profile.username)
         let credentials = ProviderCredentials(password: password)
         let channelsToLoad = Array(visibleChannels.prefix(8))
@@ -338,19 +346,29 @@ struct LiveView: View {
             if cacheIsFresh { continue }
             do {
                 let programs = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
-                guard activeProfile?.baseURL == profile.baseURL, activeProfile?.username == profile.username else { return }
+                guard timelineRequestID == requestID,
+                      activeProfile?.provider == profile.provider,
+                      activeProfile?.baseURL == profile.baseURL,
+                      activeProfile?.username == profile.username else { return }
                 epgByChannel[cacheKey] = programs
                 epgErrors[cacheKey] = nil
                 epgFetchedAt[cacheKey] = Date()
             } catch {
-                guard activeProfile?.baseURL == profile.baseURL, activeProfile?.username == profile.username else { return }
+                guard timelineRequestID == requestID,
+                      activeProfile?.provider == profile.provider,
+                      activeProfile?.baseURL == profile.baseURL,
+                      activeProfile?.username == profile.username else { return }
                 epgByChannel[cacheKey] = []
                 epgErrors[cacheKey] = error.localizedDescription
                 epgFetchedAt[cacheKey] = Date()
             }
-            guard selectedGroup == groupAtStart else { return }
+            guard timelineRequestID == requestID, selectedGroup == groupAtStart else { return }
         }
-        guard activeProfile?.baseURL == profile.baseURL, activeProfile?.username == profile.username, selectedGroup == groupAtStart else { return }
+        guard timelineRequestID == requestID,
+              activeProfile?.provider == profile.provider,
+              activeProfile?.baseURL == profile.baseURL,
+              activeProfile?.username == profile.username,
+              selectedGroup == groupAtStart else { return }
         let available = channelsToLoad.filter { !(epgByChannel[epgCacheKey(for: $0.id)]?.isEmpty ?? true) }.count
         timelineMessage = "Visar programdata för \(available) av \(channelsToLoad.count) kanaler. Högst 8 kanaler hämtas per omgång."
     }
