@@ -115,3 +115,11 @@ A phase is complete only when its code is committed, builds successfully for the
 - Added a request UUID to timeline loads so only the latest timeline request can update EPG cache entries, status text and loading state. The request also verifies provider, server and username after each await.
 - Concurrent EPG deduplication between the timeline and expanded channel panel remains a separate follow-up; both surfaces still share the profile-scoped cache, but simultaneous cache misses can still issue duplicate calls.
 - iOS/tvOS CI and real-provider/device validation pending.
+
+
+## Shared in-flight EPG requests
+
+- Added an actor-based request coordinator keyed by provider, normalized server, username and channel ID.
+- The Live TV timeline and expanded channel panel now await the same in-flight short-EPG task when they request the same channel concurrently, avoiding duplicate provider calls.
+- Completed responses continue to use the existing profile-scoped five-minute success / one-minute failure cache in the view.
+- Concurrent deduplication and Swift concurrency compatibility require iOS/tvOS CI validation and real-provider testing.
