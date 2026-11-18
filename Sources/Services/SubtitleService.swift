@@ -99,10 +99,22 @@ enum SubtitleMatching {
         for query: SubtitleSearchQuery,
         preferences: SubtitlePreferences
     ) -> [SubtitleCandidate] {
-        candidates
+        let hasStableIdentifier = query.tmdbID != nil
+            || !(query.fileHash?.isEmpty ?? true)
+            || !(query.releaseName?.isEmpty ?? true)
+        guard hasStableIdentifier else { return [] }
+
+        return candidates
             .filter { candidate in
                 guard candidate.mediaKind == query.mediaKind else { return false }
                 if let expectedID = query.tmdbID, candidate.tmdbID != expectedID { return false }
+                if query.tmdbID == nil {
+                    let hashMatches = !(query.fileHash?.isEmpty ?? true)
+                        && candidate.fileHash?.caseInsensitiveCompare(query.fileHash ?? "") == .orderedSame
+                    let releaseMatches = !(query.releaseName?.isEmpty ?? true)
+                        && candidate.releaseName?.localizedCaseInsensitiveCompare(query.releaseName ?? "") == .orderedSame
+                    guard hashMatches || releaseMatches else { return false }
+                }
                 if query.mediaKind == .series {
                     guard candidate.seasonNumber == query.seasonNumber,
                           candidate.episodeNumber == query.episodeNumber else { return false }
