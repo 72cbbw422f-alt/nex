@@ -19,6 +19,7 @@
 - [ ] Design player, subtitle picker, playback settings and connection flows
 - [x] Add first cinematic film/series detail-view shell
 - [x] Add first Live TV guide screen shell and connect it to mobile navigation
+- [x] Make Live TV category filters and favourite-channel controls interactive
 - [x] Add Apple TV navigation entry points for Home, Live TV, Films, Series and My List
 - [ ] Add preview fixtures (no real credentials)
 
