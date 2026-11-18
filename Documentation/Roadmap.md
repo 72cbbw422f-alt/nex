@@ -61,7 +61,7 @@
 - [ ] Pin an exact KSPlayer release and verify its Swift tools/Xcode compatibility
 - [ ] Build a minimal AVPlayer HLS proof-of-concept behind the playback abstraction
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
-- [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (iOS/tvOS build and Xtream locator XCTest CI passed)
+- [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (iOS/tvOS build and all eight XCTest cases passed)
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
 - [ ] Infuse external-player hand-off and callback validation
 - [ ] Subtitle preferences with ordered language priority
@@ -142,4 +142,12 @@ A phase is complete only when its code is committed, builds successfully for the
 
 - Added fake-engine XCTest coverage for start/load ordering, pause/resume forwarding, seek forwarding, and playback state passthrough.
 - The tests validate coordinator behavior independently of AVPlayer and do not claim that a real stream has played.
-- GitHub Actions validation for this new test file is pending.
+- All four PlaybackCoordinator tests passed in GitHub Actions on the subsequent branch commit; iOS and tvOS simulator builds also passed.
+
+
+## PlaybackCoordinator XCTest verification
+
+- GitHub Actions completed successfully after the four fake-engine PlaybackCoordinator tests were added.
+- The successful run built iOS Simulator and tvOS Simulator targets and executed the iOS unit-test scheme.
+- All four Xtream locator tests and all four PlaybackCoordinator tests passed.
+- This validates URL construction and coordinator command forwarding only; it does not validate real provider streams, AVPlayer codec support or physical-device playback.
