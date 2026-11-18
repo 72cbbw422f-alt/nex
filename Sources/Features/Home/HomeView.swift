@@ -179,8 +179,13 @@ struct HomeView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 13) {
                     ForEach(items) { item in
-                        PosterTile(title: item.title, subtitle: item.subtitle, seed: item.seed)
-                            .frame(width: 126)
+                        NavigationLink {
+                            MediaDetailView(title: item.title, subtitle: item.subtitle, seed: item.seed)
+                        } label: {
+                            PosterTile(title: item.title, subtitle: item.subtitle, seed: item.seed)
+                                .frame(width: 126)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, 18)
