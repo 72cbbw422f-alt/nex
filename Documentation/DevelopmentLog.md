@@ -192,3 +192,12 @@
 - Existing per-channel EPG expansion remains available.
 - This is an initial multi-channel visual prototype, not yet a fully time-aligned EPG grid: rows do not share a common clock origin, and a live-now marker, scrolling time ruler, pagination and provider-specific response validation remain outstanding.
 - The timeline requires a saved Xtream connection and credentials in Keychain; no sample programme times are presented as real provider data.
+
+
+## 2026-11-18 — Shared EPG clock axis
+
+- Reworked the multi-channel programme rows to position each returned programme by its actual start time on one shared six-hour window beginning at the current hour.
+- Added a shared hour ruler and a vertical current-time marker within the current hour.
+- Programme cards are clipped to the visible six-hour window and their widths follow the returned programme duration.
+- The timeline still only shows channels whose on-demand short EPG has been loaded, with the existing maximum of eight channel requests per load.
+- Remaining work: paging/scrolling across time windows, handling overlaps and gaps more gracefully, real-provider validation, and testing on device sizes. The current marker is a visual clock indicator; it does not infer whether a programme is actually live when provider EPG data is missing.
