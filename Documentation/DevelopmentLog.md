@@ -338,3 +338,11 @@
 - The locator rejects missing or malformed extensions instead of assuming a stream format. It percent-encodes credentials as individual path segments and does not log or persist the generated URL.
 - This change only constructs a candidate URL. It does not establish that a provider accepts the path, that a stream is playable, or that a player engine supports its codec/container.
 - iOS/tvOS CI and verification against a real provider are pending.
+
+
+## 2026-11-18 — Harden Xtream playback URL construction
+
+- Tightened URL validation to require a non-empty username/password, a positive stream ID, and an HTTP(S) base URL with a host.
+- Restricted credential path-segment encoding to RFC 3986 unreserved ASCII characters, ensuring non-ASCII characters are percent-encoded rather than being passed through by Unicode alphanumeric character sets.
+- GitHub Actions iOS and tvOS simulator builds passed for this source change.
+- The generated URL remains sensitive runtime data; real-provider acceptance and physical-device playback are not yet verified.
