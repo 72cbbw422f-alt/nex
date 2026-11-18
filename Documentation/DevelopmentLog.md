@@ -388,3 +388,15 @@
 - An initial CI run compiled an older commit containing literal escaped newline sequences in the LiveView playback model declaration. The source was corrected on `project-foundation`; the latest branch file now contains normal Swift line breaks.
 - The CI run for the corrected branch head has not yet completed. Do not treat the player integration as build-verified until a fresh run passes.
 - Playback remains unverified against a real provider and physical iPhone/iPad/Apple TV. AVPlayer format compatibility, loading/error feedback, audio/subtitle selection and tvOS remote behavior remain follow-ups.
+
+
+
+## 2026-11-18 — Playback status handling passes CI; KSPlayer compatibility review
+
+- The AVPlayer playback surface now observes AVPlayerItem status and AVPlayer time-control status. It displays connection/buffering feedback, surfaces item failure descriptions, offers a retry action, and pauses/cleans observations when dismissed.
+- The complete GitHub Actions workflow passed for this change: Xcode project generation, iOS Simulator build, tvOS Simulator build and iOS unit tests.
+- Rechecked upstream KSPlayer documentation and the exact 5.6.2 tag. KSPlayer advertises iOS/tvOS support and broader FFmpeg-backed format and subtitle capabilities, but its own documentation says the default distribution is GPL-3.0 and a paid LGPL/commercial licensing route is available. Do not integrate the default package into NEXUS without an explicit licensing decision.
+- The exact 5.6.2 Package.swift declares Swift tools 6.2 and includes binary KSPlayer framework targets plus FFmpegKit dependencies. This is not compatible with the current NEXUS Swift tools 5.9 project configuration as-is. The release tag does not remove the toolchain gate.
+- KSPlayer is described upstream as based on AVPlayer and FFmpeg; it should be evaluated as a richer engine/framework layer, not assumed to be a wholly separate replacement for Apple's media stack.
+- Decision: retain the engine abstraction and current native prototype while evaluating a legally usable KSPlayer distribution or alternative engine. No package dependency was added. Next engineering work should be to define the engine capability surface (tracks, subtitle selection, seek/live state and playback errors) without leaking engine-specific types into feature views.
+- Real Xtream provider playback and physical-device codec compatibility remain unverified.
