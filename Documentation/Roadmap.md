@@ -5,9 +5,9 @@
 - [x] Confirm iOS, iPadOS and tvOS
 - [x] Confirm Nuvio-inspired design direction
 - [x] Confirm unified movie/series presentation
-- [ ] Establish Xcode project and build configurations
-- [ ] Add CI build workflow for Apple platforms
-- [ ] Add linting and test targets
+- [x] Establish Xcode project and build configurations
+- [x] Add CI build workflow for Apple platforms
+- [x] Add XCTest target for iOS unit tests
 
 ## Phase 1 — Design shell
 - [ ] Define NEXUS design tokens and typography
@@ -39,7 +39,7 @@
 - [x] Decode EPG IDs and timestamps from string or numeric JSON values with deterministic fallback identity
 - [ ] Full EPG timeline/grid and catch-up capability detection
 - [x] Add explicit Xtream live-stream playback locator with provider-supplied container extension (iOS/tvOS simulator CI passed)
-- [ ] Playback locator unit tests (automated coverage still to add)
+- [x] Add four XCTest cases for Xtream playback URL construction, credential encoding, extension validation and invalid input (corrected build awaiting CI verification)
 
 ## Phase 3 — Jellyfin / AIOMetadata connector
 - [ ] Validate actual server API and authentication mode
@@ -61,7 +61,7 @@
 - [ ] Pin an exact KSPlayer release and verify its Swift tools/Xcode compatibility
 - [ ] Build a minimal AVPlayer HLS proof-of-concept behind the playback abstraction
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
-- [ ] Implement engine-independent PlaybackCoordinator
+- [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (UI integration and CI verification pending)
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
 - [ ] Infuse external-player hand-off and callback validation
 - [ ] Subtitle preferences with ordered language priority
@@ -90,7 +90,7 @@
 - [x] Separate overlapping EPG programmes into vertical lanes and preserve visible empty gaps (CI/provider validation pending)
 - [ ] Verify historical EPG availability per provider
 - [x] Align the red current-time marker to the selected six-hour window and hide it outside the current-time range (CI pending)
-- [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI pending)
+- [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI passed on current source)
 - [x] Reuse short-EPG responses across timeline paging with a five-minute cache and profile-change invalidation (CI pending)
 - [x] Scope EPG programme, timestamp and error caches by provider/server/account/channel identity (iOS/tvOS CI passed; device validation pending)
 - [x] Guard in-flight EPG requests against stale profile/category/channel state (iOS/tvOS CI passed; device validation pending)
