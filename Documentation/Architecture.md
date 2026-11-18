@@ -41,10 +41,17 @@ Normalize provider records into domain entities. Match in this order:
 Keep provenance for every field and every playback variant. Do not assume IPTV and Jellyfin use identical metadata or identifiers.
 
 ### Playback architecture
-Define a PlaybackCoordinator protocol independent of UI and player engine. Player engines are replaceable adapters behind this protocol.
+Define an engine-independent playback contract. Player engines are replaceable adapters behind it; feature views must not depend on AVPlayer, KSPlayer or MPV types.
 
-- Evaluate KSPlayer as the preferred embedded engine for iOS, iPadOS and tvOS. Before committing, run a focused technical spike covering the exact KSPlayer package/components, platform support, Swift/Xcode compatibility, licensing obligations and required build configuration. Do not claim codec/HDR/audio support until verified on physical target devices.
-- Keep an AVPlayer adapter available for native HLS and formats where it is the more reliable option.
+The contract should expose:
+- Load/start, pause, resume, seek and stop.
+- Current playback state: preparing, buffering, playing, paused, ended and failed.
+- A normalized error category and user-safe diagnostic message.
+- Available audio and subtitle tracks, selected track IDs and track-selection operations.
+- Live/DVR state and seekable ranges when the active source/engine provides them.
+- Current position, duration and periodic progress events where meaningful.
+
+The current implementation has an AVPlayer-backed prototype and coordinator. It is a baseline adapter, not the final format-compatibility decision. Keep it for native HLS and formats where Apple's media stack is suitable. KSPlayer remains a candidate, not an adopted dependency, until its exact licence, package distribution and toolchain are cleared.
 - Add an Infuse hand-off adapter using its documented URL integration where supported. Treat external-player progress as best-effort: only report actual position/completion when Infuse returns reliable callback data. Never infer completion merely because the app was opened.
 - Playback UI, progress tracking, subtitles and BingeLog integration must not depend directly on KSPlayer-specific types.
 
@@ -102,6 +109,6 @@ Initial sync is user-triggered and incremental where source APIs permit. Keep so
 
 - The upstream KSPlayer project advertises iOS and tvOS support and documents a Swift Package Manager integration. Its README states that the default distribution is GPL-3.0 and that a paid LGPL variant or separately negotiated licence is available. The README also describes different delivery forms for the GPL and LGPL variants; the exact terms and package artefacts must be confirmed with the maintainer before any dependency is added.
 - NEXUS is not cleared to adopt the default GPL distribution. Do not add KSPlayer, its binary frameworks or FFmpeg dependencies until the intended distribution model and written licence terms have been reviewed and approved.
-- The current upstream main Package.swift declares Swift tools 6.2. NEXUS currently builds with Swift 5.9 settings. This is a compatibility warning, not proof that every released tag requires Swift 6.2; pin and inspect an exact release before a technical integration spike.
-- Next engineering step is a minimal AVPlayer proof-of-concept for a known HLS test stream, keeping the engine behind the engine-independent playback contract. Evaluate KSPlayer only after licence and toolchain gates are cleared.
+- Inspected the exact upstream 5.6.2 tag: its Package.swift declares Swift tools 6.2, includes a binary KSPlayer framework target and references FFmpegKit. NEXUS currently builds with Swift 5.9 settings, so this exact tag is not a drop-in dependency.
+- The AVPlayer prototype now exists and its iOS/tvOS simulator builds and unit tests pass. The next engineering step is to expand the engine contract for track selection, live state and normalized errors, then assess a legally usable KSPlayer distribution or another engine. Do not claim real-stream compatibility until tested on target hardware. Evaluate KSPlayer only after licence and toolchain gates are cleared.
 - No codec, HDR, Dolby audio, subtitle or physical-device capability is inferred from the project's feature claims. Validate each required combination on actual iPhone and Apple TV hardware.
