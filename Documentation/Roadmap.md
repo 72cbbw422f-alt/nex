@@ -57,6 +57,9 @@
 - [ ] Unified search, favourites and continue watching
 
 ## Phase 5 — Playback and subtitles
+- [ ] Resolve KSPlayer GPL/LGPL licensing and distribution model before adoption
+- [ ] Pin an exact KSPlayer release and verify its Swift tools/Xcode compatibility
+- [ ] Build a minimal AVPlayer HLS proof-of-concept behind the playback abstraction
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
 - [ ] Implement engine-independent PlaybackCoordinator
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
