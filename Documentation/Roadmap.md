@@ -19,7 +19,8 @@
 - [x] Add searchable movie and series library grids and connect them to navigation
 - [x] Add a global search screen and connect the home search action
 - [x] Add first Xtream/Jellyfin connection setup form shell (no persistence or API calls yet)
-- [x] Add first native AVPlayer player screen with channel launch from Live TV (stream/device validation pending)\n- [ ] Design subtitle picker and playback settings
+- [x] Add first native AVPlayer player screen with channel launch from Live TV (latest corrected source awaiting CI validation)
+- [ ] Design subtitle picker and playback settings
 - [x] Add first cinematic film/series detail-view shell
 - [x] Add first Live TV guide screen shell and connect it to mobile navigation
 - [x] Make Live TV category filters and favourite-channel controls interactive
@@ -59,7 +60,7 @@
 ## Phase 5 — Playback and subtitles
 - [ ] Resolve KSPlayer GPL/LGPL licensing and distribution model before adoption
 - [ ] Pin an exact KSPlayer release and verify its Swift tools/Xcode compatibility
-- [x] Add first AVPlayer-backed playback surface behind the playback abstraction (real HLS/provider validation pending)
+- [x] Add first AVPlayer-backed playback surface behind the playback abstraction (latest corrected source awaiting CI validation; real HLS/provider validation pending)
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
 - [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (iOS/tvOS build and all eight XCTest cases passed)
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
@@ -90,13 +91,14 @@
 - [x] Separate overlapping EPG programmes into vertical lanes and preserve visible empty gaps (CI/provider validation pending)
 - [ ] Verify historical EPG availability per provider
 - [x] Align the red current-time marker to the selected six-hour window and hide it outside the current-time range (CI pending)
-- [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI passed on current source)
+- [x] Validate the shared timeline build after correcting a Swift key-path compile error (CI passed on current source)
 - [x] Reuse short-EPG responses across timeline paging with a five-minute cache and profile-change invalidation (CI pending)
 - [x] Scope EPG programme, timestamp and error caches by provider/server/account/channel identity (iOS/tvOS CI passed; device validation pending)
 - [x] Guard in-flight EPG requests against stale profile/category/channel state (iOS/tvOS CI passed; device validation pending)
 - [x] Distinguish successful empty EPG responses from provider request failures; use shorter retry cooldown for failures (CI/provider validation pending)
 - [x] Display provider-supplied channel logos with neutral fallback (CI/device validation pending)
-- [x] Guard overlapping channel refreshes against stale profile and request results (iOS/tvOS CI pending)\n- [ ] Channel zapping
+- [x] Guard overlapping channel refreshes against stale profile and request results (iOS/tvOS CI pending)
+- [ ] Channel zapping
 - [ ] Catch-up where provider supports it
 
 ## Phase 8 — Polish and release
