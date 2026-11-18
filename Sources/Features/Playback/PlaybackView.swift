@@ -143,7 +143,7 @@ struct PlaybackView: View {
                         Button {
                             playbackState.selectSubtitleTrack(nil)
                         } label: {
-                            if !playbackState.subtitleTracks.contains(where: \\.isSelected) {
+                            if !playbackState.subtitleTracks.contains(where: { $0.isSelected }) {
                                 Label("Av", systemImage: "checkmark")
                             } else {
                                 Text("Av")
