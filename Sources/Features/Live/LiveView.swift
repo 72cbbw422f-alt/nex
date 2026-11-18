@@ -236,8 +236,11 @@ struct LiveView: View {
         .frame(width: timelineWidth, height: 54, alignment: .leading)
         .clipped()
         .overlay(alignment: .leading) {
-            Rectangle().fill(Color.red.opacity(0.9)).frame(width: 1.5)
-                .offset(x: CGFloat(Calendar.current.component(.minute, from: Date())) / 60 * timelineHourWidth)
+            let elapsed = Date().timeIntervalSince(timelineStart)
+            if elapsed >= 0 && elapsed <= 6 * 3600 {
+                Rectangle().fill(Color.red.opacity(0.9)).frame(width: 1.5)
+                    .offset(x: CGFloat(elapsed / 3600) * timelineHourWidth)
+            }
         }
     }
 
