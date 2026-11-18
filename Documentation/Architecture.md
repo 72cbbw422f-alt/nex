@@ -96,3 +96,12 @@ Initial sync is user-triggered and incremental where source APIs permit. Keep so
 - Player hand-off tests: Infuse open, callback, resume position and failure behavior.
 - UI tests: iPhone, iPad and tvOS navigation/focus.
 - Security tests: ensure secrets are not written to logs or repository.
+
+
+### Player engine evaluation — KSPlayer (research gate, not an adoption decision)
+
+- The upstream KSPlayer project advertises iOS and tvOS support and documents a Swift Package Manager integration. Its README states that the default distribution is GPL-3.0 and that a paid LGPL variant or separately negotiated licence is available. The README also describes different delivery forms for the GPL and LGPL variants; the exact terms and package artefacts must be confirmed with the maintainer before any dependency is added.
+- NEXUS is not cleared to adopt the default GPL distribution. Do not add KSPlayer, its binary frameworks or FFmpeg dependencies until the intended distribution model and written licence terms have been reviewed and approved.
+- The current upstream main Package.swift declares Swift tools 6.2. NEXUS currently builds with Swift 5.9 settings. This is a compatibility warning, not proof that every released tag requires Swift 6.2; pin and inspect an exact release before a technical integration spike.
+- Next engineering step is a minimal AVPlayer proof-of-concept for a known HLS test stream, keeping the engine behind the engine-independent playback contract. Evaluate KSPlayer only after licence and toolchain gates are cleared.
+- No codec, HDR, Dolby audio, subtitle or physical-device capability is inferred from the project's feature claims. Validate each required combination on actual iPhone and Apple TV hardware.
