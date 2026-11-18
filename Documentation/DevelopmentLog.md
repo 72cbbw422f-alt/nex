@@ -108,3 +108,13 @@
 - The form currently holds only an in-memory draft while the view is open. Its action explicitly reports that no connection has been tested or securely saved.
 - No credentials are transmitted, persisted or logged. Keychain storage, provider-specific API validation and real connection tests remain unimplemented.
 - This UI is a setup shell only; endpoint details and authentication flows must be validated against the actual provider/server APIs before networking is added.
+
+
+## 2026-11-18 — Provider connection domain foundation
+
+- Extracted Xtream and Jellyfin provider identity into a shared domain model.
+- Added typed connection configuration and runtime credential value types.
+- Added local validation for HTTP(S) server URLs, host, username and password presence.
+- Added a provider connector protocol as the boundary for future API adapters.
+- Updated the connection form to report local format validation separately from a real server test.
+- No network requests or credential persistence are implemented. Credentials remain transient in the form; Keychain integration and provider-specific authentication still need implementation and tests.
