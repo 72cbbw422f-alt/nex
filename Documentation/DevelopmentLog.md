@@ -172,3 +172,13 @@
 - EPG is fetched per channel only when requested; the app does not issue one network request per channel during initial catalogue loading.
 - This is a short per-channel EPG view, not yet a full multi-channel timeline/grid. EPG coverage and response variations differ between Xtream panels and require real-provider validation.
 - CI runs for the new Xtream EPG and Live TV changes remain queued; no successful build result is available yet.
+
+
+## 2026-11-18 — Xtream EPG response compatibility hardening
+
+- Updated `XtreamEPGProgram` to accept EPG IDs as either strings or integer values.
+- Updated start/stop timestamp decoding to accept JSON strings, integers and floating-point numbers.
+- Replaced random UUID fallback IDs with a deterministic identity based on programme start, end and title, so repeated decoding does not change row identity when a provider omits the EPG ID.
+- Kept Base64 decoding with plain-text fallback for programme titles and descriptions.
+- This is a defensive compatibility improvement; actual response variations still need validation against the user's provider.
+- Full multi-channel EPG timeline/grid remains pending. The current UI fetches short EPG on demand for one selected channel and does not yet provide a synchronized timeline.
