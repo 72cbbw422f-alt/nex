@@ -25,6 +25,7 @@ struct LiveView: View {
     @State private var epgLoadingChannel: Int?
     @State private var isLoadingTimeline = false
     @State private var timelineMessage: String?
+    @State private var timelineOffsetHours = 0
 
     private let sampleChannels: [GuideChannel] = [
         GuideChannel(id: 1, name: "SVT1", logo: nil, groupID: "Svenska"),
@@ -134,16 +135,33 @@ struct LiveView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("PROGRAMGUIDE").font(.caption.weight(.bold)).tracking(1.2).foregroundStyle(NexusTheme.accentLight)
-                    Text("Tidslinje").font(.title3.bold()).foregroundStyle(.white)
+                    Text("Tidslinje · \(timelineStart.formatted(date: .abbreviated, time: .omitted))").font(.title3.bold()).foregroundStyle(.white)
                 }
                 Spacer()
-                Button { Task { await loadTimeline() } } label: {
-                    HStack(spacing: 6) {
-                        if isLoadingTimeline { ProgressView().tint(.white) }
-                        Text(isLoadingTimeline ? "Hämtar…" : "Ladda guide")
-                    }.font(.caption.weight(.semibold)).padding(.horizontal, 12).padding(.vertical, 9)
-                     .background(NexusTheme.accent, in: Capsule()).foregroundStyle(.white)
-                }.buttonStyle(.plain).disabled(isLoadingTimeline || !usingProviderData)
+                HStack(spacing: 7) {
+                    Button { shiftTimeline(by: -6) } label: {
+                        Image(systemName: "chevron.left").frame(width: 30, height: 30)
+                    }
+                    .accessibilityLabel("Sex timmar bakåt")
+                    Button { shiftTimeline(by: 0) } label: {
+                        Text("Nu").font(.caption.weight(.semibold)).padding(.horizontal, 8).frame(height: 30)
+                    }
+                    .disabled(timelineOffsetHours == 0)
+                    Button { shiftTimeline(by: 6) } label: {
+                        Image(systemName: "chevron.right").frame(width: 30, height: 30)
+                    }
+                    .accessibilityLabel("Sex timmar framåt")
+                    Button { Task { await loadTimeline() } } label: {
+                        HStack(spacing: 5) {
+                            if isLoadingTimeline { ProgressView().tint(.white) }
+                            Text(isLoadingTimeline ? "Hämtar…" : "Ladda")
+                        }.font(.caption.weight(.semibold)).padding(.horizontal, 10).frame(height: 30)
+                         .background(NexusTheme.accent, in: Capsule()).foregroundStyle(.white)
+                    }.disabled(isLoadingTimeline || !usingProviderData)
+                }
+                .foregroundStyle(.white)
+                .buttonStyle(.plain)
+                .background(NexusTheme.elevatedSurface, in: Capsule())
             }
             Text(timelineMessage ?? "Hämtar program för upp till 8 synliga kanaler.").font(.caption).foregroundStyle(NexusTheme.secondaryText)
             if !timelineChannels.isEmpty {
@@ -177,7 +195,15 @@ struct LiveView: View {
     }
 
     private var timelineStart: Date {
-        Calendar.current.dateInterval(of: .hour, for: Date())?.start ?? Date()
+        let currentHour = Calendar.current.dateInterval(of: .hour, for: Date())?.start ?? Date()
+        return currentHour.addingTimeInterval(Double(timelineOffsetHours) * 3600)
+    }
+
+    private func shiftTimeline(by hours: Int) {
+        guard !isLoadingTimeline else { return }
+        timelineOffsetHours = hours == 0 ? 0 : timelineOffsetHours + hours
+        epgByChannel = [:]
+        Task { await loadTimeline() }
     }
 
     private let timelineHourWidth: CGFloat = 120
