@@ -450,3 +450,13 @@
 - The first-stage tool has a 65,557-byte tail limit and a 32 MiB central-directory limit. ZIP64 and multi-disk archives fail closed. It inventories XCFramework-related paths but does not yet prove architectures or supported platforms from Info.plist.
 - Added offline unit tests for ZIP central-directory parsing, invalid ZIP data, ZIP64 rejection and corrupt directory rejection. The GitHub Actions workflow now runs these Python tests before the Xcode builds.
 - The real VideoLAN endpoint has not yet been tested by this script. The latest workflow run will validate the local parser tests and normal app builds only; no VLCKit archive download is part of CI.
+
+
+## 2026-11-19 — VLCKit remote archive verified at ZIP-directory level
+
+- Added a separate path-filtered GitHub Actions workflow, `.github/workflows/vlckit-audit.yml`, to run the bounded archive inspection on Ubuntu without coupling the 910 MB package to the normal Xcode build.
+- The exact VideoLAN November 9 archive passed the bounded HTTP Range audit. The runner received HTTP 206 responses with valid `Content-Range` values and consistent total size; the full archive was not downloaded.
+- The ZIP central directory contains all four NEXUS target variants: `ios-arm64`, `ios-arm64_x86_64-simulator`, `tvos-arm64`, and `tvos-arm64_x86_64-simulator`. It also lists macOS, watchOS and visionOS variants.
+- Corrected the ZIP64 sentinel unit test to encode the actual EOCD signature. The parser suite had already passed in the preceding runs; the corrected test is included in the next normal build run.
+- This is a directory-level finding only. The inspector has not yet extracted or validated XCFramework `Info.plist` metadata, checked Mach-O architectures, resolved VLCKit through SwiftPM, or linked it into an app target.
+- No playback engine was selected or integrated. AVPlayer remains unchanged; next gate is targeted `Info.plist` extraction and validation followed by an isolated package/build spike.
