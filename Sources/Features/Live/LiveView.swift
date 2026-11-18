@@ -165,9 +165,9 @@ struct LiveView: View {
             .frame(width: 102, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(usingProviderData ? "EPG-integration återstår" : "Exempelkanal")
+                Text(usingProviderData ? "Visa programguide" : "Exempelkanal")
                     .font(.subheadline.weight(.semibold)).foregroundStyle(.white)
-                Text(usingProviderData ? "Programdata är inte hämtad ännu" : "Ingen riktig programdata")
+                Text(usingProviderData ? "Tryck på kanalnamnet för EPG" : "Ingen riktig programdata")
                     .font(.caption).foregroundStyle(NexusTheme.secondaryText)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
