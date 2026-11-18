@@ -12,6 +12,15 @@ private struct GuideGroup: Identifiable {
     let title: String
 }
 
+private struct TimelineProgramPlacement: Identifiable {
+    let program: XtreamEPGProgram
+    let start: Date
+    let end: Date
+    let lane: Int
+
+    var id: String { program.id }
+}
+
 struct LiveView: View {
     @State private var selectedGroup = "Alla"
     @State private var favoriteIDs: Set<Int> = [1, 3]
@@ -209,31 +218,70 @@ struct LiveView: View {
     private let timelineHourWidth: CGFloat = 120
     private var timelineWidth: CGFloat { timelineHourWidth * 6 }
 
-    private func timelineRow(for channel: GuideChannel) -> some View {
-        let programs = (epgByChannel[channel.id] ?? []).sorted {
-            ($0.startTimestamp ?? .distantPast) < ($1.startTimestamp ?? .distantPast)
+    private func timelinePlacements(for channel: GuideChannel) -> [TimelineProgramPlacement] {
+        let windowEnd = timelineStart.addingTimeInterval(6 * 3600)
+        let programs = (epgByChannel[channel.id] ?? []).compactMap { program -> (XtreamEPGProgram, Date, Date)? in
+            guard let start = program.startTimestamp,
+                  let end = program.endTimestamp,
+                  end > start,
+                  end > timelineStart,
+                  start < windowEnd else { return nil }
+            return (program, max(start, timelineStart), min(end, windowEnd))
+        }.sorted { $0.1 == $1.1 ? $0.2 < $1.2 : $0.1 < $1.1 }
+
+        var laneEndTimes: [Date] = []
+        var placements: [TimelineProgramPlacement] = []
+        for (program, clippedStart, clippedEnd) in programs {
+            let lane = laneEndTimes.firstIndex(where: { $0 <= clippedStart }) ?? laneEndTimes.count
+            if lane == laneEndTimes.count {
+                laneEndTimes.append(clippedEnd)
+            } else {
+                laneEndTimes[lane] = clippedEnd
+            }
+            placements.append(TimelineProgramPlacement(program: program, start: clippedStart, end: clippedEnd, lane: lane))
         }
-        return ZStack(alignment: .leading) {
-            Color.clear.frame(width: timelineWidth, height: 54)
-            ForEach(programs) { program in
-                if let start = program.startTimestamp, let end = program.endTimestamp, end > timelineStart,
-                   start < timelineStart.addingTimeInterval(6 * 3600) {
-                    let clippedStart = max(start, timelineStart)
-                    let clippedEnd = min(end, timelineStart.addingTimeInterval(6 * 3600))
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(start.formatted(date: .omitted, time: .shortened))
-                            .font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit())
-                            .foregroundStyle(NexusTheme.accentLight)
-                        Text(program.title).font(.caption2.weight(.semibold)).foregroundStyle(.white).lineLimit(2)
-                    }
-                    .padding(6)
-                    .frame(width: max(48, CGFloat(clippedEnd.timeIntervalSince(clippedStart) / 3600) * timelineHourWidth - 3), height: 54, alignment: .leading)
-                    .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 7))
-                    .offset(x: CGFloat(clippedStart.timeIntervalSince(timelineStart) / 3600) * timelineHourWidth)
+        return placements
+    }
+
+    private func timelineRow(for channel: GuideChannel) -> some View {
+        let placements = timelinePlacements(for: channel)
+        let laneCount = max(1, (placements.map(\\.lane).max() ?? 0) + 1)
+        let laneHeight: CGFloat = 48
+        let rowHeight = CGFloat(laneCount) * laneHeight
+        return ZStack(alignment: .topLeading) {
+            VStack(spacing: 1) {
+                ForEach(0..<laneCount, id: \\.self) { _ in
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(NexusTheme.elevatedSurface.opacity(0.42))
+                        .frame(height: laneHeight - 1)
                 }
             }
+            .frame(width: timelineWidth, height: rowHeight)
+            ForEach(placements) { placement in
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(placement.start.formatted(date: .omitted, time: .shortened))
+                        .font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit())
+                        .foregroundStyle(NexusTheme.accentLight)
+                    Text(placement.program.title)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                }
+                .padding(5)
+                .frame(
+                    width: max(2, CGFloat(placement.end.timeIntervalSince(placement.start) / 3600) * timelineHourWidth - 3),
+                    height: laneHeight - 2,
+                    alignment: .leading
+                )
+                .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(NexusTheme.border, lineWidth: 0.7))
+                .offset(
+                    x: CGFloat(placement.start.timeIntervalSince(timelineStart) / 3600) * timelineHourWidth,
+                    y: CGFloat(placement.lane) * laneHeight
+                )
+            }
         }
-        .frame(width: timelineWidth, height: 54, alignment: .leading)
+        .frame(width: timelineWidth, height: rowHeight, alignment: .topLeading)
         .clipped()
         .overlay(alignment: .leading) {
             let elapsed = Date().timeIntervalSince(timelineStart)
