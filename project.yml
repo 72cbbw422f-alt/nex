@@ -37,3 +37,15 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: NEXUS
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "3"
+
+  NEXUS-iOSTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/iOS
+    dependencies:
+      - target: NEXUS-iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nexusstream.ios.tests
+        GENERATE_INFOPLIST_FILE: YES
