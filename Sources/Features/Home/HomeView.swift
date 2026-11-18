@@ -97,7 +97,7 @@ struct HomeView: View {
                     .buttonStyle(.plain)
                     Button {} label: {
                         Label("Min lista", systemImage: "plus")
-                            .font(.subheadline.semibold())
+                            .font(.subheadline.weight(.semibold))
                             .padding(.horizontal, 15)
                             .padding(.vertical, 11)
                             .background(.white.opacity(0.12), in: Capsule())
