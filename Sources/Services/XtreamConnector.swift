@@ -175,11 +175,21 @@ struct XtreamEPGProgram: Decodable, Identifiable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = (try? container.decode(String.self, forKey: .id)) ?? UUID().uuidString
         title = Self.decodeBase64(try container.decodeIfPresent(String.self, forKey: .title)) ?? "Okänt program"
         description = Self.decodeBase64(try container.decodeIfPresent(String.self, forKey: .description)) ?? ""
-        startTimestamp = Self.decodeTimestamp(try container.decodeIfPresent(String.self, forKey: .startTimestamp))
-        endTimestamp = Self.decodeTimestamp(try container.decodeIfPresent(String.self, forKey: .endTimestamp))
+        startTimestamp = Self.decodeTimestamp(from: container, forKey: .startTimestamp)
+        endTimestamp = Self.decodeTimestamp(from: container, forKey: .endTimestamp)
+
+        if let stringID = try? container.decode(String.self, forKey: .id), !stringID.isEmpty {
+            id = stringID
+        } else if let numericID = try? container.decode(Int64.self, forKey: .id) {
+            id = String(numericID)
+        } else {
+            // Stable fallback: repeated decoding of the same listing must not create a new identity.
+            let start = startTimestamp?.timeIntervalSince1970 ?? 0
+            let end = endTimestamp?.timeIntervalSince1970 ?? 0
+            id = "\(Int64(start))|\(Int64(end))|\(title)"
+        }
     }
 
     private static func decodeBase64(_ value: String?) -> String? {
@@ -187,8 +197,17 @@ struct XtreamEPGProgram: Decodable, Identifiable, Equatable {
         return String(data: data, encoding: .utf8) ?? value
     }
 
-    private static func decodeTimestamp(_ value: String?) -> Date? {
-        guard let value, let seconds = TimeInterval(value) else { return nil }
-        return Date(timeIntervalSince1970: seconds)
+    private static func decodeTimestamp(from container: KeyedDecodingContainer<CodingKeys>, forKey key: CodingKeys) -> Date? {
+        if let seconds = try? container.decode(Double.self, forKey: key) {
+            return Date(timeIntervalSince1970: seconds)
+        }
+        if let integerSeconds = try? container.decode(Int64.self, forKey: key) {
+            return Date(timeIntervalSince1970: TimeInterval(integerSeconds))
+        }
+        if let string = try? container.decode(String.self, forKey: key),
+           let seconds = TimeInterval(string) {
+            return Date(timeIntervalSince1970: seconds)
+        }
+        return nil
     }
 }
