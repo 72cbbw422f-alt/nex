@@ -293,3 +293,12 @@
 - A successful retry clears the stored channel error. EPG error state is cleared together with cached programme data when the active Xtream profile changes.
 - Aligned the channel label column width across the compact channel list, guide header and timeline rows using the shared responsive width value.
 - The preceding alignment commit passed both iOS and tvOS simulator builds. The EPG error-state change is awaiting CI and real-provider validation.
+
+
+## 2026-11-18 — Profile-scoped EPG cache and stale-request guards
+
+- Replaced channel-ID-only EPG cache keys with a composite key containing provider, normalized server address, username and channel ID. Programme data, fetch timestamps and error state now use the same profile-scoped key.
+- Corrected all cache reads and writes to use the composite key consistently, including the timeline, channel panel and timeline channel filtering.
+- Timeline loading captures the selected category and active profile before making requests. It stops applying results/status text if the profile or category changes while requests are in flight.
+- Expanded-channel EPG requests now use a request token and capture the profile-scoped cache key before awaiting the provider. Late responses cannot overwrite the active profile's cache, and a superseded request cannot clear the newer request's loading indicator.
+- The composite-cache implementation passed both iOS and tvOS simulator builds. The stale-request guard commit is awaiting CI and still needs real-provider/device validation.
