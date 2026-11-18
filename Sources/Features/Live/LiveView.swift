@@ -76,6 +76,10 @@ struct LiveView: View {
         )
     }
 
+    private func epgRequestKey(for key: LiveEPGCacheKey) -> String {
+        "\(key.provider)|\(key.server)|\(key.username)|\(key.channelID)"
+    }
+
     private var usingProviderData: Bool { activeProfile != nil && !liveStreams.isEmpty }
     private var channels: [GuideChannel] {
         if usingProviderData {
@@ -345,7 +349,10 @@ struct LiveView: View {
             let cacheIsFresh = epgFetchedAt[cacheKey].map { Date().timeIntervalSince($0) < (epgErrors[cacheKey] == nil ? 300 : 60) } ?? false
             if cacheIsFresh { continue }
             do {
-                let programs = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
+                let requestKey = epgRequestKey(for: cacheKey)
+                let programs = try await XtreamEPGRequestCoordinator.shared.programs(for: requestKey) {
+                    try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
+                }
                 guard timelineRequestID == requestID,
                       activeProfile?.provider == profile.provider,
                       activeProfile?.baseURL == profile.baseURL,
@@ -563,9 +570,12 @@ struct LiveView: View {
         epgLoadingChannel = channel.id
         let configuration = ProviderConnectionConfiguration(provider: profile.provider, baseURL: profile.baseURL, username: profile.username)
         do {
-            let programs = try await XtreamConnector().shortEPG(
-                configuration: configuration, credentials: ProviderCredentials(password: password), streamID: channel.id
-            )
+            let requestKey = epgRequestKey(for: cacheKey)
+            let programs = try await XtreamEPGRequestCoordinator.shared.programs(for: requestKey) {
+                try await XtreamConnector().shortEPG(
+                    configuration: configuration, credentials: ProviderCredentials(password: password), streamID: channel.id
+                )
+            }
             guard activeProfile?.baseURL == profile.baseURL, activeProfile?.username == profile.username else { return }
             epgByChannel[cacheKey] = programs
             epgErrors[cacheKey] = nil
