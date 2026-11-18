@@ -55,7 +55,11 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
 final class PlaybackCoordinator {
     private let engine: any PlaybackEngine
 
-    init(engine: any PlaybackEngine = AVPlayerPlaybackEngine()) {
+    init() {
+        self.engine = AVPlayerPlaybackEngine()
+    }
+
+    init(engine: any PlaybackEngine) {
         self.engine = engine
     }
 
