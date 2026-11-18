@@ -259,3 +259,12 @@
 - The lane allocator now reserves the same minimum visual interval when checking collisions, preventing compact cards from covering the next programme in the same lane.
 - Actual programme start/end timestamps and the displayed timeline duration remain unchanged; the extra width is a presentation aid only. Short programmes may therefore occupy an additional lane when needed.
 - CI and device-size validation are pending. The timeline remains horizontally scrollable on narrow screens.
+
+
+## 2026-11-18 — EPG response caching and build correction
+
+- Corrected two malformed Swift key-path expressions in the EPG timeline lane layout that caused the iOS simulator build to fail.
+- Added a five-minute in-memory freshness window for short-EPG responses. Reopening a channel or loading the timeline again within that window reuses the response instead of repeating the same Xtream request.
+- Paging the six-hour timeline no longer clears already fetched EPG data. Cached programme intervals are clipped against the selected window; this improves reuse but does not create historical listings that the provider has not returned.
+- Cache entries are invalidated when the active server address or username changes. Failed requests are also held for up to five minutes to avoid rapid repeated calls to an unavailable endpoint.
+- The fix and cache implementation are committed on `project-foundation`. CI validation is pending; no successful build is claimed yet.
