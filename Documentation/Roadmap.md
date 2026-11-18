@@ -84,6 +84,7 @@
 - [x] Add six-hour previous/next timeline window controls and return-to-now action (CI/provider validation pending)
 - [ ] Improve overlap/EPG-gap handling and verify historical EPG availability per provider
 - [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI pending)
+- [x] Display provider-supplied channel logos with neutral fallback (CI/device validation pending)
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
 
