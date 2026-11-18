@@ -31,7 +31,7 @@
 - [ ] Live categories and channels
 - [ ] VOD movies and categories
 - [ ] Series, seasons and episodes
-- [ ] EPG and catch-up capability detection
+- [x] Add on-demand short EPG retrieval and per-channel programme panel (provider validation pending)\n- [ ] Full EPG timeline/grid and catch-up capability detection
 - [ ] Playback locator tests
 
 ## Phase 3 — Jellyfin / AIOMetadata connector
@@ -72,7 +72,7 @@
 
 ## Phase 7 — Live TV
 - [x] Load live channels and provider categories into the channel browser\n- [ ] Persist channel favourites and support selecting among multiple saved provider profiles
-- [ ] EPG grid and now/next
+- [ ] Full EPG grid with multi-channel now/next timeline
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
 
