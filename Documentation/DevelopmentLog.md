@@ -379,3 +379,12 @@
 - Added a fake PlaybackEngine test double and four PlaybackCoordinator tests covering URL load/play ordering, pause/resume forwarding, seek forwarding and state passthrough.
 - The new coordinator tests are committed on `project-foundation`; their CI run is pending.
 - These tests exercise orchestration only. They do not verify network stream acceptance, codec compatibility or real playback on a physical device.
+
+
+## 2026-11-18 — First Live TV playback surface and CI correction
+
+- Added the first AVPlayer-backed full-screen playback view and connected provider-backed Live TV channel rows to it.
+- The player obtains the Xtream password from Keychain at runtime and keeps the candidate stream URL in transient view state only.
+- An initial CI run compiled an older commit containing literal escaped newline sequences in the LiveView playback model declaration. The source was corrected on `project-foundation`; the latest branch file now contains normal Swift line breaks.
+- The CI run for the corrected branch head has not yet completed. Do not treat the player integration as build-verified until a fresh run passes.
+- Playback remains unverified against a real provider and physical iPhone/iPad/Apple TV. AVPlayer format compatibility, loading/error feedback, audio/subtitle selection and tvOS remote behavior remain follow-ups.
