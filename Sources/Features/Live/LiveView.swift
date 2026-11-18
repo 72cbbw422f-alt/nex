@@ -34,6 +34,12 @@ struct LiveView: View {
         GuideChannel(id: 5, name: "Discovery", logo: nil, groupID: "Dokumentär")
     ]
 
+    private var favoriteStorageKey: String? {
+        guard let profile = activeProfile else { return nil }
+        let server = profile.baseURL.absoluteString.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return "nexus.live-favorites.\(profile.provider.rawValue).\(server).\(profile.username)"
+    }
+
     private var usingProviderData: Bool { activeProfile != nil && !liveStreams.isEmpty }
     private var channels: [GuideChannel] {
         if usingProviderData {
@@ -350,6 +356,7 @@ struct LiveView: View {
     private func loadProviderChannels() async {
         guard let profile = ProviderConnectionStore.shared.load().first(where: { $0.provider == .xtream }) else {
             activeProfile = nil
+            favoriteIDs = [1, 3]
             liveCategories = []
             liveStreams = []
             loadMessage = "Ingen sparad Xtream-anslutning. Visar exempelkanaler."
@@ -357,6 +364,9 @@ struct LiveView: View {
         }
 
         activeProfile = profile
+        if let key = favoriteStorageKey {
+            favoriteIDs = Set(UserDefaults.standard.array(forKey: key) as? [Int] ?? [])
+        }
         guard let password = try? KeychainCredentialStore.shared.password(
             provider: profile.provider, baseURL: profile.baseURL, username: profile.username
         ) , !password.isEmpty else {
@@ -388,5 +398,8 @@ struct LiveView: View {
     private func toggleFavorite(_ id: Int) {
         if favoriteIDs.contains(id) { favoriteIDs.remove(id) }
         else { favoriteIDs.insert(id) }
+        if let key = favoriteStorageKey {
+            UserDefaults.standard.set(favoriteIDs.sorted(), forKey: key)
+        }
     }
 }
