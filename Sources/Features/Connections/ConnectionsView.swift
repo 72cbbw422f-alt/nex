@@ -1,24 +1,12 @@
 import SwiftUI
 
-private enum ConnectionProvider: String, CaseIterable, Identifiable {
-    case xtream = "Xtream"
-    case jellyfin = "Jellyfin"
-
-    var id: String { rawValue }
-    var symbol: String { self == .xtream ? "antenna.radiowaves.left.and.right" : "server.rack" }
-    var description: String {
-        self == .xtream
-            ? "IPTV-kanaler, filmer, serier och EPG från din leverantör."
-            : "Bibliotek, metadata och tillgängliga strömmar från din Jellyfin-server."
-    }
-}
-
 struct ConnectionsView: View {
     @State private var selectedProvider: ConnectionProvider = .xtream
     @State private var serverAddress = ""
     @State private var username = ""
     @State private var password = ""
     @State private var draftMessage: String?
+    @State private var isValidDraft = false
 
     var body: some View {
         ScrollView {
@@ -62,9 +50,7 @@ struct ConnectionsView: View {
                             .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 12))
                     }
 
-                    Button {
-                        draftMessage = "Utkastet finns kvar medan den här vyn är öppen. Ingen anslutning har ännu testats eller sparats säkert."
-                    } label: {
+                    Button(action: validateDraft) {
                         Label("Kontrollera uppgifter", systemImage: "checkmark.shield")
                             .font(.subheadline.bold())
                             .frame(maxWidth: .infinity)
@@ -73,13 +59,13 @@ struct ConnectionsView: View {
                             .foregroundStyle(.white)
                     }
                     .buttonStyle(.plain)
-                    .disabled(serverAddress.isEmpty || username.isEmpty || password.isEmpty)
-                    .opacity(serverAddress.isEmpty || username.isEmpty || password.isEmpty ? 0.45 : 1)
+                    .disabled(serverAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty)
+                    .opacity(serverAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || password.isEmpty ? 0.45 : 1)
 
                     if let draftMessage {
-                        Text(draftMessage)
+                        Label(draftMessage, systemImage: isValidDraft ? "checkmark.circle" : "info.circle")
                             .font(.caption)
-                            .foregroundStyle(NexusTheme.secondaryText)
+                            .foregroundStyle(isValidDraft ? NexusTheme.accentLight : NexusTheme.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -87,7 +73,7 @@ struct ConnectionsView: View {
                 .background(NexusTheme.surface, in: RoundedRectangle(cornerRadius: 18))
                 .overlay(RoundedRectangle(cornerRadius: 18).stroke(NexusTheme.border, lineWidth: 1))
 
-                Text("Säkerhet: uppgifterna hanteras ännu bara som ett tillfälligt formulärutkast. NEXUS kommer inte att ansluta till servern förrän respektive API och säker lagring är implementerade.")
+                Text("Detta kontrollerar bara att uppgifterna har ett rimligt format. Ingen server kontaktas och inget sparas ännu. Riktig anslutning och säker Keychain-lagring kommer i nästa steg.")
                     .font(.caption)
                     .foregroundStyle(NexusTheme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -98,6 +84,22 @@ struct ConnectionsView: View {
         .navigationTitle("Anslutningar")
     }
 
+    private func validateDraft() {
+        do {
+            _ = try ProviderConnectionValidator.validate(
+                provider: selectedProvider,
+                address: serverAddress,
+                username: username,
+                password: password
+            )
+            isValidDraft = true
+            draftMessage = "Formatet ser korrekt ut. Servern är inte kontaktad och uppgifterna är inte sparade."
+        } catch {
+            isValidDraft = false
+            draftMessage = error.localizedDescription
+        }
+    }
+
     private func providerCard(_ provider: ConnectionProvider) -> some View {
         Button {
             selectedProvider = provider
@@ -105,6 +107,7 @@ struct ConnectionsView: View {
             username = ""
             password = ""
             draftMessage = nil
+            isValidDraft = false
         } label: {
             VStack(alignment: .leading, spacing: 9) {
                 Image(systemName: provider.symbol)
