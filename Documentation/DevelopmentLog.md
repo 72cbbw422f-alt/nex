@@ -355,3 +355,11 @@
 - The current upstream main Package.swift declares Swift tools 6.2, while NEXUS currently uses Swift 5.9 build settings. Exact release/tag compatibility must be checked before any package integration.
 - Decision for the next prototype: validate native AVPlayer with a known HLS sample behind an engine-independent playback interface. KSPlayer remains a candidate only after the legal and toolchain gates.
 - No real-provider stream, physical device, codec, HDR, Dolby audio or subtitle capability has been validated by this research.
+
+
+## 2026-11-18 — Playback coordinator concurrency correction and test target
+
+- Added an XCTest target for the Xtream playback locator with coverage for URL construction, path preservation, reserved/Unicode credential encoding, malformed or missing extensions, and invalid inputs.
+- Added an AVPlayer-backed engine behind the engine-independent playback coordinator.
+- CI exposed a Swift actor-isolation error caused by constructing the default AVPlayer engine in a default argument. Replaced that default argument with a dedicated main-actor initializer and retained explicit engine injection for tests.
+- The initial CI run confirmed the actor-isolation issue. The follow-up workflow run was cancelled before a usable build/test result was produced; the corrected code is therefore not yet marked CI-verified.
