@@ -81,7 +81,8 @@
 - [ ] Support selecting among multiple saved provider profiles
 - [x] Add first multi-channel EPG timeline prototype (on-demand, capped at 8 channels; provider validation pending)
 - [x] Align programme blocks to a shared six-hour clock axis and show a current-time marker (initial implementation; provider validation pending)
-- [ ] Add scrolling/paging across time windows and improve overlap/EPG-gap handling
+- [x] Add six-hour previous/next timeline window controls and return-to-now action (CI/provider validation pending)
+- [ ] Improve overlap/EPG-gap handling and verify historical EPG availability per provider
 - [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI pending)
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
