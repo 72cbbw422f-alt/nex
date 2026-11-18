@@ -410,3 +410,15 @@
 - The first menu UI CI run exposed an incorrectly escaped Swift key-path expression. The expression was corrected using an explicit closure; the corrected branch-head workflow passed Xcode project generation, iOS Simulator build, tvOS Simulator build and all iOS unit tests.
 - This verifies compilation and existing coordinator tests, not actual track switching against a live Xtream provider or on physical hardware. Track availability remains dependent on the media source exposing AVPlayer-compatible media-selection groups.
 - External subtitle-file loading, subtitle search/download, synchronization offset and provider-specific playback compatibility are not implemented by this change.
+
+
+## 2026-11-18 — External subtitle service foundation
+
+- Added engine-neutral subtitle domain types for SRT/WebVTT, movie/series search identity, subtitle candidates, downloaded assets and ordered language preferences.
+- Added a provider-neutral async SubtitleService contract for search and download. No provider credentials, API calls or network adapter are included.
+- Added conservative candidate ranking: media kind and TMDB ID must agree when supplied; series season/episode must match; language order is respected; exact file hash outranks exact release-name evidence.
+- Tightened matching so an item without a TMDB ID requires an exact file-hash or release-name match. Candidates with no reliable identity evidence are not auto-matched.
+- Added unit tests for format recognition, language ordering, wrong media/episode rejection, hash ranking and ambiguous-match rejection.
+- CI for the initial subtitle foundation passed iOS Simulator build, tvOS Simulator build and iOS unit tests. The stricter matching safeguard and added test have a new CI run pending.
+- Kept external subtitle playback explicitly unimplemented. AVPlayer embedded media selection does not provide a generic sidecar SRT/VTT injection path; an engine must expose and implement that capability before downloaded files can be selected for playback.
+- No OpenSubtitles integration, download/cache implementation, subtitle sync UI or physical-device playback validation has been added.
