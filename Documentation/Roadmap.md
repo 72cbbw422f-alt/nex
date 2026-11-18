@@ -86,6 +86,7 @@
 - [ ] Verify historical EPG availability per provider
 - [x] Align the red current-time marker to the selected six-hour window and hide it outside the current-time range (CI pending)
 - [ ] Validate the shared timeline build after correcting a Swift key-path compile error (CI pending)
+- [x] Reuse short-EPG responses across timeline paging with a five-minute cache and profile-change invalidation (CI pending)
 - [x] Display provider-supplied channel logos with neutral fallback (CI/device validation pending)
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
