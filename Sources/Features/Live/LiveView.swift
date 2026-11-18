@@ -1,6 +1,12 @@
 import SwiftUI
 
-private struct LivePlaybackItem: Identifiable {\n    let id = UUID()\n    let url: URL\n    let title: String\n}\n\nprivate struct GuideChannel: Identifiable {
+private struct LivePlaybackItem: Identifiable {
+    let id = UUID()
+    let url: URL
+    let title: String
+}
+
+private struct GuideChannel: Identifiable {
     let id: Int
     let name: String
     let logo: URL?
