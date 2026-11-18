@@ -35,6 +35,7 @@
 - [ ] VOD movies and categories
 - [ ] Series, seasons and episodes
 - [x] Add on-demand short EPG retrieval and per-channel programme panel (provider validation pending)
+- [x] Refine expanded channel EPG rows with start/end times and explicit loading/empty states (CI pending)
 - [x] Decode EPG IDs and timestamps from string or numeric JSON values with deterministic fallback identity
 - [ ] Full EPG timeline/grid and catch-up capability detection
 - [ ] Playback locator tests
