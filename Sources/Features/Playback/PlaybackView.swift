@@ -116,7 +116,7 @@ struct PlaybackView: View {
         if playbackState.hasLoadedTracks {
             HStack(spacing: 8) {
                 if playbackState.audioTracks.isEmpty {
-                    trackStatusLabel("Ljud saknas", icon: "waveform")
+                    trackStatusLabel("Ljud · standard", icon: "waveform")
                 } else {
                     Menu {
                         ForEach(playbackState.audioTracks) { track in
@@ -137,7 +137,7 @@ struct PlaybackView: View {
                 }
 
                 if playbackState.subtitleTracks.isEmpty {
-                    trackStatusLabel("Inga undertexter", icon: "captions.bubble")
+                    trackStatusLabel("Undertexter · ej tillgängligt", icon: "captions.bubble")
                 } else {
                     Menu {
                         Button {
