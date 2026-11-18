@@ -242,3 +242,12 @@
 - The marker now appears only when the real current time falls inside the displayed six-hour interval; historical and future windows no longer show a misleading marker at the same horizontal position.
 - Programme block positioning and provider data behavior are unchanged. Overlapping programme layout, gaps and historical EPG availability remain open items.
 - CI validation is pending.
+
+
+## 2026-11-18 — EPG overlap layout and timeline gaps
+
+- Reworked each channel's six-hour EPG row to allocate overlapping programmes to separate vertical lanes instead of drawing them on top of one another.
+- Rows now grow to fit the number of overlapping lanes; programme blocks retain their timestamp-based horizontal positions and are clipped to the selected six-hour window.
+- Empty time remains visibly unoccupied on a subtle lane track rather than being filled with fabricated programme data. Invalid or zero-length intervals are excluded.
+- The lane allocator uses programme start/end timestamps and reuses a lane once its previous programme has ended.
+- CI validation and real-provider testing are pending. Dense schedules may increase row height; visual refinement on iPhone and iPad remains outstanding.
