@@ -311,3 +311,12 @@
 - The loading indicator is now cleared only by the refresh that owns the current request token, preventing an older completion from making a newer refresh appear idle.
 - Profile changes clear EPG panel request/loading state as well as the profile-scoped EPG cache.
 - The restored Live TV view and refresh-guard commit are awaiting their own iOS/tvOS CI run. Real-provider testing and device validation remain outstanding.
+
+
+## 2026-11-18 — Xtream retry handling and timeline request ownership
+
+- Added a single bounded retry for selected transient URLSession connectivity failures and HTTP 5xx responses, using a 500 ms backoff. Authentication failures, HTTP 4xx responses, invalid JSON and other non-transient errors are not retried.
+- Added a unique request token to the six-hour EPG timeline loader. Superseded timeline requests can no longer write cache results/errors, overwrite status text or clear the loading indicator owned by a newer request.
+- Timeline response application now verifies the active provider, server and username as well as the request token.
+- Concurrent requests for the same EPG channel from the timeline and expanded channel panel are not yet deduplicated; that remains the next networking refinement.
+- GitHub Actions validation is pending. Real Xtream-provider and physical-device behavior remain unverified.
