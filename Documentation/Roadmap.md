@@ -78,7 +78,8 @@
 ## Phase 7 — Live TV
 - [x] Load live channels and provider categories into the channel browser
 - [ ] Persist channel favourites and support selecting among multiple saved provider profiles
-- [ ] Full EPG grid with multi-channel now/next timeline
+- [x] Add first multi-channel EPG timeline prototype (on-demand, capped at 8 channels; provider validation pending)
+- [ ] Align programme blocks to a shared real-time axis and add now/next indicator
 - [ ] Channel zapping
 - [ ] Catch-up where provider supports it
 
