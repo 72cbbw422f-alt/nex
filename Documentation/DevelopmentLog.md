@@ -128,3 +128,13 @@
 - Added read and delete operations for future connection lifecycle management.
 - Server address and username are not yet persisted. No server API request or authentication test is performed.
 - The Keychain implementation still requires successful iOS and tvOS CI builds and device-level verification before it is considered validated.
+
+
+## 2026-11-18 — Saved provider connection profiles
+
+- Added a Codable profile store for non-secret connection metadata (provider, server URL, username and creation date). Profiles persist locally across app launches.
+- The connection screen now lists saved profiles, can load one for editing, and can remove a profile together with its Keychain credential.
+- Saving a profile stores the password separately in Keychain; passwords are not part of the Codable profile or UserDefaults payload.
+- Keychain credential identity now includes provider, normalized server URL and case-preserved username, preventing collisions when the same account name is used on different servers.
+- The form clearly distinguishes local validation and local persistence from a real server authentication test. No provider API request is made yet.
+- CI validation for these latest changes is pending; device-level Keychain verification remains outstanding.
