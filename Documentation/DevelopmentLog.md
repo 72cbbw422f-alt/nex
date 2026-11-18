@@ -234,3 +234,11 @@
 - Added a neutral TV glyph fallback for channels with no logo URL and while artwork is unavailable or fails to load.
 - No external artwork catalogue or guessed logo mapping is used; only the Xtream stream_icon value is displayed.
 - Build validation for the timeline paging and logo changes is pending.
+
+
+## 2026-11-18 — EPG current-time marker correction
+
+- Corrected the red current-time marker to use the selected six-hour window's actual elapsed time rather than the current minute within every window.
+- The marker now appears only when the real current time falls inside the displayed six-hour interval; historical and future windows no longer show a misleading marker at the same horizontal position.
+- Programme block positioning and provider data behavior are unchanged. Overlapping programme layout, gaps and historical EPG availability remain open items.
+- CI validation is pending.
