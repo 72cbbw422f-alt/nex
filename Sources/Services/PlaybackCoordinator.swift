@@ -75,6 +75,13 @@ extension PlaybackEngine {
 @MainActor
 final class AVPlayerPlaybackEngine: PlaybackEngine {
     let player: AVPlayer
+    private var audioGroup: AVMediaSelectionGroup?
+    private var subtitleGroup: AVMediaSelectionGroup?
+    private var audioOptions: [String: AVMediaSelectionOption] = [:]
+    private var subtitleOptions: [String: AVMediaSelectionOption] = [:]
+    private var audioTrackCache: [PlaybackTrack] = []
+    private var subtitleTrackCache: [PlaybackTrack] = []
+    private var selectionLoadTask: Task<Void, Never>?
 
     init(player: AVPlayer = AVPlayer()) {
         self.player = player
@@ -88,6 +95,9 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
     var isPlaying: Bool {
         player.timeControlStatus == .playing
     }
+
+    var audioTracks: [PlaybackTrack] { audioTrackCache }
+    var subtitleTracks: [PlaybackTrack] { subtitleTrackCache }
 
     var state: PlaybackEngineState {
         guard let item = player.currentItem else { return .idle }
@@ -109,7 +119,80 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
     }
 
     func load(_ url: URL) {
-        player.replaceCurrentItem(with: AVPlayerItem(url: url))
+        selectionLoadTask?.cancel()
+        audioGroup = nil
+        subtitleGroup = nil
+        audioOptions = [:]
+        subtitleOptions = [:]
+        audioTrackCache = []
+        subtitleTrackCache = []
+
+        let item = AVPlayerItem(url: url)
+        player.replaceCurrentItem(with: item)
+        selectionLoadTask = Task { [weak self, weak item] in
+            guard let self, let item else { return }
+            async let audio = Self.loadSelectionGroup(.audible, from: item.asset)
+            async let subtitles = Self.loadSelectionGroup(.legible, from: item.asset)
+            let (loadedAudio, loadedSubtitles) = await (audio, subtitles)
+            guard !Task.isCancelled, self.player.currentItem === item else { return }
+            self.audioGroup = loadedAudio
+            self.subtitleGroup = loadedSubtitles
+            self.audioOptions = Self.optionMap(for: loadedAudio, prefix: "audio")
+            self.subtitleOptions = Self.optionMap(for: loadedSubtitles, prefix: "subtitle")
+            self.audioTrackCache = Self.tracks(from: loadedAudio, prefix: "audio", kind: .audio, selected: item.currentMediaSelection)
+            self.subtitleTrackCache = Self.tracks(from: loadedSubtitles, prefix: "subtitle", kind: .subtitle, selected: item.currentMediaSelection)
+        }
+    }
+
+    @discardableResult
+    func selectAudioTrack(id: String) -> Bool {
+        guard let option = audioOptions[id], let group = audioGroup, let item = player.currentItem else { return false }
+        item.select(option, in: group)
+        audioTrackCache = Self.tracks(from: group, prefix: "audio", kind: .audio, selected: item.currentMediaSelection)
+        return true
+    }
+
+    @discardableResult
+    func selectSubtitleTrack(id: String?) -> Bool {
+        guard let group = subtitleGroup, let item = player.currentItem else { return false }
+        if let id {
+            guard let option = subtitleOptions[id] else { return false }
+            item.select(option, in: group)
+        } else {
+            item.select(nil, in: group)
+        }
+        subtitleTrackCache = Self.tracks(from: group, prefix: "subtitle", kind: .subtitle, selected: item.currentMediaSelection)
+        return true
+    }
+
+    private static func loadSelectionGroup(_ characteristic: AVMediaCharacteristic, from asset: AVAsset) async -> AVMediaSelectionGroup? {
+        try? await asset.loadMediaSelectionGroup(for: characteristic)
+    }
+
+    private static func optionMap(for group: AVMediaSelectionGroup?, prefix: String) -> [String: AVMediaSelectionOption] {
+        guard let group else { return [:] }
+        return Dictionary(uniqueKeysWithValues: group.options.enumerated().map { index, option in
+            ("\(prefix)-\(index)", option)
+        })
+    }
+
+    private static func tracks(
+        from group: AVMediaSelectionGroup?,
+        prefix: String,
+        kind: PlaybackTrackKind,
+        selected selection: AVMediaSelection
+    ) -> [PlaybackTrack] {
+        guard let group else { return [] }
+        let selectedOption = selection.selectedMediaOption(in: group)
+        return group.options.enumerated().map { index, option in
+            PlaybackTrack(
+                id: "\(prefix)-\(index)",
+                kind: kind,
+                displayName: option.displayName,
+                languageCode: option.locale?.identifier,
+                isSelected: option == selectedOption
+            )
+        }
     }
 
     func play() {
