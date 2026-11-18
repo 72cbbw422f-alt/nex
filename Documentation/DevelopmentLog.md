@@ -226,3 +226,11 @@
 - Moving to another window clears the in-memory EPG cache for the visible timeline channels and requests fresh short-EPG data for the selected window.
 - Xtream `get_short_epg` does not accept a requested start timestamp in this adapter. Providers may therefore return only their current/upcoming listings; historical-window coverage is not guaranteed. This remains a provider-specific validation item rather than a claim of full historical EPG support.
 - CI validation is pending.
+
+
+## 2026-11-18 — Live TV channel logos
+
+- Added provider-supplied channel artwork to the channel browser and multi-channel EPG labels using SwiftUI AsyncImage.
+- Added a neutral TV glyph fallback for channels with no logo URL and while artwork is unavailable or fails to load.
+- No external artwork catalogue or guessed logo mapping is used; only the Xtream stream_icon value is displayed.
+- Build validation for the timeline paging and logo changes is pending.
