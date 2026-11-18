@@ -346,3 +346,12 @@
 - Restricted credential path-segment encoding to RFC 3986 unreserved ASCII characters, ensuring non-ASCII characters are percent-encoded rather than being passed through by Unicode alphanumeric character sets.
 - GitHub Actions iOS and tvOS simulator builds passed for this source change.
 - The generated URL remains sensitive runtime data; real-provider acceptance and physical-device playback are not yet verified.
+
+
+## 2026-11-18 — KSPlayer player-engine evaluation
+
+- Reviewed the upstream KSPlayer repository and package information. The project advertises iOS and tvOS support, but its README says the default distribution is GPL-3.0; an LGPL variant is offered under paid terms, with separate licensing discussions also possible.
+- NEXUS will not add the dependency until licensing and distribution obligations are explicitly resolved.
+- The current upstream main Package.swift declares Swift tools 6.2, while NEXUS currently uses Swift 5.9 build settings. Exact release/tag compatibility must be checked before any package integration.
+- Decision for the next prototype: validate native AVPlayer with a known HLS sample behind an engine-independent playback interface. KSPlayer remains a candidate only after the legal and toolchain gates.
+- No real-provider stream, physical device, codec, HDR, Dolby audio or subtitle capability has been validated by this research.
