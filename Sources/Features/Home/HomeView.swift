@@ -51,7 +51,7 @@ struct HomeView: View {
                     .foregroundStyle(.white)
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button {} label: { Image(systemName: "magnifyingglass") }
+                NavigationLink { SearchView() } label: { Image(systemName: "magnifyingglass") }
                 Button {} label: { Image(systemName: "bell") }
             }
         }
