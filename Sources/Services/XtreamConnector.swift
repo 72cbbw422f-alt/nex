@@ -1,6 +1,6 @@
 import Foundation
 
-struct XtreamConnector: ProviderConnector {
+struct XtreamConnector: ProviderConnector, Sendable {
     let provider: ConnectionProvider = .xtream
     private let session: URLSession
 
@@ -144,7 +144,29 @@ struct XtreamConnector: ProviderConnector {
     }
 }
 
-struct XtreamLiveCategory: Decodable, Identifiable, Equatable {
+
+/// Shares one in-flight EPG request between the timeline and channel detail panel.
+actor XtreamEPGRequestCoordinator {
+    static let shared = XtreamEPGRequestCoordinator()
+
+    private var inFlight: [String: Task<[XtreamEPGProgram], Error>] = [:]
+
+    func programs(
+        for key: String,
+        operation: @escaping @Sendable () async throws -> [XtreamEPGProgram]
+    ) async throws -> [XtreamEPGProgram] {
+        if let existing = inFlight[key] {
+            return try await existing.value
+        }
+
+        let task = Task { try await operation() }
+        inFlight[key] = task
+        defer { inFlight[key] = nil }
+        return try await task.value
+    }
+}
+
+struct XtreamLiveCategory: Decodable, Identifiable, Equatable, Sendable {
     let categoryID: String
     let categoryName: String
     let parentID: Int?
@@ -158,7 +180,7 @@ struct XtreamLiveCategory: Decodable, Identifiable, Equatable {
     }
 }
 
-struct XtreamLiveStream: Decodable, Identifiable, Equatable {
+struct XtreamLiveStream: Decodable, Identifiable, Equatable, Sendable {
     let name: String
     let streamID: Int
     let streamIcon: URL?
@@ -190,7 +212,7 @@ struct XtreamLiveStream: Decodable, Identifiable, Equatable {
 }
 
 
-struct XtreamEPGProgram: Decodable, Identifiable, Equatable {
+struct XtreamEPGProgram: Decodable, Identifiable, Equatable, Sendable {
     let id: String
     let title: String
     let description: String
