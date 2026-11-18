@@ -438,7 +438,7 @@ struct LiveView: View {
             }
 
             if let programs = epgByChannel[channel.id], !programs.isEmpty {
-                ForEach(Array(programs.prefix(5).enumerated()), id: \.element.id) { index, program in
+                ForEach(programs.prefix(5)) { program in
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(alignment: .firstTextBaseline, spacing: 9) {
                             Text(programTimeRange(program))
@@ -464,9 +464,6 @@ struct LiveView: View {
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(NexusTheme.surface, in: RoundedRectangle(cornerRadius: 9))
-                    if index < min(programs.count, 5) - 1 {
-                        EmptyView()
-                    }
                 }
             } else if epgLoadingChannel == channel.id {
                 HStack(spacing: 8) {
