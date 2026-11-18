@@ -180,7 +180,7 @@ struct LiveView: View {
                         }
                         ForEach(timelineChannels) { channel in
                             HStack(spacing: 0) {
-                                Text(channel.name).font(.caption.weight(.semibold)).foregroundStyle(.white).lineLimit(2).frame(width: 112, alignment: .leading)
+                                HStack(spacing: 6) { channelLogo(channel, size: 22); Text(channel.name).font(.caption.weight(.semibold)).foregroundStyle(.white).lineLimit(2) }.frame(width: 112, alignment: .leading)
                                 timelineRow(for: channel)
                             }
                         }
@@ -285,12 +285,42 @@ struct LiveView: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(NexusTheme.border, lineWidth: 1))
     }
 
+    @ViewBuilder
+    private func channelLogo(_ channel: GuideChannel, size: CGFloat) -> some View {
+        if let logo = channel.logo {
+            AsyncImage(url: logo) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFit()
+                case .empty, .failure:
+                    Image(systemName: "tv").resizable().scaledToFit().padding(size * 0.22)
+                        .foregroundStyle(NexusTheme.secondaryText)
+                @unknown default:
+                    Image(systemName: "tv").resizable().scaledToFit().padding(size * 0.22)
+                        .foregroundStyle(NexusTheme.secondaryText)
+                }
+            }
+            .frame(width: size, height: size)
+            .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 6))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+        } else {
+            Image(systemName: "tv")
+                .font(.system(size: size * 0.55, weight: .medium))
+                .foregroundStyle(NexusTheme.secondaryText)
+                .frame(width: size, height: size)
+                .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 6))
+        }
+    }
+
     private func channelRow(_ channel: GuideChannel) -> some View {
         VStack(spacing: 0) {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 5) {
-                Button { Task { await toggleEPG(channel) } } label: {
-                    Text(channel.name).font(.headline.bold()).foregroundStyle(NexusTheme.accentLight).lineLimit(2)
+                HStack(spacing: 7) {
+                    channelLogo(channel, size: 30)
+                    Button { Task { await toggleEPG(channel) } } label: {
+                        Text(channel.name).font(.headline.bold()).foregroundStyle(NexusTheme.accentLight).lineLimit(2)
+                    }
                 }
                 .buttonStyle(.plain)
                 Button { toggleFavorite(channel.id) } label: {
