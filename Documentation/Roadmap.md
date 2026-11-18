@@ -27,7 +27,7 @@
 - [ ] Add preview fixtures (no real credentials)
 
 ## Phase 2 — Xtream connector
-- [ ] Secure connection setup and validation
+- [ ] Secure connection setup and validation (local URL/field validation scaffolded; Keychain and server-side auth test pending)
 - [ ] Live categories and channels
 - [ ] VOD movies and categories
 - [ ] Series, seasons and episodes
