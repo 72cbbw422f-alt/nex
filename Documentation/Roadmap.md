@@ -18,7 +18,8 @@
 - [ ] Build reusable poster, backdrop, shelf and detail components
 - [x] Add searchable movie and series library grids and connect them to navigation
 - [x] Add a global search screen and connect the home search action
-- [ ] Design player, subtitle picker, playback settings and connection flows
+- [x] Add first Xtream/Jellyfin connection setup form shell (no persistence or API calls yet)
+- [ ] Design player, subtitle picker and playback settings
 - [x] Add first cinematic film/series detail-view shell
 - [x] Add first Live TV guide screen shell and connect it to mobile navigation
 - [x] Make Live TV category filters and favourite-channel controls interactive
