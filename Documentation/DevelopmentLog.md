@@ -91,3 +91,11 @@
 - Added a global search destination reachable from the home toolbar.
 - Search filters a shared sample catalogue across film and series, shows result count and an empty/no-results state, and opens the selected detail shell.
 - This is local fixture search only. Unified provider search across Xtream/Jellyfin/AIOStreams and metadata indexing remain future connector work.
+
+
+## 2026-11-18 — Shared catalogue fixture model
+
+- Added a single typed preview-catalogue model for movie and series fixtures.
+- Updated the movie library, series library and global search to consume the same fixture records, including consistent title, type, subtitle and artwork seed.
+- This removes duplicate sample lists and establishes a seam for replacing fixtures with repository-backed catalogue data.
+- The catalogue remains local preview data; no Xtream, Jellyfin/AIOStreams or TMDB requests are made.
