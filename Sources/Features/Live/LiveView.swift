@@ -235,7 +235,7 @@ struct LiveView: View {
             )
         } catch {
             epgByChannel[channel.id] = []
-            loadMessage = "EPG kunde inte hämtas för \\(channel.name): \\(error.localizedDescription)"
+            loadMessage = "EPG kunde inte hämtas för \(channel.name): \(error.localizedDescription)"
         }
     }
 
