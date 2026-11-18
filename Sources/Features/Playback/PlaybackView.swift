@@ -7,13 +7,23 @@ private final class PlaybackStatusModel: ObservableObject {
     @Published private(set) var isLoading = true
     @Published private(set) var errorMessage: String?
     @Published private(set) var waitingMessage = "Ansluter till kanalen…"
+    @Published private(set) var audioTracks: [PlaybackTrack] = []
+    @Published private(set) var subtitleTracks: [PlaybackTrack] = []
 
     private let player: AVPlayer
+    private let coordinator: PlaybackCoordinator
     private var itemObservation: NSKeyValueObservation?
     private var timeControlObservation: NSKeyValueObservation?
 
     init(player: AVPlayer) {
         self.player = player
+        let engine = AVPlayerPlaybackEngine(player: player)
+        coordinator = PlaybackCoordinator(engine: engine)
+        coordinator.onTracksChanged = { [weak self] in
+            guard let self else { return }
+            self.audioTracks = self.coordinator.audioTracks
+            self.subtitleTracks = self.coordinator.subtitleTracks
+        }
         timeControlObservation = player.observe(\.timeControlStatus, options: [.initial, .new]) { [weak self] player, _ in
             Task { @MainActor in
                 guard let self, self.errorMessage == nil else { return }
@@ -36,17 +46,24 @@ private final class PlaybackStatusModel: ObservableObject {
         errorMessage = nil
         isLoading = true
         waitingMessage = "Ansluter till kanalen…"
-        player.replaceCurrentItem(with: AVPlayerItem(url: url))
+        coordinator.start(url: url)
         observeCurrentItem()
-        player.play()
     }
 
     func retry(url: URL) {
         start(url: url)
     }
 
+    func selectAudioTrack(_ track: PlaybackTrack) {
+        _ = coordinator.selectAudioTrack(id: track.id)
+    }
+
+    func selectSubtitleTrack(_ track: PlaybackTrack?) {
+        _ = coordinator.selectSubtitleTrack(id: track?.id)
+    }
+
     func stop() {
-        player.pause()
+        coordinator.pause()
         itemObservation = nil
         timeControlObservation = nil
     }
@@ -89,6 +106,70 @@ struct PlaybackView: View {
         _playbackState = StateObject(wrappedValue: PlaybackStatusModel(player: player))
     }
 
+    @ViewBuilder
+    private var trackControls: some View {
+        if !playbackState.audioTracks.isEmpty || !playbackState.subtitleTracks.isEmpty {
+            HStack(spacing: 8) {
+                if !playbackState.audioTracks.isEmpty {
+                    Menu {
+                        ForEach(playbackState.audioTracks) { track in
+                            Button {
+                                playbackState.selectAudioTrack(track)
+                            } label: {
+                                if track.isSelected {
+                                    Label(track.displayName, systemImage: "checkmark")
+                                } else {
+                                    Text(track.displayName)
+                                }
+                            }
+                        }
+                    } label: {
+                        Label("Ljud", systemImage: "waveform")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(.black.opacity(0.62), in: Capsule())
+                    }
+                    .accessibilityLabel("Välj ljudspår")
+                }
+
+                if !playbackState.subtitleTracks.isEmpty {
+                    Menu {
+                        Button {
+                            playbackState.selectSubtitleTrack(nil)
+                        } label: {
+                            if !playbackState.subtitleTracks.contains(where: \\.isSelected) {
+                                Label("Av", systemImage: "checkmark")
+                            } else {
+                                Text("Av")
+                            }
+                        }
+                        ForEach(playbackState.subtitleTracks) { track in
+                            Button {
+                                playbackState.selectSubtitleTrack(track)
+                            } label: {
+                                if track.isSelected {
+                                    Label(track.displayName, systemImage: "checkmark")
+                                } else {
+                                    Text(track.displayName)
+                                }
+                            }
+                        }
+                    } label: {
+                        Label("Undertexter", systemImage: "captions.bubble")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(.black.opacity(0.62), in: Capsule())
+                    }
+                    .accessibilityLabel("Välj undertextspår")
+                }
+            }
+        }
+    }
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
@@ -122,6 +203,7 @@ struct PlaybackView: View {
                             .foregroundStyle(NexusTheme.accentLight)
                     }
                     Spacer()
+                    trackControls
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 14)
