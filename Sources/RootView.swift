@@ -13,9 +13,9 @@ struct RootView: View {
         TabView {
             NavigationStack { HomeView() }
                 .tabItem { Label("Hem", systemImage: "house.fill") }
-            NavigationStack { PlaceholderScreen(title: "Filmer", symbol: "film", detail: "Ett gemensamt filmbibliotek från alla dina källor.") }
+            NavigationStack { MediaLibraryView(kind: .movies) }
                 .tabItem { Label("Filmer", systemImage: "film") }
-            NavigationStack { PlaceholderScreen(title: "Serier", symbol: "tv", detail: "Serier, säsonger och avsnitt från hela ditt bibliotek.") }
+            NavigationStack { MediaLibraryView(kind: .series) }
                 .tabItem { Label("Serier", systemImage: "rectangle.stack") }
             NavigationStack { LiveView() }
                 .tabItem { Label("Live", systemImage: "dot.radiowaves.left.and.right") }
@@ -31,7 +31,7 @@ struct RootView: View {
                 .tabItem { Label("Hem", systemImage: "house.fill") }
             NavigationStack { LiveView() }
                 .tabItem { Label("Live TV", systemImage: "dot.radiowaves.left.and.right") }
-            NavigationStack { PlaceholderScreen(title: "Filmer", symbol: "film", detail: "Ditt samlade filmbibliotek.") }
+            NavigationStack { MediaLibraryView(kind: .movies) }
                 .tabItem { Label("Filmer", systemImage: "film") }
             NavigationStack { PlaceholderScreen(title: "Serier", symbol: "tv", detail: "Serier, säsonger och avsnitt.") }
                 .tabItem { Label("Serier", systemImage: "rectangle.stack") }
