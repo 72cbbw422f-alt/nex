@@ -320,3 +320,12 @@
 - Timeline response application now verifies the active provider, server and username as well as the request token.
 - Concurrent requests for the same EPG channel from the timeline and expanded channel panel are not yet deduplicated; that remains the next networking refinement.
 - GitHub Actions validation is pending. Real Xtream-provider and physical-device behavior remain unverified.
+
+
+## 2026-11-18 — Shared in-flight EPG request coordination
+
+- Added an actor-based coordinator for short-EPG requests, keyed by provider, normalized server, username and channel ID.
+- The six-hour timeline and expanded channel panel now share the same in-flight request when they ask for the same channel at the same time. This prevents duplicate API calls during overlapping UI activity.
+- Existing profile-scoped cache behavior and freshness windows remain responsible for reuse after a request completes.
+- Marked the provider request values and EPG response models Sendable for the concurrency boundary.
+- iOS/tvOS CI validation is pending; real-provider behavior remains to be verified.
