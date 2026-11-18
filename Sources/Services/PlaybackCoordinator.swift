@@ -82,6 +82,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
     private var audioTrackCache: [PlaybackTrack] = []
     private var subtitleTrackCache: [PlaybackTrack] = []
     private var selectionLoadTask: Task<Void, Never>?
+    var onTracksChanged: (() -> Void)?
 
     init(player: AVPlayer = AVPlayer()) {
         self.player = player
@@ -126,6 +127,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
         subtitleOptions = [:]
         audioTrackCache = []
         subtitleTrackCache = []
+        onTracksChanged?()
 
         let item = AVPlayerItem(url: url)
         player.replaceCurrentItem(with: item)
@@ -141,6 +143,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
             self.subtitleOptions = Self.optionMap(for: loadedSubtitles, prefix: "subtitle")
             self.audioTrackCache = Self.tracks(from: loadedAudio, prefix: "audio", kind: .audio, selected: item.currentMediaSelection)
             self.subtitleTrackCache = Self.tracks(from: loadedSubtitles, prefix: "subtitle", kind: .subtitle, selected: item.currentMediaSelection)
+            self.onTracksChanged?()
         }
     }
 
@@ -149,6 +152,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
         guard let option = audioOptions[id], let group = audioGroup, let item = player.currentItem else { return false }
         item.select(option, in: group)
         audioTrackCache = Self.tracks(from: group, prefix: "audio", kind: .audio, selected: item.currentMediaSelection)
+        onTracksChanged?()
         return true
     }
 
@@ -162,6 +166,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
             item.select(nil, in: group)
         }
         subtitleTrackCache = Self.tracks(from: group, prefix: "subtitle", kind: .subtitle, selected: item.currentMediaSelection)
+        onTracksChanged?()
         return true
     }
 
@@ -228,6 +233,10 @@ final class PlaybackCoordinator {
     var audioTracks: [PlaybackTrack] { engine.audioTracks }
     var subtitleTracks: [PlaybackTrack] { engine.subtitleTracks }
     var avPlayer: AVPlayer? { (engine as? AVPlayerPlaybackEngine)?.player }
+    var onTracksChanged: (() -> Void)? {
+        get { (engine as? AVPlayerPlaybackEngine)?.onTracksChanged }
+        set { (engine as? AVPlayerPlaybackEngine)?.onTracksChanged = newValue }
+    }
 
     func start(url: URL) {
         engine.load(url)
