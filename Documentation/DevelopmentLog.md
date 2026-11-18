@@ -217,3 +217,12 @@
 - When no provider profile exists, the sample preview retains its two illustrative favourites; loading a provider profile restores only that profile's saved favourites.
 - Favourite channel IDs are stored as a sorted integer array. No credentials are included in the preference key or stored value.
 - CI validation is pending. Real-provider testing and profile-switching verification remain outstanding.
+
+
+## 2026-11-18 — EPG timeline time-window navigation
+
+- Added previous/next controls that shift the shared six-hour timeline in six-hour increments, plus a Nu control to return to the current window.
+- The visible date is shown in the timeline heading.
+- Moving to another window clears the in-memory EPG cache for the visible timeline channels and requests fresh short-EPG data for the selected window.
+- Xtream `get_short_epg` does not accept a requested start timestamp in this adapter. Providers may therefore return only their current/upcoming listings; historical-window coverage is not guaranteed. This remains a provider-specific validation item rather than a claim of full historical EPG support.
+- CI validation is pending.
