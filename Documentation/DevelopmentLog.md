@@ -329,3 +329,12 @@
 - Existing profile-scoped cache behavior and freshness windows remain responsible for reuse after a request completes.
 - Marked the provider request values and EPG response models Sendable for the concurrency boundary.
 - iOS/tvOS CI validation is pending; real-provider behavior remains to be verified.
+
+
+## 2026-11-18 — Xtream live playback locator foundation
+
+- Extended the live stream response model to retain the optional `container_extension` supplied by the provider.
+- Added a dedicated Xtream live playback locator for the `/live/{username}/{password}/{stream_id}.{extension}` URL shape.
+- The locator rejects missing or malformed extensions instead of assuming a stream format. It percent-encodes credentials as individual path segments and does not log or persist the generated URL.
+- This change only constructs a candidate URL. It does not establish that a provider accepts the path, that a stream is playable, or that a player engine supports its codec/container.
+- iOS/tvOS CI and verification against a real provider are pending.
