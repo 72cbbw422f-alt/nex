@@ -9,6 +9,7 @@ private final class PlaybackStatusModel: ObservableObject {
     @Published private(set) var waitingMessage = "Ansluter till kanalen…"
     @Published private(set) var audioTracks: [PlaybackTrack] = []
     @Published private(set) var subtitleTracks: [PlaybackTrack] = []
+    @Published private(set) var hasLoadedTracks = false
 
     private let player: AVPlayer
     private let coordinator: PlaybackCoordinator
@@ -23,6 +24,7 @@ private final class PlaybackStatusModel: ObservableObject {
             guard let self else { return }
             self.audioTracks = self.coordinator.audioTracks
             self.subtitleTracks = self.coordinator.subtitleTracks
+            self.hasLoadedTracks = true
         }
         timeControlObservation = player.observe(\.timeControlStatus, options: [.initial, .new]) { [weak self] player, _ in
             Task { @MainActor in
@@ -46,6 +48,9 @@ private final class PlaybackStatusModel: ObservableObject {
         errorMessage = nil
         isLoading = true
         waitingMessage = "Ansluter till kanalen…"
+        audioTracks = []
+        subtitleTracks = []
+        hasLoadedTracks = false
         coordinator.start(url: url)
         observeCurrentItem()
     }
@@ -108,9 +113,11 @@ struct PlaybackView: View {
 
     @ViewBuilder
     private var trackControls: some View {
-        if !playbackState.audioTracks.isEmpty || !playbackState.subtitleTracks.isEmpty {
+        if playbackState.hasLoadedTracks {
             HStack(spacing: 8) {
-                if !playbackState.audioTracks.isEmpty {
+                if playbackState.audioTracks.isEmpty {
+                    trackStatusLabel("Ljud saknas", icon: "waveform")
+                } else {
                     Menu {
                         ForEach(playbackState.audioTracks) { track in
                             Button {
@@ -124,17 +131,14 @@ struct PlaybackView: View {
                             }
                         }
                     } label: {
-                        Label("Ljud", systemImage: "waveform")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(.black.opacity(0.62), in: Capsule())
+                        trackMenuLabel("Ljud · \(playbackState.audioTracks.count)", icon: "waveform")
                     }
                     .accessibilityLabel("Välj ljudspår")
                 }
 
-                if !playbackState.subtitleTracks.isEmpty {
+                if playbackState.subtitleTracks.isEmpty {
+                    trackStatusLabel("Inga undertexter", icon: "captions.bubble")
+                } else {
                     Menu {
                         Button {
                             playbackState.selectSubtitleTrack(nil)
@@ -157,17 +161,33 @@ struct PlaybackView: View {
                             }
                         }
                     } label: {
-                        Label("Undertexter", systemImage: "captions.bubble")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(.black.opacity(0.62), in: Capsule())
+                        trackMenuLabel("Undertexter · \(playbackState.subtitleTracks.count)", icon: "captions.bubble")
                     }
                     .accessibilityLabel("Välj undertextspår")
                 }
             }
+        } else if playbackState.isLoading {
+            trackStatusLabel("Läser spår…", icon: "waveform")
         }
+    }
+
+    private func trackMenuLabel(_ title: String, icon: String) -> some View {
+        Label(title, systemImage: icon)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(.black.opacity(0.62), in: Capsule())
+    }
+
+    private func trackStatusLabel(_ title: String, icon: String) -> some View {
+        Label(title, systemImage: icon)
+            .font(.caption.weight(.medium))
+            .foregroundStyle(.white.opacity(0.78))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 9)
+            .background(.black.opacity(0.48), in: Capsule())
+            .accessibilityElement(children: .combine)
     }
 
     var body: some View {
