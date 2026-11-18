@@ -100,3 +100,13 @@ Use a separate branch or isolated target; do not replace the working AVPlayer pa
 Start the isolated spike with **VLCKit 4.0**, while retaining KSPlayer as a feature-rich alternative pending written licence and toolchain clearance. This is a recommendation for testing order only, not a final engine selection.
 
 Do not add any playback package to the production NEXUS targets until the spike passes.
+
+
+## 2026-11-18 — VLCKit distribution artifact audit
+
+- Rechecked the official VideoLAN upstream Package.swift and the live VideoLAN unstable download index.
+- The upstream manifest currently pins the binary URL VLCKit-4.0-20260831-1526.zip with checksum c61a42052ec4c1315325fba81f8893f4ccf639d92bf61dd1b3c37c3a2f26b8e3.
+- The official unstable directory also lists newer 4.0 builds dated 2026-09-29 and 2026-11-09. The manifest therefore does not point at the newest artifact visible in the directory. Do not silently substitute the newer archive: it needs its own verified checksum and compatibility audit.
+- The manifest's August 31 archive is listed at approximately 920.6 MB. The November 9 archive is approximately 910.2 MB. This is a substantial dependency download and increases CI/cache, distribution and update costs.
+- The public index confirms the artifacts exist and their approximate sizes, but does not prove their XCFramework contents or platform slices. iOS device/simulator and tvOS device/simulator support still must be inspected from the actual archive.
+- Current conclusion: VLCKit remains the best candidate for an isolated test, but the SPM artifact is not yet cleared for integration. Next gate is archive integrity/checksum plus XCFramework slice inspection and a minimal CI package-resolution/build spike. Keep AVPlayer untouched.
