@@ -107,3 +107,11 @@
 ## Definition of done
 
 A phase is complete only when its code is committed, builds successfully for the relevant target(s), has documented tests, and its known limitations are recorded.
+
+
+## Xtream request resilience and timeline request ownership
+
+- Added one bounded retry after a transient URLSession network failure (timeout, DNS/host/connectivity loss) and after an HTTP 5xx response, with a 500 ms delay. Authentication and other HTTP 4xx responses, malformed JSON and non-transient errors are not retried.
+- Added a request UUID to timeline loads so only the latest timeline request can update EPG cache entries, status text and loading state. The request also verifies provider, server and username after each await.
+- Concurrent EPG deduplication between the timeline and expanded channel panel remains a separate follow-up; both surfaces still share the profile-scoped cache, but simultaneous cache misses can still issue duplicate calls.
+- iOS/tvOS CI and real-provider/device validation pending.
