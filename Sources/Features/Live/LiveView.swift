@@ -223,7 +223,7 @@ struct LiveView: View {
     }
 
     private var timelineChannels: [GuideChannel] {
-        Array(visibleChannels.filter { epgByChannel[epgCacheKey(for: $0.id)] != nil && !(epgByChannel[$0.id]?.isEmpty ?? true) }.prefix(8))
+        Array(visibleChannels.filter { epgByChannel[epgCacheKey(for: $0.id)] != nil && !(epgByChannel[epgCacheKey(for: $0.id)]?.isEmpty ?? true) }.prefix(8))
     }
 
     private var timelineStart: Date {
@@ -333,16 +333,16 @@ struct LiveView: View {
             let cacheIsFresh = epgFetchedAt[epgCacheKey(for: channel.id)].map { Date().timeIntervalSince($0) < (epgErrors[epgCacheKey(for: channel.id)] == nil ? 300 : 60) } ?? false
             if cacheIsFresh { continue }
             do {
-                epgByChannel[channel.id] = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
-                epgErrors[channel.id] = nil
-                epgFetchedAt[channel.id] = Date()
+                epgByChannel[epgCacheKey(for: channel.id)] = try await XtreamConnector().shortEPG(configuration: configuration, credentials: credentials, streamID: channel.id, limit: 8)
+                epgErrors[epgCacheKey(for: channel.id)] = nil
+                epgFetchedAt[epgCacheKey(for: channel.id)] = Date()
             } catch {
-                epgByChannel[channel.id] = []
-                epgErrors[channel.id] = error.localizedDescription
-                epgFetchedAt[channel.id] = Date()
+                epgByChannel[epgCacheKey(for: channel.id)] = []
+                epgErrors[epgCacheKey(for: channel.id)] = error.localizedDescription
+                epgFetchedAt[epgCacheKey(for: channel.id)] = Date()
             }
         }
-        let available = channelsToLoad.filter { !(epgByChannel[$0.id]?.isEmpty ?? true) }.count
+        let available = channelsToLoad.filter { !(epgByChannel[epgCacheKey(for: $0.id)]?.isEmpty ?? true) }.count
         timelineMessage = "Visar programdata för \(available) av \(channelsToLoad.count) kanaler. Högst 8 kanaler hämtas per omgång."
     }
     private var guide: some View {
@@ -450,14 +450,14 @@ struct LiveView: View {
                 Spacer()
                 if epgLoadingChannel == channel.id {
                     ProgressView().tint(NexusTheme.accentLight)
-                } else if epgFetchedAt[channel.id] != nil {
+                } else if epgFetchedAt[epgCacheKey(for: channel.id)] != nil {
                     Text("Uppdaterad")
                         .font(.caption2)
                         .foregroundStyle(NexusTheme.secondaryText)
                 }
             }
 
-            if let programs = epgByChannel[channel.id], !programs.isEmpty {
+            if let programs = epgByChannel[epgCacheKey(for: channel.id)], !programs.isEmpty {
                 ForEach(programs.prefix(5)) { program in
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(alignment: .firstTextBaseline, spacing: 9) {
@@ -493,8 +493,8 @@ struct LiveView: View {
                         .foregroundStyle(NexusTheme.secondaryText)
                 }
                 .padding(.vertical, 5)
-            } else if epgByChannel[channel.id] != nil {
-                Text(epgErrors[channel.id].map { "Programguiden kunde inte hämtas: \($0)" } ?? "Leverantören har inte lämnat någon programinformation för kanalen.")
+            } else if epgByChannel[epgCacheKey(for: channel.id)] != nil {
+                Text(epgErrors[epgCacheKey(for: channel.id)].map { "Programguiden kunde inte hämtas: \($0)" } ?? "Leverantören har inte lämnat någon programinformation för kanalen.")
                     .font(.caption)
                     .foregroundStyle(NexusTheme.secondaryText)
             } else {
@@ -522,7 +522,7 @@ struct LiveView: View {
         }
         expandedEPGChannel = channel.id
         guard usingProviderData, let profile = activeProfile else { return }
-        let cacheIsFresh = epgFetchedAt[channel.id].map { Date().timeIntervalSince($0) < (epgErrors[channel.id] == nil ? 300 : 60) } ?? false
+        let cacheIsFresh = epgFetchedAt[epgCacheKey(for: channel.id)].map { Date().timeIntervalSince($0) < (epgErrors[epgCacheKey(for: channel.id)] == nil ? 300 : 60) } ?? false
         if cacheIsFresh { return }
         guard let password = try? KeychainCredentialStore.shared.password(
             provider: profile.provider, baseURL: profile.baseURL, username: profile.username
@@ -531,15 +531,15 @@ struct LiveView: View {
         defer { epgLoadingChannel = nil }
         let configuration = ProviderConnectionConfiguration(provider: profile.provider, baseURL: profile.baseURL, username: profile.username)
         do {
-            epgByChannel[channel.id] = try await XtreamConnector().shortEPG(
+            epgByChannel[epgCacheKey(for: channel.id)] = try await XtreamConnector().shortEPG(
                 configuration: configuration, credentials: ProviderCredentials(password: password), streamID: channel.id
             )
-            epgErrors[channel.id] = nil
-            epgFetchedAt[channel.id] = Date()
+            epgErrors[epgCacheKey(for: channel.id)] = nil
+            epgFetchedAt[epgCacheKey(for: channel.id)] = Date()
         } catch {
-            epgByChannel[channel.id] = []
-            epgErrors[channel.id] = error.localizedDescription
-            epgFetchedAt[channel.id] = Date()
+            epgByChannel[epgCacheKey(for: channel.id)] = []
+            epgErrors[epgCacheKey(for: channel.id)] = error.localizedDescription
+            epgFetchedAt[epgCacheKey(for: channel.id)] = Date()
             loadMessage = "EPG kunde inte hämtas för \(channel.name): \(error.localizedDescription)"
         }
     }
