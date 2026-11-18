@@ -34,15 +34,34 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(engine.calls, ["seek"])
     }
 
-    func testPlaybackStateIsReadFromEngine() {
+    func testPlaybackStateAndTracksAreExposedWithoutEngineTypes() {
         let engine = FakePlaybackEngine()
         let coordinator = PlaybackCoordinator(engine: engine)
+        let audio = PlaybackTrack(id: "audio-en", kind: .audio, displayName: "English", languageCode: "en", isSelected: true)
+        let subtitles = PlaybackTrack(id: "subtitle-sv", kind: .subtitle, displayName: "Svenska", languageCode: "sv")
 
         engine.currentTime = 45
         engine.isPlaying = true
+        engine.audioTracks = [audio]
+        engine.subtitleTracks = [subtitles]
+        engine.state = .buffering
 
         XCTAssertEqual(coordinator.currentTime, 45)
         XCTAssertTrue(coordinator.isPlaying)
+        XCTAssertEqual(coordinator.state, .buffering)
+        XCTAssertEqual(coordinator.audioTracks, [audio])
+        XCTAssertEqual(coordinator.subtitleTracks, [subtitles])
+    }
+
+    func testTrackSelectionIsForwardedToEngine() {
+        let engine = FakePlaybackEngine()
+        let coordinator = PlaybackCoordinator(engine: engine)
+
+        XCTAssertTrue(coordinator.selectAudioTrack(id: "audio-en"))
+        XCTAssertTrue(coordinator.selectSubtitleTrack(id: "subtitle-sv"))
+        XCTAssertTrue(coordinator.selectSubtitleTrack(id: nil))
+        XCTAssertEqual(engine.selectedAudioID, "audio-en")
+        XCTAssertEqual(engine.selectedSubtitleIDs, ["subtitle-sv", "off"])
     }
 }
 
@@ -50,6 +69,11 @@ final class PlaybackCoordinatorTests: XCTestCase {
 private final class FakePlaybackEngine: PlaybackEngine {
     var currentTime: TimeInterval = 0
     var isPlaying = false
+    var state: PlaybackEngineState = .idle
+    var audioTracks: [PlaybackTrack] = []
+    var subtitleTracks: [PlaybackTrack] = []
+    var selectedAudioID: String?
+    var selectedSubtitleIDs: [String] = []
     var loadedURL: URL?
     var lastSeek: TimeInterval = 0
     var calls: [String] = []
@@ -73,5 +97,17 @@ private final class FakePlaybackEngine: PlaybackEngine {
         lastSeek = seconds
         currentTime = seconds
         calls.append("seek")
+    }
+
+    func selectAudioTrack(id: String) -> Bool {
+        selectedAudioID = id
+        calls.append("select-audio")
+        return true
+    }
+
+    func selectSubtitleTrack(id: String?) -> Bool {
+        selectedSubtitleIDs.append(id ?? "off")
+        calls.append("select-subtitle")
+        return true
     }
 }
