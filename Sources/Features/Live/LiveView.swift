@@ -194,7 +194,7 @@ struct LiveView: View {
                         }
                         ForEach(timelineChannels) { channel in
                             HStack(spacing: 0) {
-                                HStack(spacing: 6) { channelLogo(channel, size: 22); Text(channel.name).font(.caption.weight(.semibold)).foregroundStyle(.white).lineLimit(2) }.frame(width: 112, alignment: .leading)
+                                HStack(spacing: 6) { channelLogo(channel, size: 22); Text(channel.name).font(.caption.weight(.semibold)).foregroundStyle(.white).lineLimit(2) }.frame(width: channelColumnWidth, alignment: .leading)
                                 timelineRow(for: channel)
                             }
                         }
@@ -397,7 +397,7 @@ struct LiveView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(favoriteIDs.contains(channel.id) ? "Ta bort favorit" : "Lägg till favorit")
             }
-            .frame(width: isCompactWidth ? 94 : 102, alignment: .leading)
+            .frame(width: channelColumnWidth, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(usingProviderData ? "Visa programguide" : "Exempelkanal")
