@@ -145,19 +145,19 @@ struct LiveView: View {
                     VStack(alignment: .leading, spacing: 7) {
                         HStack(spacing: 0) {
                             Text("KANAL").font(.caption2.bold()).foregroundStyle(NexusTheme.secondaryText).frame(width: 112, alignment: .leading)
-                            Text("PROGRAM").font(.caption2.bold()).foregroundStyle(NexusTheme.secondaryText).frame(width: timelineWidth, alignment: .leading)
+                            HStack(spacing: 0) {
+                                ForEach(0..<7, id: \\.self) { hour in
+                                    Text(timelineStart.addingTimeInterval(Double(hour) * 3600).formatted(date: .omitted, time: .shortened))
+                                        .font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit())
+                                        .foregroundStyle(NexusTheme.secondaryText)
+                                        .frame(width: timelineHourWidth, alignment: .leading)
+                                }
+                            }.frame(width: timelineWidth, alignment: .leading)
                         }
                         ForEach(timelineChannels) { channel in
                             HStack(spacing: 0) {
                                 Text(channel.name).font(.caption.weight(.semibold)).foregroundStyle(.white).lineLimit(2).frame(width: 112, alignment: .leading)
-                                HStack(spacing: 5) {
-                                    ForEach(epgByChannel[channel.id] ?? []) { program in
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(program.startTimestamp?.formatted(date: .omitted, time: .shortened) ?? "--:--").font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit()).foregroundStyle(NexusTheme.accentLight)
-                                            Text(program.title).font(.caption2.weight(.semibold)).foregroundStyle(.white).lineLimit(2)
-                                        }.padding(7).frame(width: timelineCardWidth(program), height: 54, alignment: .leading).background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 8))
-                                    }
-                                }.frame(height: 54, alignment: .leading)
+                                timelineRow(for: channel)
                             }
                         }
                     }
@@ -170,11 +170,43 @@ struct LiveView: View {
         Array(visibleChannels.filter { epgByChannel[$0.id] != nil && !(epgByChannel[$0.id]?.isEmpty ?? true) }.prefix(8))
     }
 
-    private var timelineWidth: CGFloat { max(520, CGFloat(timelineChannels.count) * 180) }
+    private var timelineStart: Date {
+        Calendar.current.dateInterval(of: .hour, for: Date())?.start ?? Date()
+    }
 
-    private func timelineCardWidth(_ program: XtreamEPGProgram) -> CGFloat {
-        guard let start = program.startTimestamp, let end = program.endTimestamp else { return 150 }
-        return min(280, max(105, CGFloat(end.timeIntervalSince(start) / 60) * 2.0))
+    private let timelineHourWidth: CGFloat = 120
+    private var timelineWidth: CGFloat { timelineHourWidth * 6 }
+
+    private func timelineRow(for channel: GuideChannel) -> some View {
+        let programs = (epgByChannel[channel.id] ?? []).sorted {
+            ($0.startTimestamp ?? .distantPast) < ($1.startTimestamp ?? .distantPast)
+        }
+        return HStack(spacing: 0) {
+            ForEach(programs) { program in
+                if let start = program.startTimestamp, let end = program.endTimestamp, end > timelineStart,
+                   start < timelineStart.addingTimeInterval(6 * 3600) {
+                    let clippedStart = max(start, timelineStart)
+                    let clippedEnd = min(end, timelineStart.addingTimeInterval(6 * 3600))
+                    if clippedStart > timelineStart {
+                        Color.clear.frame(width: CGFloat(clippedStart.timeIntervalSince(timelineStart) / 3600) * timelineHourWidth)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(start.formatted(date: .omitted, time: .shortened))
+                            .font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit())
+                            .foregroundStyle(NexusTheme.accentLight)
+                        Text(program.title).font(.caption2.weight(.semibold)).foregroundStyle(.white).lineLimit(2)
+                    }
+                    .padding(6)
+                    .frame(width: max(48, CGFloat(clippedEnd.timeIntervalSince(clippedStart) / 3600) * timelineHourWidth - 3), height: 54, alignment: .leading)
+                    .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 7))
+                }
+            }
+        }
+        .frame(width: timelineWidth, height: 54, alignment: .leading)
+        .clipped()
+        .overlay(alignment: .leading) {
+            Rectangle().fill(Color.red.opacity(0.9)).frame(width: 1.5)
+        }
     }
 
     @MainActor
