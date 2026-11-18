@@ -76,3 +76,11 @@
 - Favourites filter has an explicit empty state.
 - Current programme progress and next-programme fields remain sample fixtures pending a real provider/EPG connector.
 - Favourite state is currently view-local and not persisted; persistence will be added with the real channel model and settings store.
+
+
+## 2026-11-18 — Searchable library screens
+
+- Added separate movie and series library screens with responsive adaptive poster grids.
+- Added local title search and navigation from each card to the media detail shell.
+- Connected both mobile tabs and Apple TV library destinations to the new screens.
+- The screens currently use fixture entries; provider catalogue ingestion, real artwork and metadata remain unimplemented.
