@@ -54,3 +54,16 @@
 - The design reference is the visual acceptance baseline. Adapt responsively for iPhone, iPad and Apple TV without arbitrary redesign.
 - Added `Documentation/DesignDirection.md` as the source of truth for colors, layouts, reusable components and acceptance criteria.
 - These are approved design requirements, not yet implemented production UI. Existing scaffold remains an early placeholder until rebuilt to this specification.
+
+
+## 2026-11-18 — First detail and Live TV navigation implementation
+
+- Rebuilt the home screen around the approved deep-navy and violet design system, including a cinematic hero, Live nu shelf, continue-watching and curated shelves.
+- Added a first Live TV guide screen shell with channel group chips and now/next rows with progress indicators. It currently uses illustrative sample data; no IPTV provider or EPG is connected.
+- Added a first film/series detail shell with synopsis, metadata chips, technical metadata placeholders, cast section, related content and episode rows for series. It currently uses sample content; no TMDB or provider metadata is connected.
+- Home shelf cards now navigate to the detail shell.
+- Added Apple TV navigation destinations for Home, Live TV, Films, Series and My List.
+- CI caught a SwiftUI font modifier compile error; corrected it from `.subheadline.semibold()` to `.subheadline.weight(.semibold)`.
+- The corrected iOS simulator build and the detail-view iOS/tvOS simulator build completed successfully. A later navigation commit has a new CI run in progress.
+- Earlier failed CI runs correspond to the pre-fix commits and are superseded by the successful corrected builds.
+- No real streaming, metadata, EPG, subtitle or BingeLog integration is implemented yet.
