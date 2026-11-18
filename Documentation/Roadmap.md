@@ -39,7 +39,7 @@
 - [x] Decode EPG IDs and timestamps from string or numeric JSON values with deterministic fallback identity
 - [ ] Full EPG timeline/grid and catch-up capability detection
 - [x] Add explicit Xtream live-stream playback locator with provider-supplied container extension (iOS/tvOS simulator CI passed)
-- [x] Add four XCTest cases for Xtream playback URL construction, credential encoding, extension validation and invalid input (corrected build awaiting CI verification)
+- [x] Add four XCTest cases for Xtream playback URL construction, credential encoding, extension validation and invalid input (CI passed)
 
 ## Phase 3 — Jellyfin / AIOMetadata connector
 - [ ] Validate actual server API and authentication mode
@@ -61,7 +61,7 @@
 - [ ] Pin an exact KSPlayer release and verify its Swift tools/Xcode compatibility
 - [ ] Build a minimal AVPlayer HLS proof-of-concept behind the playback abstraction
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
-- [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (UI integration and CI verification pending)
+- [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (iOS/tvOS build and Xtream locator XCTest CI passed)
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
 - [ ] Infuse external-player hand-off and callback validation
 - [ ] Subtitle preferences with ordered language priority
@@ -136,3 +136,10 @@ A phase is complete only when its code is committed, builds successfully for the
 - The builder requires an explicit, validated extension from provider data; it does not guess TS/HLS format when the provider omits it.
 - Username and password are percent-encoded as individual path segments. The resulting secret-bearing URL must remain runtime-only and must never be logged or persisted.
 - This is URL construction only: no channel player, stream probe, KSPlayer dependency or playback support claim has been added. iOS/tvOS simulator CI passed; real-provider URL verification remains pending.
+
+
+## Playback coordinator test coverage
+
+- Added fake-engine XCTest coverage for start/load ordering, pause/resume forwarding, seek forwarding, and playback state passthrough.
+- The tests validate coordinator behavior independently of AVPlayer and do not claim that a real stream has played.
+- GitHub Actions validation for this new test file is pending.
