@@ -181,15 +181,13 @@ struct LiveView: View {
         let programs = (epgByChannel[channel.id] ?? []).sorted {
             ($0.startTimestamp ?? .distantPast) < ($1.startTimestamp ?? .distantPast)
         }
-        return HStack(spacing: 0) {
+        return ZStack(alignment: .leading) {
+            Color.clear.frame(width: timelineWidth, height: 54)
             ForEach(programs) { program in
                 if let start = program.startTimestamp, let end = program.endTimestamp, end > timelineStart,
                    start < timelineStart.addingTimeInterval(6 * 3600) {
                     let clippedStart = max(start, timelineStart)
                     let clippedEnd = min(end, timelineStart.addingTimeInterval(6 * 3600))
-                    if clippedStart > timelineStart {
-                        Color.clear.frame(width: CGFloat(clippedStart.timeIntervalSince(timelineStart) / 3600) * timelineHourWidth)
-                    }
                     VStack(alignment: .leading, spacing: 4) {
                         Text(start.formatted(date: .omitted, time: .shortened))
                             .font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit())
@@ -199,6 +197,7 @@ struct LiveView: View {
                     .padding(6)
                     .frame(width: max(48, CGFloat(clippedEnd.timeIntervalSince(clippedStart) / 3600) * timelineHourWidth - 3), height: 54, alignment: .leading)
                     .background(NexusTheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 7))
+                    .offset(x: CGFloat(clippedStart.timeIntervalSince(timelineStart) / 3600) * timelineHourWidth)
                 }
             }
         }
@@ -206,6 +205,7 @@ struct LiveView: View {
         .clipped()
         .overlay(alignment: .leading) {
             Rectangle().fill(Color.red.opacity(0.9)).frame(width: 1.5)
+                .offset(x: CGFloat(Calendar.current.component(.minute, from: Date())) / 60 * timelineHourWidth)
         }
     }
 
