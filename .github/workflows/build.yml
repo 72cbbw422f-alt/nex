@@ -12,6 +12,8 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Test bounded ZIP inspector
+        run: python3 -m unittest discover -s Tests/Tools -v
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
       - name: Install XcodeGen
