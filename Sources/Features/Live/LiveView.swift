@@ -7,6 +7,11 @@ private struct GuideChannel: Identifiable {
     let groupID: String?
 }
 
+private struct GuideGroup: Identifiable {
+    let id: String
+    let title: String
+}
+
 struct LiveView: View {
     @State private var selectedGroup = "Alla"
     @State private var favoriteIDs: Set<Int> = [1, 3]
@@ -32,12 +37,12 @@ struct LiveView: View {
         return sampleChannels
     }
 
-    private var groups: [(id: String, title: String)] {
+    private var groups: [GuideGroup] {
         if !liveCategories.isEmpty {
-            return [("Alla", "Alla"), ("Favoriter", "Favoriter")] +
-                liveCategories.map { ($0.categoryID, $0.categoryName) }
+            return [GuideGroup(id: "Alla", title: "Alla"), GuideGroup(id: "Favoriter", title: "Favoriter")] +
+                liveCategories.map { GuideGroup(id: $0.categoryID, title: $0.categoryName) }
         }
-        return ["Alla", "Favoriter", "Svenska", "Sport", "Film", "Dokumentär"].map { ($0, $0) }
+        return ["Alla", "Favoriter", "Svenska", "Sport", "Film", "Dokumentär"].map { GuideGroup(id: $0, title: $0) }
     }
 
     private var visibleChannels: [GuideChannel] {
@@ -178,7 +183,7 @@ struct LiveView: View {
         activeProfile = profile
         guard let password = try? KeychainCredentialStore.shared.password(
             provider: profile.provider, baseURL: profile.baseURL, username: profile.username
-        ), let password, !password.isEmpty else {
+        ) , !password.isEmpty else {
             liveCategories = []
             liveStreams = []
             loadMessage = "Lösenord saknas i nyckelringen. Öppna Anslutningar och spara profilen igen."
