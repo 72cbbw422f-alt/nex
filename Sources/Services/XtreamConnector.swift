@@ -104,11 +104,43 @@ struct XtreamConnector: ProviderConnector {
         request.timeoutInterval = 25
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
-        let (data, response) = try await session.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            guard Self.isTransientNetworkError(error) else { throw error }
+            try await Self.waitBeforeRetry()
+            (data, response) = try await session.data(for: request)
+        }
+
         guard let http = response as? HTTPURLResponse else { throw ConnectionError.nonHTTPResponse }
+        if (500...599).contains(http.statusCode) {
+            try await Self.waitBeforeRetry()
+            let (retryData, retryResponse) = try await session.data(for: request)
+            guard let retryHTTP = retryResponse as? HTTPURLResponse else { throw ConnectionError.nonHTTPResponse }
+            guard (200..<300).contains(retryHTTP.statusCode) else { throw ConnectionError.serverRejected(retryHTTP.statusCode) }
+            do { return try JSONSerialization.jsonObject(with: retryData) }
+            catch { throw ConnectionError.invalidResponse }
+        }
         guard (200..<300).contains(http.statusCode) else { throw ConnectionError.serverRejected(http.statusCode) }
         do { return try JSONSerialization.jsonObject(with: data) }
         catch { throw ConnectionError.invalidResponse }
+    }
+
+    private static func isTransientNetworkError(_ error: Error) -> Bool {
+        guard let urlError = error as? URLError else { return false }
+        switch urlError.code {
+        case .timedOut, .cannotFindHost, .cannotConnectToHost, .networkConnectionLost,
+             .dnsLookupFailed, .notConnectedToInternet, .resourceUnavailable:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private static func waitBeforeRetry() async throws {
+        try await Task.sleep(nanoseconds: 500_000_000)
     }
 }
 
