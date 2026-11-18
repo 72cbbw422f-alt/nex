@@ -146,7 +146,7 @@ struct LiveView: View {
                         HStack(spacing: 0) {
                             Text("KANAL").font(.caption2.bold()).foregroundStyle(NexusTheme.secondaryText).frame(width: 112, alignment: .leading)
                             HStack(spacing: 0) {
-                                ForEach(0..<7, id: \\.self) { hour in
+                                ForEach(0..<7, id: \.self) { hour in
                                     Text(timelineStart.addingTimeInterval(Double(hour) * 3600).formatted(date: .omitted, time: .shortened))
                                         .font(.system(size: 9, weight: .medium, design: .rounded).monospacedDigit())
                                         .foregroundStyle(NexusTheme.secondaryText)
