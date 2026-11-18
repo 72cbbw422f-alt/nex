@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum MediaLibraryKind {
+enum MediaLibraryKind: Equatable {
     case movies
     case series
 
