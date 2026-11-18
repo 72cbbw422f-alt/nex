@@ -67,3 +67,12 @@
 - The corrected iOS simulator build and the detail-view iOS/tvOS simulator build completed successfully. A later navigation commit has a new CI run in progress.
 - Earlier failed CI runs correspond to the pre-fix commits and are superseded by the successful corrected builds.
 - No real streaming, metadata, EPG, subtitle or BingeLog integration is implemented yet.
+
+
+## 2026-11-18 — Live TV guide interaction pass
+
+- Channel group chips now filter the guide list (All, Favourites, Swedish, Sport, Film and Documentary categories).
+- Channel star controls toggle favourite membership.
+- Favourites filter has an explicit empty state.
+- Current programme progress and next-programme fields remain sample fixtures pending a real provider/EPG connector.
+- Favourite state is currently view-local and not persisted; persistence will be added with the real channel model and settings store.
