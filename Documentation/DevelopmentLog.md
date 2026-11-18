@@ -182,3 +182,13 @@
 - Kept Base64 decoding with plain-text fallback for programme titles and descriptions.
 - This is a defensive compatibility improvement; actual response variations still need validation against the user's provider.
 - Full multi-channel EPG timeline/grid remains pending. The current UI fetches short EPG on demand for one selected channel and does not yet provide a synchronized timeline.
+
+
+## 2026-11-18 — First multi-channel EPG timeline prototype
+
+- Added a dedicated timeline section above the channel browser in Live TV.
+- The user can explicitly load programme data for the currently visible channel group; requests are sequential and capped at 8 channels per load to avoid a burst of provider API calls.
+- Each channel row displays returned programme titles and start times. Programme card width is proportional to its returned duration when both timestamps exist; missing timestamps use a fixed fallback width.
+- Existing per-channel EPG expansion remains available.
+- This is an initial multi-channel visual prototype, not yet a fully time-aligned EPG grid: rows do not share a common clock origin, and a live-now marker, scrolling time ruler, pagination and provider-specific response validation remain outstanding.
+- The timeline requires a saved Xtream connection and credentials in Keychain; no sample programme times are presented as real provider data.
