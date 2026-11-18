@@ -1,0 +1,18 @@
+name: VLCKit archive audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: project-foundation
+      - name: Inspect VideoLAN ZIP using bounded HTTP Range requests
+        run: python3 Scripts/inspect_remote_zip.py
