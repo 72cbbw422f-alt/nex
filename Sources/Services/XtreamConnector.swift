@@ -242,10 +242,16 @@ enum XtreamPlaybackLocator {
             throw LocatorError.invalidExtension
         }
 
-        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
+        guard !username.isEmpty, !password.isEmpty, streamID > 0,
+              var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false),
+              let scheme = components.scheme?.lowercased(),
+              ["http", "https"].contains(scheme),
+              components.host != nil else {
             throw LocatorError.invalidURL
         }
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~"))
+        // RFC 3986 unreserved ASCII only. Unicode CharacterSet.alphanumerics can
+        // leave non-ASCII credentials unescaped in a percent-encoded path.
+        let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
         func encodeSegment(_ value: String) throws -> String {
             guard let encoded = value.addingPercentEncoding(withAllowedCharacters: allowed) else {
                 throw LocatorError.invalidURL
