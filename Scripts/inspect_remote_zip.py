@@ -216,7 +216,7 @@ def inspect(url: str) -> tuple[list[ZipEntry], dict[str, object]]:
 
 
 MAX_BINARY_PREFIX_BYTES = 4096
-CPU_TYPE_NAMES = {7: "i386", 0x01000007: "x86_64", 12: "arm", 0x0100000C: "arm64"}
+CPU_TYPE_NAMES = {7: "i386", 0x01000007: "x86_64", 12: "arm", 0x0100000C: "arm64", 0x0200000C: "arm64_32"}
 
 
 def parse_macho_architectures(data: bytes) -> list[str]:
