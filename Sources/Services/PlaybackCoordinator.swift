@@ -55,6 +55,7 @@ protocol PlaybackEngine: AnyObject {
     func load(_ url: URL)
     func play()
     func pause()
+    func stop()
     func seek(to seconds: TimeInterval)
     @discardableResult func selectAudioTrack(id: String) -> Bool
     @discardableResult func selectSubtitleTrack(id: String?) -> Bool
@@ -62,6 +63,10 @@ protocol PlaybackEngine: AnyObject {
 
 extension PlaybackEngine {
     /// Unknown or indefinite duration is represented as nil (common for live streams).
+    /// Stops playback and releases the current item when an engine supports it.
+    /// The default preserves compatibility for simple/fake engines.
+    func stop() { pause() }
+
     var duration: TimeInterval? { nil }
     var isSeekable: Bool { false }
     var state: PlaybackEngineState { isPlaying ? .playing : .paused }
@@ -224,6 +229,20 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
         player.pause()
     }
 
+    func stop() {
+        selectionLoadTask?.cancel()
+        selectionLoadTask = nil
+        audioGroup = nil
+        subtitleGroup = nil
+        audioOptions = [:]
+        subtitleOptions = [:]
+        audioTrackCache = []
+        subtitleTrackCache = []
+        player.pause()
+        player.replaceCurrentItem(with: nil)
+        onTracksChanged?()
+    }
+
     func seek(to seconds: TimeInterval) {
         guard seconds.isFinite, seconds >= 0 else { return }
         player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
@@ -267,6 +286,10 @@ final class PlaybackCoordinator {
 
     func resume() {
         engine.play()
+    }
+
+    func stop() {
+        engine.stop()
     }
 
     func seek(to seconds: TimeInterval) {
