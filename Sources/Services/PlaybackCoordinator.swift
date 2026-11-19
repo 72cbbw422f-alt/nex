@@ -119,6 +119,8 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
     private var selectionLoadTask: Task<Void, Never>?
     private var itemStatusObservation: NSKeyValueObservation?
     private var timeControlObservation: NSKeyValueObservation?
+    private var endOfPlaybackObserver: NSObjectProtocol?
+    private var didReachEnd = false
     var onStateChanged: (() -> Void)?
     var onTracksChanged: (() -> Void)?
 
@@ -158,6 +160,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
 
     var state: PlaybackEngineState {
         guard let item = player.currentItem else { return .idle }
+        if didReachEnd { return .ended }
         switch item.status {
         case .unknown:
             return .preparing
@@ -177,6 +180,9 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
 
     func load(_ url: URL) {
         selectionLoadTask?.cancel()
+        removeEndOfPlaybackObserver()
+        itemStatusObservation = nil
+        didReachEnd = false
         audioGroup = nil
         subtitleGroup = nil
         audioOptions = [:]
@@ -186,6 +192,17 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
         onTracksChanged?()
 
         let item = AVPlayerItem(url: url)
+        endOfPlaybackObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: item,
+            queue: .main
+        ) { [weak self, weak item] _ in
+            Task { @MainActor in
+                guard let self, let item, self.player.currentItem === item else { return }
+                self.didReachEnd = true
+                self.onStateChanged?()
+            }
+        }
         itemStatusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self] _, _ in
             Task { @MainActor in self?.onStateChanged?() }
         }
@@ -272,6 +289,8 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
 
     func stop() {
         selectionLoadTask?.cancel()
+        removeEndOfPlaybackObserver()
+        didReachEnd = false
         selectionLoadTask = nil
         itemStatusObservation = nil
         audioGroup = nil
@@ -288,7 +307,14 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
 
     func seek(to seconds: TimeInterval) {
         guard seconds.isFinite, seconds >= 0 else { return }
+        if didReachEnd { didReachEnd = false }
         player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
+    }
+
+    private func removeEndOfPlaybackObserver() {
+        guard let observer = endOfPlaybackObserver else { return }
+        NotificationCenter.default.removeObserver(observer)
+        endOfPlaybackObserver = nil
     }
 }
 
