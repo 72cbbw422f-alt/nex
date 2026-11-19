@@ -1,5 +1,59 @@
 import Foundation
 import VLCKit
+import UIKit
+
+/// Retains the weak VLCKit delegate for the full lifetime of the probe session.
+@MainActor
+public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
+    public let player: VLCMediaPlayer
+    private var drawableView: UIView?
+
+    public private(set) var latestState: VLCMediaPlayerState = .stopped
+    public private(set) var latestBuffering: Float = 0
+
+    public var onStateChanged: ((VLCMediaPlayerState) -> Void)?
+    public var onBufferingChanged: ((Float) -> Void)?
+
+    public override init() {
+        player = VLCMediaPlayer(options: [])
+        super.init()
+        player.delegate = self
+    }
+
+    /// The view must remain alive while the player renders into it.
+    public func attachDrawable(_ view: UIView) {
+        drawableView = view
+        player.drawable = view
+    }
+
+    public func load(_ media: VLCMedia, autoplay: Bool = false) {
+        player.stop()
+        player.media = media
+        if autoplay {
+            player.play()
+        }
+    }
+
+    public func play() { player.play() }
+    public func pause() { player.pause() }
+
+    public func stop() {
+        player.stop()
+        player.drawable = nil
+        drawableView = nil
+    }
+
+    public func mediaPlayerStateChanged(_ aNotification: Notification!) {
+        let state = player.state
+        latestState = state
+        onStateChanged?(state)
+    }
+
+    public func mediaPlayerBuffering(_ aNotification: Notification!, buffer: Float) {
+        latestBuffering = buffer
+        onBufferingChanged?(buffer)
+    }
+}
 
 /// Compile-time probe only. This target is isolated from all production NEXUS targets.
 public enum VLCKitLinkProbe {
