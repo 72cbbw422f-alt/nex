@@ -14,6 +14,7 @@ from inspect_remote_zip import (
     find_eocd,
     parse_central_directory,
     parse_central_directory_entries,
+    parse_macho_architectures,
 )
 
 
@@ -85,6 +86,21 @@ class RemoteZipInspectorTests(unittest.TestCase):
         with patch("inspect_remote_zip.request_range", side_effect=fake_range):
             result = fetch_member("https://example.invalid/archive.zip", entry, len(payload))
         self.assertEqual(plistlib.loads(result)["CFBundlePackageType"], "XFWK")
+
+
+    def test_parses_thin_arm64_macho_header(self):
+        header = struct.pack("<Iii", 0xFEEDFACF, 0x0100000C, 0)
+        self.assertEqual(parse_macho_architectures(header), ["arm64"])
+
+    def test_parses_fat_simulator_macho_header(self):
+        header = struct.pack(">II", 0xCAFEBABE, 2)
+        header += struct.pack(">iiIII", 0x0100000C, 0, 4096, 100, 12)
+        header += struct.pack(">iiIII", 0x01000007, 3, 8192, 100, 12)
+        self.assertEqual(parse_macho_architectures(header), ["arm64", "x86_64"])
+
+    def test_rejects_unknown_macho_header(self):
+        with self.assertRaises(InspectionError):
+            parse_macho_architectures(b"NOPE0000")
 
     def test_rejects_non_zip_tail(self):
         with self.assertRaises(InspectionError):
