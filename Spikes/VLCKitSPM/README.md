@@ -6,7 +6,8 @@ This directory is deliberately separate from the production NEXUS targets.
 
 - SwiftPM can resolve the pinned VideoLAN binary XCFramework.
 - XcodeGen can generate iOS and tvOS probe frameworks against the local binary package.
-- Xcode can compile and link the imported `VLCMediaPlayer` API for iOS Simulator and tvOS Simulator.
+- Xcode can compile and link the imported `VLCMediaPlayer` API and external subtitle attachment API for iOS and tvOS.
+- CI builds both simulator and generic device destinations; these are link/build checks, not physical-device runtime tests.
 
 ## What this does not prove
 
