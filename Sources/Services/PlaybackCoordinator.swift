@@ -71,6 +71,7 @@ protocol PlaybackEngine: AnyObject {
     func seek(to seconds: TimeInterval)
     @discardableResult func selectAudioTrack(id: String) -> Bool
     @discardableResult func selectSubtitleTrack(id: String?) -> Bool
+    @discardableResult func attachExternalSubtitle(from url: URL, languageCode: String?) -> Bool
 }
 
 extension PlaybackEngine {
@@ -99,6 +100,9 @@ extension PlaybackEngine {
 
     @discardableResult
     func selectSubtitleTrack(id: String?) -> Bool { false }
+
+    @discardableResult
+    func attachExternalSubtitle(from url: URL, languageCode: String? = nil) -> Bool { false }
 }
 
 /// Native AVPlayer implementation for formats supported by Apple's media stack.
@@ -347,5 +351,11 @@ final class PlaybackCoordinator {
     @discardableResult
     func selectSubtitleTrack(id: String?) -> Bool {
         engine.selectSubtitleTrack(id: id)
+    }
+
+    @discardableResult
+    func attachExternalSubtitle(from url: URL, languageCode: String? = nil) -> Bool {
+        guard capabilities.contains(.externalSubtitles) else { return false }
+        return engine.attachExternalSubtitle(from: url, languageCode: languageCode)
     }
 }
