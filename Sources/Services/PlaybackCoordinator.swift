@@ -51,6 +51,7 @@ protocol PlaybackEngine: AnyObject {
     var state: PlaybackEngineState { get }
     var audioTracks: [PlaybackTrack] { get }
     var subtitleTracks: [PlaybackTrack] { get }
+    var onStateChanged: (() -> Void)? { get set }
 
     func load(_ url: URL)
     func play()
@@ -72,6 +73,10 @@ extension PlaybackEngine {
     var state: PlaybackEngineState { isPlaying ? .playing : .paused }
     var audioTracks: [PlaybackTrack] { [] }
     var subtitleTracks: [PlaybackTrack] { [] }
+    var onStateChanged: (() -> Void)? {
+        get { nil }
+        set { }
+    }
 
     @discardableResult
     func selectAudioTrack(id: String) -> Bool { false }
@@ -92,10 +97,16 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
     private var audioTrackCache: [PlaybackTrack] = []
     private var subtitleTrackCache: [PlaybackTrack] = []
     private var selectionLoadTask: Task<Void, Never>?
+    private var itemStatusObservation: NSKeyValueObservation?
+    private var timeControlObservation: NSKeyValueObservation?
+    var onStateChanged: (() -> Void)?
     var onTracksChanged: (() -> Void)?
 
     init(player: AVPlayer = AVPlayer()) {
         self.player = player
+        timeControlObservation = player.observe(\\.timeControlStatus, options: [.initial, .new]) { [weak self] _, _ in
+            Task { @MainActor in self?.onStateChanged?() }
+        }
     }
 
     var currentTime: TimeInterval {
@@ -151,7 +162,11 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
         onTracksChanged?()
 
         let item = AVPlayerItem(url: url)
+        itemStatusObservation = item.observe(\\.status, options: [.initial, .new]) { [weak self] _, _ in
+            Task { @MainActor in self?.onStateChanged?() }
+        }
         player.replaceCurrentItem(with: item)
+        onStateChanged?()
         selectionLoadTask = Task { [weak self, weak item] in
             guard let self, let item else { return }
             async let audio = Self.loadSelectionGroup(.audible, from: item.asset)
@@ -223,15 +238,18 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
 
     func play() {
         player.play()
+        onStateChanged?()
     }
 
     func pause() {
         player.pause()
+        onStateChanged?()
     }
 
     func stop() {
         selectionLoadTask?.cancel()
         selectionLoadTask = nil
+        itemStatusObservation = nil
         audioGroup = nil
         subtitleGroup = nil
         audioOptions = [:]
@@ -241,6 +259,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
         player.pause()
         player.replaceCurrentItem(with: nil)
         onTracksChanged?()
+        onStateChanged?()
     }
 
     func seek(to seconds: TimeInterval) {
@@ -269,6 +288,10 @@ final class PlaybackCoordinator {
     var state: PlaybackEngineState { engine.state }
     var audioTracks: [PlaybackTrack] { engine.audioTracks }
     var subtitleTracks: [PlaybackTrack] { engine.subtitleTracks }
+    var onStateChanged: (() -> Void)? {
+        get { engine.onStateChanged }
+        set { engine.onStateChanged = newValue }
+    }
     var avPlayer: AVPlayer? { (engine as? AVPlayerPlaybackEngine)?.player }
     var onTracksChanged: (() -> Void)? {
         get { (engine as? AVPlayerPlaybackEngine)?.onTracksChanged }
