@@ -52,6 +52,7 @@ protocol PlaybackEngine: AnyObject {
     var audioTracks: [PlaybackTrack] { get }
     var subtitleTracks: [PlaybackTrack] { get }
     var onStateChanged: (() -> Void)? { get set }
+    var onTracksChanged: (() -> Void)? { get set }
 
     func load(_ url: URL)
     func play()
@@ -74,6 +75,10 @@ extension PlaybackEngine {
     var audioTracks: [PlaybackTrack] { [] }
     var subtitleTracks: [PlaybackTrack] { [] }
     var onStateChanged: (() -> Void)? {
+        get { nil }
+        set { }
+    }
+    var onTracksChanged: (() -> Void)? {
         get { nil }
         set { }
     }
@@ -292,10 +297,9 @@ final class PlaybackCoordinator {
         get { engine.onStateChanged }
         set { engine.onStateChanged = newValue }
     }
-    var avPlayer: AVPlayer? { (engine as? AVPlayerPlaybackEngine)?.player }
     var onTracksChanged: (() -> Void)? {
-        get { (engine as? AVPlayerPlaybackEngine)?.onTracksChanged }
-        set { (engine as? AVPlayerPlaybackEngine)?.onTracksChanged = newValue }
+        get { engine.onTracksChanged }
+        set { engine.onTracksChanged = newValue }
     }
 
     func start(url: URL) {
