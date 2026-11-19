@@ -225,7 +225,7 @@ def parse_macho_architectures(data: bytes) -> list[str]:
         raise InspectionError("Mach-O prefix is too short")
     thin = {
         b"\xce\xfa\xed\xfe": "<", b"\xfe\xed\xfa\xce": ">",
-        b"\xcf\xfa\xed\xxfe": "<", b"\xfe\xed\xfa\xcf": ">",
+        b"\xcf\xfa\xed\xfe": "<", b"\xfe\xed\xfa\xcf": ">",
     }
     fat = {
         b"\xca\xfe\xba\xbe": ">", b"\xbe\xba\xfe\xca": "<",
