@@ -14,6 +14,17 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(engine.calls, ["load", "play"])
     }
 
+    func testPlaybackStateChangesAreForwardedFromEngine() {
+        let engine = FakePlaybackEngine()
+        let coordinator = PlaybackCoordinator(engine: engine)
+        var notificationCount = 0
+        coordinator.onStateChanged = { notificationCount += 1 }
+
+        engine.emitStateChange()
+
+        XCTAssertEqual(notificationCount, 1)
+    }
+
     func testPauseAndResumeAreForwardedToEngine() {
         let engine = FakePlaybackEngine()
         let coordinator = PlaybackCoordinator(engine: engine)
@@ -92,6 +103,11 @@ private final class FakePlaybackEngine: PlaybackEngine {
     var loadedURL: URL?
     var lastSeek: TimeInterval = 0
     var calls: [String] = []
+    var onStateChanged: (() -> Void)?
+
+    func emitStateChange() {
+        onStateChanged?()
+    }
 
     func load(_ url: URL) {
         loadedURL = url
