@@ -296,8 +296,9 @@ def inspect_macho_binaries(url: str, entries: list[ZipEntry], metadata: dict[str
                 continue
             framework = library_path.rsplit("/", 1)[-1]
             executable = framework[:-10] if framework.endswith(".framework") else framework
-            binary_path = f"{root}/{identifier}/{library_path}/{executable}"
-            entry = by_name.get(binary_path)
+            framework_root = f"{root}/{identifier}/{library_path}"
+            binary_path = f"{framework_root}/{executable}"
+            entry = by_name.get(f"{framework_root}/Versions/A/{executable}") or by_name.get(binary_path)
             if entry is None:
                 raise InspectionError(f"Framework executable not found: {binary_path}")
             actual = parse_macho_architectures(fetch_member_prefix(url, entry, archive_size))
