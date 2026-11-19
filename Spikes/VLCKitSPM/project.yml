@@ -1,0 +1,41 @@
+name: VLCKitSpike
+options:
+  deploymentTarget:
+    iOS: "17.0"
+    tvOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  VLCKitBinary:
+    path: ./VLCKitBinary
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CODE_SIGNING_ALLOWED: NO
+    GENERATE_INFOPLIST_FILE: YES
+
+targets:
+  VLCKitProbe-iOS:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Sources
+    dependencies:
+      - package: VLCKitBinary
+        product: VLCKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nexusstream.spike.vlckit.ios
+
+  VLCKitProbe-tvOS:
+    type: framework
+    platform: tvOS
+    sources:
+      - path: Sources
+    dependencies:
+      - package: VLCKitBinary
+        product: VLCKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nexusstream.spike.vlckit.tvos
