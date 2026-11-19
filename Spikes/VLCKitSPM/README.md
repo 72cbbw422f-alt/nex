@@ -1,0 +1,30 @@
+# Isolated VLCKit SwiftPM link spike
+
+This directory is deliberately separate from the production NEXUS targets.
+
+## What this proves
+
+- SwiftPM can resolve the pinned VideoLAN binary XCFramework.
+- XcodeGen can generate iOS and tvOS probe frameworks against the local binary package.
+- Xcode can compile and link the imported `VLCMediaPlayer` API for iOS Simulator and tvOS Simulator.
+
+## What this does not prove
+
+A successful simulator build is not proof of physical-device playback, external SRT/VTT behavior, codec coverage, performance, signing/distribution, or LGPL compliance. Those remain separate gates.
+
+## Binary pin
+
+- Artifact: `VLCKit-4.0-20261109-1916.zip`
+- SHA-256: `1fec7232f88e706f44d9a015133e08d742166eb2666cb44915c9f570bf339463`
+- Upstream package source: VideoLAN's official VLCKit repository.
+- The archive is approximately 910 MB. The spike is opt-in through its dedicated workflow and does not add the binary to the normal NEXUS build.
+
+## Run locally on macOS
+
+```sh
+cd Spikes/VLCKitSPM
+xcodegen generate --spec project.yml
+xcodebuild -resolvePackageDependencies -project VLCKitSpike.xcodeproj
+xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
+```
