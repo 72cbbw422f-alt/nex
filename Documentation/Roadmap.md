@@ -63,6 +63,7 @@
 - [x] Add first AVPlayer-backed playback surface behind the playback abstraction (latest corrected source awaiting CI validation; real HLS/provider validation pending)
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
 - [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (iOS/tvOS build and all eight XCTest cases passed)
+- [x] Add explicit engine stop lifecycle and AVPlayer item teardown (new stop-forwarding XCTest added; latest CI pending)
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
 - [ ] Infuse external-player hand-off and callback validation
 - [ ] Subtitle preferences with ordered language priority
