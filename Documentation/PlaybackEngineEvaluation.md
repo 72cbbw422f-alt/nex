@@ -146,3 +146,18 @@ Do not add any playback package to the production NEXUS targets until the spike 
 - Corrected the ZIP64 sentinel test so it uses the actual EOCD signature rather than a literal backslash sequence.
 - The inspector now fetches only the compressed XCFramework `Info.plist` member by reading the central-directory local-header offset, validates the local/central header agreement, and inflates only bounded metadata members (1 MiB compressed / 4 MiB uncompressed caps). The actual archive's `AvailableLibraries` declares iOS device arm64, iOS simulator arm64+x86_64, tvOS device arm64 and tvOS simulator arm64+x86_64. It also declares macOS, watchOS and visionOS variants.
 - This verifies XCFramework manifest metadata, not the Mach-O contents of each binary. Next gate: inspect binary architecture headers or perform a minimal SwiftPM package-resolution/build spike on CI. Keep the 910 MB archive out of normal build CI and do not add VLCKit to production targets.
+
+
+## 2026-11-19 — Actual Mach-O architecture audit completed
+
+- The bounded remote inspector now fetches only a small prefix of each XCFramework framework executable and parses thin/universal Mach-O headers.
+- The live VideoLAN archive audit completed successfully. Every `AvailableLibraries` entry in `VLCKit.xcframework/Info.plist` was matched against the actual Mach-O CPU architecture table.
+- Verified NEXUS-relevant slices:
+  - iOS device: `arm64` matches.
+  - iOS Simulator: `arm64,x86_64` matches.
+  - tvOS device: `arm64` matches.
+  - tvOS Simulator: `arm64,x86_64` matches.
+- The same audit also verified the macOS, watchOS and visionOS entries, including the watchOS `arm64_32` architecture.
+- The archive was inspected using bounded HTTP Range requests; the full approximately 910 MB ZIP was not downloaded.
+- This closes the archive metadata and Mach-O architecture gate. It does **not** establish SwiftPM package resolution, linker compatibility, app launch, runtime playback, external subtitle behavior, physical-device performance or distribution compliance.
+- Next gate: an isolated SwiftPM resolution/link/build spike for iOS and tvOS, kept separate from production targets. AVPlayer remains unchanged until that spike and the runtime/license gates pass.
