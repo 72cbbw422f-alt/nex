@@ -104,7 +104,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
 
     init(player: AVPlayer = AVPlayer()) {
         self.player = player
-        timeControlObservation = player.observe(\\.timeControlStatus, options: [.initial, .new]) { [weak self] _, _ in
+        timeControlObservation = player.observe(\.timeControlStatus, options: [.initial, .new]) { [weak self] _, _ in
             Task { @MainActor in self?.onStateChanged?() }
         }
     }
@@ -162,7 +162,7 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
         onTracksChanged?()
 
         let item = AVPlayerItem(url: url)
-        itemStatusObservation = item.observe(\\.status, options: [.initial, .new]) { [weak self] _, _ in
+        itemStatusObservation = item.observe(\.status, options: [.initial, .new]) { [weak self] _, _ in
             Task { @MainActor in self?.onStateChanged?() }
         }
         player.replaceCurrentItem(with: item)
