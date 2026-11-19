@@ -487,3 +487,11 @@
 - The AVPlayer adapter now cancels pending media-selection loading, clears track caches, pauses playback and removes the current AVPlayerItem when stopped.
 - PlaybackCoordinator forwards the stop operation, and PlaybackView uses it when its playback session ends.
 - Added a fake-engine XCTest for stop forwarding. The CI run for this change is pending; no runtime/device playback claim is made.
+
+
+## 2026-11-19 — Playback teardown verification and first rendering boundary
+
+- The explicit playback stop lifecycle passed GitHub Actions: iOS Simulator build, tvOS Simulator build and the complete iOS unit-test suite. The new stop-forwarding test passed with the existing tests.
+- Extracted `AVPlayerPlaybackSurface` as the only view that directly hosts SwiftUI `VideoPlayer`; `PlaybackView` now composes that surface rather than embedding AVPlayer rendering itself.
+- This is an initial rendering seam, not yet a fully engine-neutral surface factory: playback status observation and track selection still use AVPlayer-specific APIs and are the next refactoring targets.
+- The source remains AVPlayer-only in production. No VLCKit runtime integration or physical-device playback has been performed.
