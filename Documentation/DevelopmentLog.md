@@ -504,3 +504,13 @@
 - PlaybackStatusModel now maps the engine-neutral `PlaybackEngineState` values to loading, buffering, and error presentation.
 - Added a coordinator unit test proving state-change notifications are forwarded from the engine.
 - CI validation is pending for this change. This refactor does not establish third-party engine playback or physical-device runtime behavior.
+
+
+## 2026-11-19 — Engine capability contract and external subtitle boundary
+
+- Added an engine-neutral capability OptionSet for seeking, embedded audio selection, embedded subtitle selection and external subtitle support.
+- PlaybackCoordinator now exposes the active engine's capabilities. AVPlayer advertises seeking and embedded track selection, but not external subtitle ingestion.
+- Added an engine-neutral external subtitle attachment method accepting a local URL and optional language code. Calls are rejected at the coordinator boundary unless the active engine advertises external subtitle support.
+- Added fake-engine tests for both unsupported rejection and supported forwarding.
+- The capability-contract commit passed iOS Simulator build, tvOS Simulator build and iOS unit tests. The external-subtitle contract commit also passed those checks. The latest test-forwarding workflow run ended as a cancelled job and therefore does not validate the two new tests; a fresh CI run is required.
+- No external subtitle is rendered by AVPlayer, and no production VLCKit dependency has been added. Runtime playback and subtitle rendering remain unverified.
