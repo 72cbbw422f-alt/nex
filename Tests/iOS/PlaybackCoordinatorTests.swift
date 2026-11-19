@@ -120,6 +120,65 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(engine.selectedAudioID, "audio-en")
         XCTAssertEqual(engine.selectedSubtitleIDs, ["subtitle-sv", "off"])
     }
+
+    func testAVPlayerEngineReportsEndedWhenCurrentItemFinishes() async {
+        let player = AVPlayer()
+        let engine = AVPlayerPlaybackEngine(player: player)
+        let finished = expectation(description: "Playback completion is forwarded")
+        engine.onStateChanged = {
+            if engine.state == .ended {
+                finished.fulfill()
+            }
+        }
+        let url = URL(fileURLWithPath: "/tmp/nexus-playback-completion-fixture.mp4")
+
+        engine.load(url)
+        guard let item = player.currentItem else {
+            XCTFail("Expected the engine to install a current item")
+            return
+        }
+
+        NotificationCenter.default.post(
+            name: .AVPlayerItemDidPlayToEndTime,
+            object: item
+        )
+
+        await fulfillment(of: [finished], timeout: 2)
+        XCTAssertEqual(engine.state, .ended)
+        engine.stop()
+    }
+
+    func testAVPlayerEngineIgnoresCompletionFromReplacedItem() async {
+        let player = AVPlayer()
+        let engine = AVPlayerPlaybackEngine(player: player)
+        let firstURL = URL(fileURLWithPath: "/tmp/nexus-old-fixture.mp4")
+        let secondURL = URL(fileURLWithPath: "/tmp/nexus-new-fixture.mp4")
+
+        engine.load(firstURL)
+        guard let oldItem = player.currentItem else {
+            XCTFail("Expected the first item to be installed")
+            return
+        }
+
+        engine.load(secondURL)
+        guard let currentItem = player.currentItem else {
+            XCTFail("Expected the replacement item to be installed")
+            return
+        }
+
+        NotificationCenter.default.post(
+            name: .AVPlayerItemDidPlayToEndTime,
+            object: oldItem
+        )
+
+        // Allow the notification's MainActor task to run.
+        await Task.yield()
+
+        XCTAssertFalse(engine.state == .ended)
+        XCTAssertTrue(player.currentItem === currentItem)
+        engine.stop()
+    }
+
 }
 
 @MainActor
