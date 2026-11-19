@@ -68,7 +68,7 @@ private final class PlaybackStatusModel: ObservableObject {
     }
 
     func stop() {
-        coordinator.pause()
+        coordinator.stop()
         itemObservation = nil
     }
 
