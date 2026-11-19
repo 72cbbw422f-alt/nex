@@ -24,6 +24,15 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(engine.calls, ["pause", "play"])
     }
 
+    func testStopIsForwardedToEngine() {
+        let engine = FakePlaybackEngine()
+        let coordinator = PlaybackCoordinator(engine: engine)
+
+        coordinator.stop()
+
+        XCTAssertEqual(engine.calls, ["stop"])
+    }
+
     func testSeekIsForwardedToEngine() {
         let engine = FakePlaybackEngine()
         let coordinator = PlaybackCoordinator(engine: engine)
@@ -97,6 +106,12 @@ private final class FakePlaybackEngine: PlaybackEngine {
     func pause() {
         isPlaying = false
         calls.append("pause")
+    }
+
+    func stop() {
+        isPlaying = false
+        state = .idle
+        calls.append("stop")
     }
 
     func seek(to seconds: TimeInterval) {
