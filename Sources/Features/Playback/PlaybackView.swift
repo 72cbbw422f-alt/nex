@@ -193,7 +193,7 @@ struct PlaybackView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            VideoPlayer(player: player)
+            AVPlayerPlaybackSurface(player: player)
                 .ignoresSafeArea(edges: .bottom)
 
             VStack {
