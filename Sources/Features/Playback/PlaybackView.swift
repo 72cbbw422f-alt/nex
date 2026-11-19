@@ -1,4 +1,3 @@
-import AVKit
 import Combine
 import SwiftUI
 
@@ -82,21 +81,34 @@ private final class PlaybackStatusModel: ObservableObject {
     }
 }
 
+@MainActor
+private struct PlaybackSession {
+    let coordinator: PlaybackCoordinator
+    let surface: AnyView
+
+    static func makeAVPlayerSession() -> PlaybackSession {
+        let player = AVPlayer()
+        let engine = AVPlayerPlaybackEngine(player: player)
+        return PlaybackSession(
+            coordinator: PlaybackCoordinator(engine: engine),
+            surface: AnyView(AVPlayerPlaybackSurface(player: player))
+        )
+    }
+}
+
 struct PlaybackView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var playbackState: PlaybackStatusModel
     private let url: URL
-    private let player: AVPlayer
+    private let surface: AnyView
     private let title: String
 
     init(url: URL, title: String) {
         self.url = url
         self.title = title
-        let player = AVPlayer()
-        let engine = AVPlayerPlaybackEngine(player: player)
-        let coordinator = PlaybackCoordinator(engine: engine)
-        self.player = player
-        _playbackState = StateObject(wrappedValue: PlaybackStatusModel(coordinator: coordinator))
+        let session = PlaybackSession.makeAVPlayerSession()
+        self.surface = session.surface
+        _playbackState = StateObject(wrappedValue: PlaybackStatusModel(coordinator: session.coordinator))
     }
 
     @ViewBuilder
@@ -182,7 +194,7 @@ struct PlaybackView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            AVPlayerPlaybackSurface(player: player)
+            surface
                 .ignoresSafeArea(edges: .bottom)
 
             VStack {
