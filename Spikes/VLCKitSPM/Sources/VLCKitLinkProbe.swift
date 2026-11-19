@@ -26,6 +26,12 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         player.drawable = view
     }
 
+    /// Detaches the rendering surface after the playback session has stopped.
+    public func detachDrawable() {
+        player.drawable = nil
+        drawableView = nil
+    }
+
     public func load(_ media: VLCMedia, autoplay: Bool = false) {
         player.stop()
         player.media = media
@@ -60,10 +66,10 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public func play() { player.play() }
     public func pause() { player.pause() }
 
+    /// Stops the current item but keeps the drawable attached for a subsequent load.
     public func stop() {
         player.stop()
-        player.drawable = nil
-        drawableView = nil
+        player.media = nil
     }
 
     public func mediaPlayerStateChanged(_ aNotification: Notification!) {
@@ -78,7 +84,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     }
 }
 
-/// Compile-time probe only. This target is isolated from all production NEXUS targets.
+/// Compile-time proof of the imported VLCKit and sidecar subtitle APIs.
 public enum VLCKitLinkProbe {
     public static var mediaPlayerType: Any.Type {
         VLCMediaPlayer.self
@@ -88,8 +94,6 @@ public enum VLCKitLinkProbe {
         VLCMediaPlayer(options: [])
     }
 
-    /// Compile-time proof of the documented external subtitle attachment API.
-    /// The media slave must be attached before parsing or playback begins.
     public static func attachExternalSubtitle(
         to mediaURL: URL,
         subtitleURL: URL
