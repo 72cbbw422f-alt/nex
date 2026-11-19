@@ -29,3 +29,7 @@ xcodebuild -resolvePackageDependencies -project VLCKitSpike.xcodeproj
 xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
 ```
+
+## Runtime integration research
+
+See [RuntimeIntegrationPlan.md](RuntimeIntegrationPlan.md) for the verified drawable/delegate API surface, proposed engine-adapter lifecycle, test gates, and limitations. This is a research plan, not an implemented player.
