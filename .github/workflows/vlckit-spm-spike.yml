@@ -1,0 +1,55 @@
+name: VLCKit SwiftPM link spike
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - spike/vlckit-spm
+    paths:
+      - "Spikes/VLCKitSPM/**"
+      - ".github/workflows/vlckit-spm-spike.yml"
+  pull_request:
+    paths:
+      - "Spikes/VLCKitSPM/**"
+      - ".github/workflows/vlckit-spm-spike.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vlckit-spm-spike-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve-and-link:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -n 1)
+          if [ -n "$XCODE_PATH" ]; then
+            sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          fi
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate isolated Xcode project
+        working-directory: Spikes/VLCKitSPM
+        run: xcodegen generate --spec project.yml
+
+      - name: Resolve pinned binary package
+        working-directory: Spikes/VLCKitSPM
+        run: xcodebuild -resolvePackageDependencies -project VLCKitSpike.xcodeproj
+
+      - name: Build iOS Simulator probe
+        working-directory: Spikes/VLCKitSPM
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Build tvOS Simulator probe
+        working-directory: Spikes/VLCKitSPM
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
