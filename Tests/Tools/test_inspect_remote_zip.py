@@ -98,6 +98,10 @@ class RemoteZipInspectorTests(unittest.TestCase):
         header += struct.pack(">iiIII", 0x01000007, 3, 8192, 100, 12)
         self.assertEqual(parse_macho_architectures(header), ["arm64", "x86_64"])
 
+    def test_parses_arm64_32_macho_header(self):
+        header = struct.pack("<Iii", 0xFEEDFACF, 0x0200000C, 0)
+        self.assertEqual(parse_macho_architectures(header), ["arm64_32"])
+
     def test_rejects_unknown_macho_header(self):
         with self.assertRaises(InspectionError):
             parse_macho_architectures(b"NOPE0000")
