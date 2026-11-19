@@ -13,9 +13,8 @@ private final class PlaybackStatusModel: ObservableObject {
 
     private let coordinator: PlaybackCoordinator
 
-    init(player: AVPlayer) {
-        let engine = AVPlayerPlaybackEngine(player: player)
-        coordinator = PlaybackCoordinator(engine: engine)
+    init(coordinator: PlaybackCoordinator) {
+        self.coordinator = coordinator
         coordinator.onStateChanged = { [weak self] in
             self?.refreshPlaybackState()
         }
@@ -94,8 +93,10 @@ struct PlaybackView: View {
         self.url = url
         self.title = title
         let player = AVPlayer()
+        let engine = AVPlayerPlaybackEngine(player: player)
+        let coordinator = PlaybackCoordinator(engine: engine)
         self.player = player
-        _playbackState = StateObject(wrappedValue: PlaybackStatusModel(player: player))
+        _playbackState = StateObject(wrappedValue: PlaybackStatusModel(coordinator: coordinator))
     }
 
     @ViewBuilder
