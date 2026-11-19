@@ -15,6 +15,8 @@ from inspect_remote_zip import (
     parse_central_directory,
     parse_central_directory_entries,
     parse_macho_architectures,
+    fetch_member_prefix,
+    inspect_macho_binaries,
 )
 
 
@@ -87,6 +89,64 @@ class RemoteZipInspectorTests(unittest.TestCase):
             result = fetch_member("https://example.invalid/archive.zip", entry, len(payload))
         self.assertEqual(plistlib.loads(result)["CFBundlePackageType"], "XFWK")
 
+
+    def test_fetches_and_parses_stored_macho_prefix(self):
+        payload = io.BytesIO()
+        macho = struct.pack("<Iii", 0xFEEDFACF, 0x0100000C, 0) + b"payload"
+        with zipfile.ZipFile(payload, "w", compression=zipfile.ZIP_STORED) as archive:
+            archive.writestr("VLCKit.xcframework/ios-arm64/VLCKit.framework/VLCKit", macho)
+        raw = payload.getvalue()
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            info = archive.getinfo("VLCKit.xcframework/ios-arm64/VLCKit.framework/VLCKit")
+        tail = raw[-min(len(raw), 65557):]
+        offset, size, count = find_eocd(tail, len(raw) - len(tail))
+        entries = parse_central_directory_entries(raw[offset:offset + size], count)
+        entry = next(item for item in entries if item.name == info.filename)
+
+        def fake_range(_url, start, end, suffix=None):
+            if suffix is not None:
+                body = raw[-suffix:]
+                return body, len(raw) - len(body), len(raw) - 1, len(raw)
+            return raw[start:end + 1], start, end, len(raw)
+
+        with patch("inspect_remote_zip.request_range", side_effect=fake_range):
+            prefix = fetch_member_prefix("https://example.invalid/archive.zip", entry, len(raw))
+        self.assertEqual(parse_macho_architectures(prefix), ["arm64"])
+
+    def test_validates_macho_against_xcframework_manifest(self):
+        metadata = {
+            "VLCKit.xcframework/Info.plist": {
+                "AvailableLibraries": [{
+                    "LibraryIdentifier": "ios-arm64",
+                    "LibraryPath": "VLCKit.framework",
+                    "SupportedArchitectures": ["arm64"],
+                }]
+            }
+        }
+        entry = type("Entry", (), {
+            "name": "VLCKit.xcframework/ios-arm64/VLCKit.framework/VLCKit"
+        })()
+        with patch("inspect_remote_zip.fetch_member_prefix",
+                   return_value=struct.pack("<Iii", 0xFEEDFACF, 0x0100000C, 0)):
+            inspect_macho_binaries("https://example.invalid/archive.zip", [entry], metadata, 100)
+
+    def test_rejects_macho_manifest_architecture_mismatch(self):
+        metadata = {
+            "VLCKit.xcframework/Info.plist": {
+                "AvailableLibraries": [{
+                    "LibraryIdentifier": "ios-arm64",
+                    "LibraryPath": "VLCKit.framework",
+                    "SupportedArchitectures": ["x86_64"],
+                }]
+            }
+        }
+        entry = type("Entry", (), {
+            "name": "VLCKit.xcframework/ios-arm64/VLCKit.framework/VLCKit"
+        })()
+        with patch("inspect_remote_zip.fetch_member_prefix",
+                   return_value=struct.pack("<Iii", 0xFEEDFACF, 0x0100000C, 0)):
+            with self.assertRaises(InspectionError):
+                inspect_macho_binaries("https://example.invalid/archive.zip", [entry], metadata, 100)
 
     def test_parses_thin_arm64_macho_header(self):
         header = struct.pack("<Iii", 0xFEEDFACF, 0x0100000C, 0)
