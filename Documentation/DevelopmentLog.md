@@ -479,3 +479,16 @@
 - The tests exercise the extraction/validation helpers without downloading or storing the full VLCKit archive.
 - GitHub Actions run for this commit is queued/in progress; results have not yet been recorded.
 - The separate live archive audit previously passed, including actual Mach-O architecture-header inspection for the declared XCFramework libraries. This new change strengthens offline regression coverage; it does not resolve or link VLCKit through SwiftPM.
+
+
+## 2026-11-19 — Isolated VLCKit runtime host apps
+
+- The pinned VLCKit binary package resolved and compiled/linked successfully for iOS Simulator, tvOS Simulator, generic iOS device and generic tvOS device framework destinations in the isolated spike.
+- Added separate diagnostic host apps for iPhone/iPad and Apple TV. They are not part of the production NEXUS targets.
+- The host accepts a media URL and optional SRT/WebVTT sidecar URL, attaches the subtitle to VLCMedia before playback, and exposes load/play/pause/stop plus player-state and buffering feedback.
+- Improved probe lifecycle handling: stopping clears the current media while preserving the drawable for a subsequent load; view teardown explicitly detaches the drawable.
+- Expanded the dedicated GitHub Actions workflow to build the framework and both host apps for simulator and generic device destinations.
+- Added a manual runtime test checklist and explicit warnings that successful compilation or media creation does not prove video or subtitle rendering.
+- No production playback code or dependency was changed. AVPlayer remains the only production engine.
+- CI for the new host app targets is required before considering the harness build-verified. Physical iPhone/iPad/Apple TV runtime tests, external subtitle synchronization, real-provider compatibility, codec/performance tests and LGPL/binary distribution review remain open.
+- Branch: `spike/vlckit-spm`; intended review target: `project-foundation` via draft PR #1.
