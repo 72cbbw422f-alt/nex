@@ -13,6 +13,24 @@ This directory is deliberately separate from the production NEXUS targets.
 
 A successful simulator build is not proof of physical-device playback, external SRT/VTT behavior, codec coverage, performance, signing/distribution, or LGPL compliance. Those remain separate gates.
 
+## Runtime subtitle fixtures
+
+- `Fixtures/swedish-test.srt`
+- `Fixtures/swedish-test.vtt`
+
+Both fixtures contain multiple cues and Swedish characters (`åäö`). They are intended for manual runtime testing with a locally available, short test video. Keep the video outside the repository unless distribution rights are clear.
+
+### Manual runtime checklist
+
+1. Open the probe in a small host app on a physical iPhone/iPad or Apple TV.
+2. Copy the test video and one subtitle fixture to a location the app can read.
+3. Call `VLCKitProbeSession.load(mediaURL:subtitleURL:autoplay:)` with the local file URLs.
+4. Confirm that playback starts and each cue appears at the expected timestamp.
+5. Repeat with both SRT and WebVTT; check å, ä and ö, multiline text, pause/resume, seek, and stop/reload.
+6. Repeat on each target device class. Record device model, OS version, media codec/container, subtitle format, and observed result.
+
+Do not treat a successful `load` return value as proof that subtitles rendered correctly; it only confirms media creation and that VLCKit accepted the sidecar attachment call.
+
 ## Binary pin
 
 - Artifact: `VLCKit-4.0-20261109-1916.zip`
