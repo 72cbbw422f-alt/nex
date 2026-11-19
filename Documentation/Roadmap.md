@@ -16,6 +16,7 @@
 - [ ] Build adaptive navigation for iPhone and iPad
 - [ ] Build focus-driven tvOS navigation
 - [ ] Build reusable poster, backdrop, shelf and detail components
+- [x] Extract the native AVPlayer video rendering surface as a first engine-specific UI boundary (CI pending)
 - [x] Add searchable movie and series library grids and connect them to navigation
 - [x] Add a global search screen and connect the home search action
 - [x] Add first Xtream/Jellyfin connection setup form shell (no persistence or API calls yet)
@@ -63,7 +64,8 @@
 - [x] Add first AVPlayer-backed playback surface behind the playback abstraction (latest corrected source awaiting CI validation; real HLS/provider validation pending)
 - [ ] KSPlayer technical spike: package, license, iOS/iPadOS/tvOS build and device compatibility
 - [x] Add engine-independent PlaybackCoordinator and AVPlayer adapter (iOS/tvOS build and all eight XCTest cases passed)
-- [x] Add explicit engine stop lifecycle and AVPlayer item teardown (new stop-forwarding XCTest added; latest CI pending)
+- [x] Add explicit engine stop lifecycle and AVPlayer item teardown (iOS/tvOS builds and unit tests passed)
+- [x] Extract AVPlayer VideoPlayer rendering into a dedicated surface component (latest CI pending)
 - [ ] KSPlayer adapter if the spike passes; retain AVPlayer fallback for supported streams
 - [ ] Infuse external-player hand-off and callback validation
 - [ ] Subtitle preferences with ordered language priority
