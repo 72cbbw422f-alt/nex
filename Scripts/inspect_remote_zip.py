@@ -214,12 +214,106 @@ def inspect(url: str) -> tuple[list[ZipEntry], dict[str, object]]:
     return entries, metadata
 
 
+
+MAX_BINARY_PREFIX_BYTES = 4096
+CPU_TYPE_NAMES = {7: "i386", 0x01000007: "x86_64", 12: "arm", 0x0100000C: "arm64"}
+
+
+def parse_macho_architectures(data: bytes) -> list[str]:
+    """Parse CPU types from a thin or universal Mach-O header."""
+    if len(data) < 8:
+        raise InspectionError("Mach-O prefix is too short")
+    thin = {
+        b"\xce\xfa\xed\xfe": "<", b"\xfe\xed\xfa\xce": ">",
+        b"\xcf\xfa\xed\xxfe": "<", b"\xfe\xed\xfa\xcf": ">",
+    }
+    fat = {
+        b"\xca\xfe\xba\xbe": ">", b"\xbe\xba\xfe\xca": "<",
+        b"\xca\xfe\xba\xbf": ">", b"\xbf\xba\xfe\xca": "<",
+    }
+    magic = data[:4]
+    if magic in thin:
+        cpu = struct.unpack_from(thin[magic] + "I", data, 4)[0]
+        return [CPU_TYPE_NAMES.get(cpu, f"cpu_type_{cpu:#x}")]
+    if magic in fat:
+        endian = fat[magic]
+        is_64 = magic in (b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca")
+        count = struct.unpack_from(endian + "I", data, 4)[0]
+        size = 32 if is_64 else 20
+        if count == 0 or 8 + count * size > MAX_BINARY_PREFIX_BYTES or len(data) < 8 + count * size:
+            raise InspectionError("Universal Mach-O architecture table is incomplete or too large")
+        names = []
+        for index in range(count):
+            cpu = struct.unpack_from(endian + "I", data, 8 + index * size)[0]
+            name = CPU_TYPE_NAMES.get(cpu, f"cpu_type_{cpu:#x}")
+            if name not in names:
+                names.append(name)
+        return names
+    raise InspectionError(f"Unrecognized Mach-O magic: {magic.hex()}")
+
+
+def fetch_member_prefix(url: str, entry: ZipEntry, archive_size: int) -> bytes:
+    """Fetch at most 4 KiB from a stored ZIP member; never fetch the full binary."""
+    if entry.flags & 0x1 or entry.method != 0:
+        raise InspectionError(f"Mach-O member must be an unencrypted stored ZIP entry: {entry.name}")
+    header, _, _, total = request_range(url, entry.local_header_offset, entry.local_header_offset + 29)
+    if total != archive_size or header[:4] != b"PK\x03\x04":
+        raise InspectionError(f"Invalid local ZIP header: {entry.name}")
+    fields = struct.unpack_from("<4s5H3I2H", header)
+    if fields[2] != entry.flags or fields[3] != entry.method:
+        raise InspectionError(f"Local/central ZIP header mismatch: {entry.name}")
+    name_len, extra_len = fields[9], fields[10]
+    header_end = entry.local_header_offset + 30 + name_len + extra_len
+    variable = b""
+    if name_len + extra_len:
+        variable, _, _, total = request_range(url, entry.local_header_offset + 30, header_end - 1)
+        if total != archive_size:
+            raise InspectionError("Archive size changed during binary prefix read")
+    try:
+        local_name = variable[:name_len].decode("utf-8")
+    except UnicodeDecodeError:
+        local_name = variable[:name_len].decode("cp437")
+    if local_name != entry.name:
+        raise InspectionError(f"Local/central filename mismatch: {entry.name}")
+    amount = min(MAX_BINARY_PREFIX_BYTES, entry.compressed_size)
+    if amount < 8:
+        raise InspectionError(f"Binary member is too small: {entry.name}")
+    prefix, _, _, total = request_range(url, header_end, header_end + amount - 1)
+    if total != archive_size:
+        raise InspectionError("Archive size changed during binary prefix read")
+    return prefix
+
+
+def inspect_macho_binaries(url: str, entries: list[ZipEntry], metadata: dict[str, object], archive_size: int) -> None:
+    by_name = {entry.name: entry for entry in entries}
+    for plist_path, plist in metadata.items():
+        root = plist_path.rsplit("/Info.plist", 1)[0]
+        for library in plist.get("AvailableLibraries", []):
+            if not isinstance(library, dict):
+                continue
+            identifier, library_path = library.get("LibraryIdentifier"), library.get("LibraryPath")
+            if not isinstance(identifier, str) or not isinstance(library_path, str):
+                continue
+            framework = library_path.rsplit("/", 1)[-1]
+            executable = framework[:-10] if framework.endswith(".framework") else framework
+            binary_path = f"{root}/{identifier}/{library_path}/{executable}"
+            entry = by_name.get(binary_path)
+            if entry is None:
+                raise InspectionError(f"Framework executable not found: {binary_path}")
+            actual = parse_macho_architectures(fetch_member_prefix(url, entry, archive_size))
+            declared = library.get("SupportedArchitectures", [])
+            print(f"  - {identifier}: Mach-O={','.join(actual)}; Info.plist={','.join(declared)}")
+            if set(actual) != set(declared):
+                raise InspectionError(f"Mach-O architectures do not match Info.plist for {identifier}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", default=DEFAULT_URL, help="Remote ZIP URL (default: pinned VideoLAN VLCKit archive)")
     args = parser.parse_args()
     try:
         entries, metadata = inspect(args.url)
+        _, _, _, archive_size = request_range(args.url, None, None, suffix=1)
     except InspectionError as error:
         print(f"STOP: {error}", file=sys.stderr)
         return 2
@@ -244,6 +338,13 @@ def main() -> int:
                     f"variant={library.get('SupportedPlatformVariant')} "
                     f"architectures={','.join(library.get('SupportedArchitectures', []))}"
                 )
+    if metadata:
+        print("\nMach-O binary prefix audit:")
+        try:
+            inspect_macho_binaries(args.url, entries, metadata, archive_size)
+        except InspectionError as error:
+            print(f"STOP: {error}", file=sys.stderr)
+            return 2
     return 0
 
 
