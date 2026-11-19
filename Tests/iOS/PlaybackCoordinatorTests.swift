@@ -90,6 +90,26 @@ final class PlaybackCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.subtitleTracks, [subtitles])
     }
 
+    func testExternalSubtitleIsRejectedWhenEngineDoesNotAdvertiseSupport() {
+        let engine = FakePlaybackEngine()
+        let coordinator = PlaybackCoordinator(engine: engine)
+        let url = URL(fileURLWithPath: "/tmp/sample.srt")
+
+        XCTAssertFalse(coordinator.attachExternalSubtitle(from: url, languageCode: "sv"))
+        XCTAssertNil(engine.attachedSubtitleURL)
+    }
+
+    func testExternalSubtitleIsForwardedWhenEngineAdvertisesSupport() {
+        let engine = FakePlaybackEngine()
+        engine.capabilities = [.externalSubtitles]
+        let coordinator = PlaybackCoordinator(engine: engine)
+        let url = URL(fileURLWithPath: "/tmp/sample.srt")
+
+        XCTAssertTrue(coordinator.attachExternalSubtitle(from: url, languageCode: "sv"))
+        XCTAssertEqual(engine.attachedSubtitleURL, url)
+        XCTAssertEqual(engine.attachedSubtitleLanguage, "sv")
+    }
+
     func testTrackSelectionIsForwardedToEngine() {
         let engine = FakePlaybackEngine()
         let coordinator = PlaybackCoordinator(engine: engine)
@@ -112,6 +132,8 @@ private final class FakePlaybackEngine: PlaybackEngine {
     var state: PlaybackEngineState = .idle
     var audioTracks: [PlaybackTrack] = []
     var subtitleTracks: [PlaybackTrack] = []
+    var attachedSubtitleURL: URL?
+    var attachedSubtitleLanguage: String?
     var selectedAudioID: String?
     var selectedSubtitleIDs: [String] = []
     var loadedURL: URL?
@@ -158,6 +180,14 @@ private final class FakePlaybackEngine: PlaybackEngine {
     func selectAudioTrack(id: String) -> Bool {
         selectedAudioID = id
         calls.append("select-audio")
+        return true
+    }
+
+    func attachExternalSubtitle(from url: URL, languageCode: String?) -> Bool {
+        guard capabilities.contains(.externalSubtitles) else { return false }
+        attachedSubtitleURL = url
+        attachedSubtitleLanguage = languageCode
+        calls.append("attach-subtitle")
         return true
     }
 
