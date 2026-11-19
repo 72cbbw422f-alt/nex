@@ -32,4 +32,6 @@ xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 
 
 ## Runtime integration research
 
-See [RuntimeIntegrationPlan.md](RuntimeIntegrationPlan.md) for the verified drawable/delegate API surface, proposed engine-adapter lifecycle, test gates, and limitations. This is a research plan, not an implemented player.
+See [RuntimeIntegrationPlan.md](RuntimeIntegrationPlan.md) for the verified drawable/delegate API surface, proposed engine-adapter lifecycle, test gates, and limitations.
+
+See [NEXUSPlaybackIntegrationMap.md](NEXUSPlaybackIntegrationMap.md) for the gaps between the existing production AVPlayer UI/coordinator and a future engine-neutral VLCKit adapter. This is an architecture assessment, not an implemented player.
