@@ -253,9 +253,9 @@ def parse_macho_architectures(data: bytes) -> list[str]:
 
 
 def fetch_member_prefix(url: str, entry: ZipEntry, archive_size: int) -> bytes:
-    """Fetch at most 4 KiB from a stored ZIP member; never fetch the full binary."""
-    if entry.flags & 0x1 or entry.method != 0:
-        raise InspectionError(f"Mach-O member must be an unencrypted stored ZIP entry: {entry.name}")
+    """Fetch and, if needed, incrementally inflate only a bounded binary prefix."""
+    if entry.flags & 0x1 or entry.method not in (0, 8):
+        raise InspectionError(f"Unsupported encrypted/ZIP compression method for Mach-O member: {entry.name}")
     header, _, _, total = request_range(url, entry.local_header_offset, entry.local_header_offset + 29)
     if total != archive_size or header[:4] != b"PK\x03\x04":
         raise InspectionError(f"Invalid local ZIP header: {entry.name}")
@@ -275,14 +275,36 @@ def fetch_member_prefix(url: str, entry: ZipEntry, archive_size: int) -> bytes:
         local_name = variable[:name_len].decode("cp437")
     if local_name != entry.name:
         raise InspectionError(f"Local/central filename mismatch: {entry.name}")
-    amount = min(MAX_BINARY_PREFIX_BYTES, entry.compressed_size)
-    if amount < 8:
-        raise InspectionError(f"Binary member is too small: {entry.name}")
-    prefix, _, _, total = request_range(url, header_end, header_end + amount - 1)
-    if total != archive_size:
-        raise InspectionError("Archive size changed during binary prefix read")
-    return prefix
 
+    if entry.method == 0:
+        amount = min(MAX_BINARY_PREFIX_BYTES, entry.compressed_size)
+        if amount < 8:
+            raise InspectionError(f"Binary member is too small: {entry.name}")
+        prefix, _, _, total = request_range(url, header_end, header_end + amount - 1)
+        if total != archive_size:
+            raise InspectionError("Archive size changed during binary prefix read")
+        return prefix
+
+    inflater = zlib.decompressobj(-15)
+    compressed_read = 0
+    chunk_size = 64 * 1024
+    while compressed_read < min(entry.compressed_size, MAX_MEMBER_COMPRESSED_BYTES):
+        amount = min(chunk_size, entry.compressed_size - compressed_read,
+                     MAX_MEMBER_COMPRESSED_BYTES - compressed_read)
+        start = header_end + compressed_read
+        chunk, _, _, total = request_range(url, start, start + amount - 1)
+        if total != archive_size:
+            raise InspectionError("Archive size changed during compressed binary prefix read")
+        compressed_read += len(chunk)
+        try:
+            prefix = inflater.decompress(chunk, MAX_BINARY_PREFIX_BYTES)
+        except zlib.error as error:
+            raise InspectionError(f"Invalid compressed Mach-O member: {entry.name}") from error
+        if len(prefix) >= 8:
+            return prefix
+        if inflater.eof:
+            break
+    raise InspectionError(f"Could not inflate a Mach-O header within the {MAX_MEMBER_COMPRESSED_BYTES}-byte compressed-prefix limit: {entry.name}")
 
 def inspect_macho_binaries(url: str, entries: list[ZipEntry], metadata: dict[str, object], archive_size: int) -> None:
     by_name = {entry.name: entry for entry in entries}
