@@ -34,6 +34,29 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         }
     }
 
+    /// Builds a media item and attaches an optional sidecar subtitle before playback.
+    /// Returns false if media creation or subtitle attachment fails.
+    @discardableResult
+    public func load(
+        mediaURL: URL,
+        subtitleURL: URL? = nil,
+        autoplay: Bool = false
+    ) -> Bool {
+        guard let media = VLCMedia(url: mediaURL) else { return false }
+
+        if let subtitleURL {
+            let subtitle = VLCMediaSlave(
+                url: subtitleURL,
+                type: .subtitle,
+                priority: 0
+            )
+            guard media.addSlave(subtitle) else { return false }
+        }
+
+        load(media, autoplay: autoplay)
+        return true
+    }
+
     public func play() { player.play() }
     public func pause() { player.pause() }
 
