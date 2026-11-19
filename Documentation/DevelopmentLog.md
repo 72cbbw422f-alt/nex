@@ -495,3 +495,12 @@
 - Extracted `AVPlayerPlaybackSurface` as the only view that directly hosts SwiftUI `VideoPlayer`; `PlaybackView` now composes that surface rather than embedding AVPlayer rendering itself.
 - This is an initial rendering seam, not yet a fully engine-neutral surface factory: playback status observation and track selection still use AVPlayer-specific APIs and are the next refactoring targets.
 - The source remains AVPlayer-only in production. No VLCKit runtime integration or physical-device playback has been performed.
+
+
+## 2026-11-19 — Engine-neutral playback state events
+
+- Added an optional `onStateChanged` event to the `PlaybackEngine` contract, with a no-op default for compatibility.
+- The AVPlayer adapter now observes item readiness and time-control changes internally and emits state updates; feature UI no longer owns AVPlayer KVO observations.
+- PlaybackStatusModel now maps the engine-neutral `PlaybackEngineState` values to loading, buffering, and error presentation.
+- Added a coordinator unit test proving state-change notifications are forwarded from the engine.
+- CI validation is pending for this change. This refactor does not establish third-party engine playback or physical-device runtime behavior.
