@@ -41,12 +41,16 @@ final class PlaybackCoordinatorTests: XCTestCase {
         let subtitles = PlaybackTrack(id: "subtitle-sv", kind: .subtitle, displayName: "Svenska", languageCode: "sv")
 
         engine.currentTime = 45
+        engine.duration = 180
+        engine.isSeekable = true
         engine.isPlaying = true
         engine.audioTracks = [audio]
         engine.subtitleTracks = [subtitles]
         engine.state = .buffering
 
         XCTAssertEqual(coordinator.currentTime, 45)
+        XCTAssertEqual(coordinator.duration, 180)
+        XCTAssertTrue(coordinator.isSeekable)
         XCTAssertTrue(coordinator.isPlaying)
         XCTAssertEqual(coordinator.state, .buffering)
         XCTAssertEqual(coordinator.audioTracks, [audio])
@@ -68,6 +72,8 @@ final class PlaybackCoordinatorTests: XCTestCase {
 @MainActor
 private final class FakePlaybackEngine: PlaybackEngine {
     var currentTime: TimeInterval = 0
+    var duration: TimeInterval?
+    var isSeekable = false
     var isPlaying = false
     var state: PlaybackEngineState = .idle
     var audioTracks: [PlaybackTrack] = []
