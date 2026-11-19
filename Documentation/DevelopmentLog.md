@@ -479,3 +479,11 @@
 - The tests exercise the extraction/validation helpers without downloading or storing the full VLCKit archive.
 - GitHub Actions run for this commit is queued/in progress; results have not yet been recorded.
 - The separate live archive audit previously passed, including actual Mach-O architecture-header inspection for the declared XCFramework libraries. This new change strengthens offline regression coverage; it does not resolve or link VLCKit through SwiftPM.
+
+
+## 2026-11-19 — Explicit playback stop and item teardown
+
+- Added `stop()` to the engine-neutral PlaybackEngine lifecycle contract, with a compatibility default that pauses simple engines.
+- The AVPlayer adapter now cancels pending media-selection loading, clears track caches, pauses playback and removes the current AVPlayerItem when stopped.
+- PlaybackCoordinator forwards the stop operation, and PlaybackView uses it when its playback session ends.
+- Added a fake-engine XCTest for stop forwarding. The CI run for this change is pending; no runtime/device playback claim is made.
