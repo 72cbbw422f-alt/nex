@@ -1,4 +1,4 @@
-name: VLCKit SwiftPM link spike
+name: VLCKit SwiftPM runtime spike
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ concurrency:
 jobs:
   resolve-and-link:
     runs-on: macos-15
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -46,18 +46,26 @@ jobs:
         working-directory: Spikes/VLCKitSPM
         run: xcodebuild -resolvePackageDependencies -project VLCKitSpike.xcodeproj
 
-      - name: Build iOS Simulator probe
+      - name: Build iOS Simulator framework
         working-directory: Spikes/VLCKitSPM
         run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
-      - name: Build tvOS Simulator probe
+      - name: Build tvOS Simulator framework
         working-directory: Spikes/VLCKitSPM
         run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
-      - name: Build iOS device probe
+      - name: Build iOS runtime host
         working-directory: Spikes/VLCKitSPM
-        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-iOS -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
-      - name: Build tvOS device probe
+      - name: Build tvOS runtime host
         working-directory: Spikes/VLCKitSPM
-        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 'generic/platform=tvOS' CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Build iOS device runtime host
+        working-directory: Spikes/VLCKitSPM
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-iOS -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Build tvOS device runtime host
+        working-directory: Spikes/VLCKitSPM
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-tvOS -destination 'generic/platform=tvOS' CODE_SIGNING_ALLOWED=NO build
