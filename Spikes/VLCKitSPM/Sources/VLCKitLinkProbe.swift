@@ -8,6 +8,6 @@ public enum VLCKitLinkProbe {
     }
 
     public static func makeMediaPlayer() -> VLCMediaPlayer {
-        VLCMediaPlayer()
+        VLCMediaPlayer(options: [])
     }
 }
