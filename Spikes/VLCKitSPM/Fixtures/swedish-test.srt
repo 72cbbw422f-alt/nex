@@ -1,0 +1,11 @@
+1
+00:00:01,000 --> 00:00:03,500
+Välkommen till NEXUS.
+
+2
+00:00:04,000 --> 00:00:07,000
+Det här är ett test av svenska tecken: å, ä och ö.
+
+3
+00:00:07,500 --> 00:00:11,000
+Undertexterna ska visas synkroniserat med videon.
