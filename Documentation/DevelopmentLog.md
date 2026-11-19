@@ -470,3 +470,12 @@
 - This is now stronger evidence than directory-name matching: the package's XCFramework manifest declares all four NEXUS target variants. The actual Mach-O binary architecture headers have not yet been inspected, and the package has not yet been resolved/linked in NEXUS.
 - Added offline tests for XCFramework metadata fixture parsing and bounded deflate-member extraction. No production dependency was added and no playback engine was selected.
 - Next gate: inspect Mach-O headers from small bounded ranges or perform an isolated SwiftPM resolution/build spike, then assess runtime playback and LGPL distribution obligations.
+
+
+## 2026-11-19 — Mach-O extraction and manifest comparison regression tests
+
+- Added offline regression coverage for reading a stored Mach-O framework executable prefix through bounded ZIP ranges.
+- Added tests for matching a thin arm64 Mach-O header against the XCFramework `SupportedArchitectures` declaration and rejecting a deliberate mismatch.
+- The tests exercise the extraction/validation helpers without downloading or storing the full VLCKit archive.
+- GitHub Actions run for this commit is queued/in progress; results have not yet been recorded.
+- The separate live archive audit previously passed, including actual Mach-O architecture-header inspection for the declared XCFramework libraries. This new change strengthens offline regression coverage; it does not resolve or link VLCKit through SwiftPM.
