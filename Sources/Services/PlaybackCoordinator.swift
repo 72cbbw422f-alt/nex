@@ -31,6 +31,15 @@ struct PlaybackTrack: Identifiable, Equatable, Sendable {
     }
 }
 
+struct PlaybackEngineCapabilities: OptionSet, Sendable {
+    let rawValue: UInt16
+
+    static let seeking = PlaybackEngineCapabilities(rawValue: 1 << 0)
+    static let embeddedAudioSelection = PlaybackEngineCapabilities(rawValue: 1 << 1)
+    static let embeddedSubtitleSelection = PlaybackEngineCapabilities(rawValue: 1 << 2)
+    static let externalSubtitles = PlaybackEngineCapabilities(rawValue: 1 << 3)
+}
+
 enum PlaybackEngineState: Equatable, Sendable {
     case idle
     case preparing
@@ -47,6 +56,7 @@ protocol PlaybackEngine: AnyObject {
     var currentTime: TimeInterval { get }
     var duration: TimeInterval? { get }
     var isSeekable: Bool { get }
+    var capabilities: PlaybackEngineCapabilities { get }
     var isPlaying: Bool { get }
     var state: PlaybackEngineState { get }
     var audioTracks: [PlaybackTrack] { get }
@@ -71,6 +81,7 @@ extension PlaybackEngine {
 
     var duration: TimeInterval? { nil }
     var isSeekable: Bool { false }
+    var capabilities: PlaybackEngineCapabilities { [] }
     var state: PlaybackEngineState { isPlaying ? .playing : .paused }
     var audioTracks: [PlaybackTrack] { [] }
     var subtitleTracks: [PlaybackTrack] { [] }
@@ -128,6 +139,10 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
     var isSeekable: Bool {
         guard let item = player.currentItem else { return false }
         return !item.seekableTimeRanges.isEmpty
+    }
+
+    var capabilities: PlaybackEngineCapabilities {
+        [.seeking, .embeddedAudioSelection, .embeddedSubtitleSelection]
     }
 
     var isPlaying: Bool {
@@ -289,6 +304,7 @@ final class PlaybackCoordinator {
     var currentTime: TimeInterval { engine.currentTime }
     var duration: TimeInterval? { engine.duration }
     var isSeekable: Bool { engine.isSeekable }
+    var capabilities: PlaybackEngineCapabilities { engine.capabilities }
     var isPlaying: Bool { engine.isPlaying }
     var state: PlaybackEngineState { engine.state }
     var audioTracks: [PlaybackTrack] { engine.audioTracks }
