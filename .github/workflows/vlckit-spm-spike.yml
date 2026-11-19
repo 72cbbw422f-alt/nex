@@ -2,6 +2,12 @@ name: VLCKit SwiftPM link spike
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "spike/vlckit-spm"
+    paths:
+      - "Spikes/VLCKitSPM/**"
+      - ".github/workflows/vlckit-spm-spike.yml"
   pull_request:
     paths:
       - "Spikes/VLCKitSPM/**"
