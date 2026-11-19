@@ -11,36 +11,19 @@ private final class PlaybackStatusModel: ObservableObject {
     @Published private(set) var subtitleTracks: [PlaybackTrack] = []
     @Published private(set) var hasLoadedTracks = false
 
-    private let player: AVPlayer
     private let coordinator: PlaybackCoordinator
-    private var itemObservation: NSKeyValueObservation?
-    private var timeControlObservation: NSKeyValueObservation?
 
     init(player: AVPlayer) {
-        self.player = player
         let engine = AVPlayerPlaybackEngine(player: player)
         coordinator = PlaybackCoordinator(engine: engine)
+        coordinator.onStateChanged = { [weak self] in
+            self?.refreshPlaybackState()
+        }
         coordinator.onTracksChanged = { [weak self] in
             guard let self else { return }
             self.audioTracks = self.coordinator.audioTracks
             self.subtitleTracks = self.coordinator.subtitleTracks
             self.hasLoadedTracks = true
-        }
-        timeControlObservation = player.observe(\.timeControlStatus, options: [.initial, .new]) { [weak self] player, _ in
-            Task { @MainActor in
-                guard let self, self.errorMessage == nil else { return }
-                switch player.timeControlStatus {
-                case .waitingToPlayAtSpecifiedRate:
-                    self.isLoading = true
-                    self.waitingMessage = "Buffrar strömmen…"
-                case .playing:
-                    self.isLoading = false
-                case .paused:
-                    break
-                @unknown default:
-                    break
-                }
-            }
         }
     }
 
@@ -52,7 +35,7 @@ private final class PlaybackStatusModel: ObservableObject {
         subtitleTracks = []
         hasLoadedTracks = false
         coordinator.start(url: url)
-        observeCurrentItem()
+        refreshPlaybackState()
     }
 
     func retry(url: URL) {
@@ -69,28 +52,33 @@ private final class PlaybackStatusModel: ObservableObject {
 
     func stop() {
         coordinator.stop()
-        itemObservation = nil
     }
 
-    private func observeCurrentItem() {
-        itemObservation = player.currentItem?.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
-            Task { @MainActor in
-                guard let self else { return }
-                switch item.status {
-                case .unknown:
-                    self.isLoading = true
-                    self.errorMessage = nil
-                case .readyToPlay:
-                    self.isLoading = false
-                    self.errorMessage = nil
-                case .failed:
-                    self.isLoading = false
-                    self.errorMessage = item.error?.localizedDescription ?? "Kanalen kunde inte startas. Kontrollera anslutningen eller prova igen."
-                @unknown default:
-                    self.isLoading = false
-                    self.errorMessage = "Spelaren fick ett okänt svar från videokällan."
-                }
-            }
+    private func refreshPlaybackState() {
+        switch coordinator.state {
+        case .idle:
+            isLoading = false
+            errorMessage = nil
+        case .preparing:
+            isLoading = true
+            waitingMessage = "Ansluter till kanalen…"
+            errorMessage = nil
+        case .buffering:
+            isLoading = true
+            waitingMessage = "Buffrar strömmen…"
+            errorMessage = nil
+        case .playing:
+            isLoading = false
+            errorMessage = nil
+        case .paused:
+            isLoading = false
+        case .ended:
+            isLoading = false
+        case .failed(let message):
+            isLoading = false
+            errorMessage = message.isEmpty
+                ? "Kanalen kunde inte startas. Kontrollera anslutningen eller prova igen."
+                : message
         }
     }
 }
