@@ -45,6 +45,8 @@ enum PlaybackEngineState: Equatable, Sendable {
 @MainActor
 protocol PlaybackEngine: AnyObject {
     var currentTime: TimeInterval { get }
+    var duration: TimeInterval? { get }
+    var isSeekable: Bool { get }
     var isPlaying: Bool { get }
     var state: PlaybackEngineState { get }
     var audioTracks: [PlaybackTrack] { get }
@@ -59,6 +61,9 @@ protocol PlaybackEngine: AnyObject {
 }
 
 extension PlaybackEngine {
+    /// Unknown or indefinite duration is represented as nil (common for live streams).
+    var duration: TimeInterval? { nil }
+    var isSeekable: Bool { false }
     var state: PlaybackEngineState { isPlaying ? .playing : .paused }
     var audioTracks: [PlaybackTrack] { [] }
     var subtitleTracks: [PlaybackTrack] { [] }
@@ -91,6 +96,17 @@ final class AVPlayerPlaybackEngine: PlaybackEngine {
     var currentTime: TimeInterval {
         let seconds = player.currentTime().seconds
         return seconds.isFinite ? max(0, seconds) : 0
+    }
+
+    var duration: TimeInterval? {
+        guard let item = player.currentItem else { return nil }
+        let seconds = item.duration.seconds
+        return seconds.isFinite && seconds > 0 ? seconds : nil
+    }
+
+    var isSeekable: Bool {
+        guard let item = player.currentItem else { return false }
+        return !item.seekableTimeRanges.isEmpty
     }
 
     var isPlaying: Bool {
@@ -228,6 +244,8 @@ final class PlaybackCoordinator {
     }
 
     var currentTime: TimeInterval { engine.currentTime }
+    var duration: TimeInterval? { engine.duration }
+    var isSeekable: Bool { engine.isSeekable }
     var isPlaying: Bool { engine.isPlaying }
     var state: PlaybackEngineState { engine.state }
     var audioTracks: [PlaybackTrack] { engine.audioTracks }
