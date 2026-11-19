@@ -47,3 +47,11 @@ jobs:
       - name: Build tvOS Simulator probe
         working-directory: Spikes/VLCKitSPM
         run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 'generic/platform=tvOS Simulator' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Build iOS device probe
+        working-directory: Spikes/VLCKitSPM
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-iOS -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Build tvOS device probe
+        working-directory: Spikes/VLCKitSPM
+        run: xcodebuild -project VLCKitSpike.xcodeproj -scheme VLCKitProbe-tvOS -destination 'generic/platform=tvOS' CODE_SIGNING_ALLOWED=NO build
