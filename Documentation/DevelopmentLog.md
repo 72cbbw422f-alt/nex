@@ -651,3 +651,13 @@
 - Source change is committed on `integration/vlckit-spike-refresh`. A fresh CI build is required before the updated IPA can be installed. This is a layout/rendering-surface correction only; it does not prove the underlying stream contains a video track or that VLCKit can decode its video codec.
 - Next verification: confirm the drawable is visible on iPhone, then test the same URL in a known-good player and inspect whether the HLS master/media playlist exposes a video variant. If audio continues with a visible drawable but no picture, capture VLCKit media/video-track metadata and compare the stream codec/profile.
 - AVPlayer production playback path remains unchanged. No production target or dependency was modified.
+
+## 2026-11-20 — External subtitle test improved after iPhone and Apple TV reports
+
+- User confirmed that the same Mux HLS stream now renders both picture and audio on iPhone and Apple TV, but no subtitle text was visible on either device.
+- The Apple TV screenshot shows the app status message "Undertextspår valt." This only reflected that a track object was found and a selection request was issued; the previous code did not explicitly call the VLCKit 4.0 `selectTextTracks` API for selection, so that status was not proof of rendered subtitles.
+- The original SRT/WebVTT fixtures only contained cues during the first 11 seconds. This made the test easy to miss if the user opened the subtitle menu after playback had progressed. Both fixtures have now been extended with Swedish test cues through 1:55.
+- External subtitle slaves now use priority 4 (highest VLCKit media-slave priority) instead of 0 (lowest). Track selection now calls `player.selectTextTracks([track])`, matching the explicit track-selection API available in the pinned VLCKit 4.0 headers. Subtitle disable still calls `deselectAllTextTracks()`.
+- This is a source-level correction and improved test fixture, not yet runtime-verified. CI must pass and a new signed iOS/tvOS package must be installed before we can confirm actual subtitle rendering.
+- Next physical test: reload the Mux stream and the updated SRT URL together from the beginning; observe cues at 0:02, 0:15, 0:30, 0:45, 1:00, 1:15, 1:30 and 1:45. Confirm the subtitle menu reports an active selected track and the text is visibly composited over the video. Repeat on both iPhone and Apple TV; then repeat with WebVTT.
+- AVPlayer and all production targets remain unchanged. PR #2 remains Draft and unmerged.
