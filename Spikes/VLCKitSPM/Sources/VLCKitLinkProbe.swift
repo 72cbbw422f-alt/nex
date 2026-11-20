@@ -14,6 +14,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public let player: VLCMediaPlayer
     private var drawableView: UIView?
     private var pendingExternalSubtitleSelection = false
+    public private(set) var selectedSubtitleTrackID: String?
     public private(set) var latestState: VLCMediaPlayerState = .stopped
     public private(set) var latestBuffering: Float = 0
     public var onStateChanged: ((VLCMediaPlayerState) -> Void)?
@@ -42,7 +43,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
                 id: "\(track.trackId)-\(index)",
                 trackId: track.trackId,
                 name: track.trackName,
-                isSelected: track.isSelected
+                isSelected: track.isSelected || track.trackId == selectedSubtitleTrackID
             )
         }
     }
@@ -62,12 +63,14 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public func selectSubtitleTrack(id: String?) -> Bool {
         guard let id else {
             player.deselectAllTextTracks()
+            selectedSubtitleTrackID = nil
             return true
         }
         guard let track = player.textTracks.first(where: { $0.trackId == id }) else {
             return false
         }
         player.selectTextTracks([track])
+        selectedSubtitleTrackID = track.trackId
         return true
     }
 
@@ -80,10 +83,14 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         player.stop()
         player.drawable = nil
         drawableView = nil
+        pendingExternalSubtitleSelection = false
+        selectedSubtitleTrackID = nil
     }
 
     public func load(_ media: VLCMedia, autoplay: Bool = false) {
         player.stop()
+        pendingExternalSubtitleSelection = false
+        selectedSubtitleTrackID = nil
         player.media = media
         if autoplay { player.play() }
     }
@@ -92,6 +99,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         guard pendingExternalSubtitleSelection else { return }
         guard let track = player.textTracks.first else { return }
         player.selectTextTracks([track])
+        selectedSubtitleTrackID = track.trackId
         pendingExternalSubtitleSelection = false
     }
 
@@ -107,6 +115,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
             }
         }
         load(media, autoplay: autoplay)
+        pendingExternalSubtitleSelection = subtitleURL != nil
         return true
     }
 
@@ -116,6 +125,8 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public func stop() {
         player.stop()
         player.media = nil
+        pendingExternalSubtitleSelection = false
+        selectedSubtitleTrackID = nil
     }
 }
 
