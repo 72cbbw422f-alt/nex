@@ -541,3 +541,6 @@
 - Replaced the shared probe text-field style with the cross-platform `.plain` style so the same input UI compiles on iOS and tvOS.
 - Moved the optional Objective-C VLCKit delegate callback implementations into a class extension and restored the imported implicitly-unwrapped Notification signature to address the compiler's near-match warning.
 - The run stopped at the tvOS Simulator step; device builds were skipped. The latest corrections require a fresh complete CI run. No physical playback, subtitle rendering or production integration is claimed.
+
+
+- Adjusted the dedicated spike workflow concurrency policy so an in-flight validation is not cancelled merely because another PR synchronization event arrives. This prevents rapid sequential source/documentation commits from repeatedly cancelling the expensive binary-resolution/build job. The next run should be allowed to finish against its triggering revision.
