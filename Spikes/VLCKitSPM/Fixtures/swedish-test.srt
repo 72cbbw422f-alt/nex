@@ -1,11 +1,31 @@
 1
-00:00:01,000 --> 00:00:03,500
-Välkommen till NEXUS.
+00:00:02,000 --> 00:00:12,000
+NEXUS undertexttest – rad 1.
 
 2
-00:00:04,000 --> 00:00:07,000
+00:00:15,000 --> 00:00:25,000
 Svenska tecken: å, ä och ö.
 
 3
-00:00:08,000 --> 00:00:11,000
-Versaler: Å, Ä och Ö – smörgås, blåbär och fågel.
+00:00:30,000 --> 00:00:40,000
+Versaler: Å, Ä och Ö.
+
+4
+00:00:45,000 --> 00:00:55,000
+Smörgås, blåbär och fågel.
+
+5
+00:01:00,000 --> 00:01:10,000
+Undertexterna ska synas tydligt.
+
+6
+00:01:15,000 --> 00:01:25,000
+Kontroll av extern SRT-fil.
+
+7
+00:01:30,000 --> 00:01:40,000
+NEXUS – bild, ljud och text.
+
+8
+00:01:45,000 --> 00:01:55,000
+Sista svenska testfrasen: räksmörgås.
