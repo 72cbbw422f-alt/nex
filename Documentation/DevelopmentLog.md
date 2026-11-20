@@ -524,3 +524,12 @@
 - The workflow is configured to build iOS Simulator, tvOS Simulator and generic device host targets. It will download the approximately 910 MB unstable upstream binary when the workflow runs.
 - No production dependency or playback path was changed. AVPlayer remains the production engine.
 - This refreshed branch has not yet completed CI. Swift/Xcode compilation, runtime media playback, sidecar subtitle rendering, physical-device behavior and licensing remain unverified.
+
+
+## 2026-11-20 — VLCKit probe build failure analysis and target wiring correction
+
+- The first refreshed VLCKit workflow resolved the pinned SwiftPM binary successfully and generated the Xcode project, but the iOS Simulator build failed because the host app could not resolve the intermediate `VLCKitProbe` framework module.
+- Reworked the isolated XcodeGen project so each iOS/tvOS probe host compiles the adapter source directly and links the pinned VLCKit package product. Removed the unnecessary intermediate framework targets and the corresponding app-level module import.
+- Corrected the state delegate callback parameter from implicitly unwrapped to non-optional `Notification`, matching the Swift-imported protocol requirement and removing the compiler's near-match warning.
+- The first run's failure was a target/module wiring issue, not a package-resolution failure. The follow-up run was cancelled as the branch received subsequent commits; the corrected branch head still requires a fresh complete iOS/tvOS build.
+- No production playback source or dependency was changed. AVPlayer remains the production engine. Physical-device playback, sidecar subtitle behavior and distribution licensing remain unverified.
