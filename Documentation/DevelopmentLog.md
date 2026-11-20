@@ -577,3 +577,14 @@
 - Expanded both SRT and WebVTT fixtures to include lowercase and uppercase Swedish characters (å, ä, ö, Å, Ä, Ö), punctuation and Swedish words.
 - These source changes have not yet passed a fresh Xcode build. API import compatibility with the pinned unstable VLCKit binary must be confirmed by CI before the track controls are considered build-verified.
 - No real playback or subtitle rendering test has been performed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — VLCKit 4.0 track API mismatch found in CI
+
+- Fresh GitHub Actions run #63 (44750855997) for PR #2 passed XcodeGen and pinned SwiftPM binary resolution, then failed at the iOS Simulator compile.
+- The compiler confirmed that the pinned VLCKit 4.0 artifact does not expose the legacy audioTrackNames, audioTrackIndexes, videoSubTitlesNames, videoSubTitlesIndexes, currentAudioTrackIndex or currentVideoSubTitleIndex members used by the first track-control pass.
+- This is an API-version mismatch in the probe adapter, not a package-resolution or linker failure. The IPA archive and artifact steps were correctly skipped after the failed compile.
+- Added a temporary CI inspection step to print the actual public VLCMediaPlayer and track header declarations from the resolved binary. This is required to implement against the exact pinned 4.0 API rather than guessing from older documentation.
+- The new diagnostic workflow revision has not yet produced a recorded run result. Track selection remains unverified and the current probe head is not build-green.
+- Do not sign, distribute or install an IPA until the corrected iOS and tvOS builds and archive/package steps pass.
+- No production playback code or dependency was changed. AVPlayer remains the production engine.
