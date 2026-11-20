@@ -641,3 +641,13 @@
 - PR #2 remains open and draft against `project-foundation`; it is mergeable, but has not been merged. No production code or AVPlayer path was changed.
 - Next gate is physical-device validation after FlareStore signing: install on iPhone and Apple TV, test playback, pause/resume/stop, buffering, audio switching, embedded and external SRT/WebVTT subtitles, Swedish glyphs/timing, stability and performance against AVPlayer.
 - Runtime playback, physical-device behavior, actual subtitle/audio switching and LGPL/distribution review remain unverified. AVPlayer remains the production engine.
+
+## 2026-11-20 — VLCKit probe video surface layout correction
+
+- User reported that the physical iPhone probe produced audio but no visible picture. The supplied screenshot shows the playback controls and audio output but does not establish whether the tested HLS playlist itself contains a video rendition.
+- Reviewed the current SwiftUI host and drawable adapter. The UIKit video surface had no explicit height; its size depended on the representable's intrinsic sizing while embedded in a vertical stack. The black drawable also had no visible boundary against the dark app background.
+- Updated the probe surface to use explicit platform-specific bounds (220 pt on iOS/iPadOS and 360 pt on tvOS), an opaque clipped UIKit view, and a subtle violet outline so the drawable region is visibly identifiable.
+- The UIViewRepresentable continues to attach the actual UIView to VLCMediaPlayer; no fake video surface or AVPlayer fallback was introduced.
+- Source change is committed on `integration/vlckit-spike-refresh`. A fresh CI build is required before the updated IPA can be installed. This is a layout/rendering-surface correction only; it does not prove the underlying stream contains a video track or that VLCKit can decode its video codec.
+- Next verification: confirm the drawable is visible on iPhone, then test the same URL in a known-good player and inspect whether the HLS master/media playlist exposes a video variant. If audio continues with a visible drawable but no picture, capture VLCKit media/video-track metadata and compare the stream codec/profile.
+- AVPlayer production playback path remains unchanged. No production target or dependency was modified.
