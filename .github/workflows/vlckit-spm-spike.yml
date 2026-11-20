@@ -15,7 +15,7 @@ permissions:
   contents: read
 concurrency:
   group: vlckit-spm-spike-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   resolve-and-build:
     runs-on: macos-15
