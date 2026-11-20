@@ -514,3 +514,13 @@
 - Added fake-engine tests for both unsupported rejection and supported forwarding.
 - The capability-contract commit passed iOS Simulator build, tvOS Simulator build and iOS unit tests. The external-subtitle contract commit also passed those checks. The latest test-forwarding workflow run ended as a cancelled job and therefore does not validate the two new tests; a fresh CI run is required.
 - No external subtitle is rendered by AVPlayer, and no production VLCKit dependency has been added. Runtime playback and subtitle rendering remain unverified.
+
+
+## 2026-11-20 — VLCKit spike refreshed on current foundation
+
+- The earlier `spike/vlckit-spm` branch had diverged substantially from the current `project-foundation` branch (30 commits ahead and 29 behind at inspection). Its older Roadmap.md would have overwritten newer playback abstraction, Xtream resilience and Live TV work if merged as-is.
+- Created `integration/vlckit-spike-refresh` from the current `project-foundation` head and copied only the isolated VLCKit spike files. Production sources and the current roadmap were left untouched.
+- Added an isolated XcodeGen project, pinned VideoLAN binary package, iOS/tvOS host app entry points, media/subtitle probe session, Swedish SRT/WebVTT fixtures and a dedicated GitHub Actions workflow.
+- The workflow is configured to build iOS Simulator, tvOS Simulator and generic device host targets. It will download the approximately 910 MB unstable upstream binary when the workflow runs.
+- No production dependency or playback path was changed. AVPlayer remains the production engine.
+- This refreshed branch has not yet completed CI. Swift/Xcode compilation, runtime media playback, sidecar subtitle rendering, physical-device behavior and licensing remain unverified.
