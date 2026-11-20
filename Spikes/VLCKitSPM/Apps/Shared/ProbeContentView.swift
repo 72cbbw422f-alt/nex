@@ -1,12 +1,13 @@
 import SwiftUI
 import UIKit
 
-
 @MainActor
 private final class ProbeViewModel: ObservableObject {
     @Published var status = "Ange en medieadress och tryck på Spela."
     @Published var buffering = 0.0
     @Published var isPlaying = false
+    @Published var audioTracks: [VLCKitProbeTrack] = []
+    @Published var subtitleTracks: [VLCKitProbeTrack] = []
     let session = VLCKitProbeSession()
 
     init() {
@@ -15,6 +16,7 @@ private final class ProbeViewModel: ObservableObject {
                 let value = String(describing: state)
                 self?.status = "Spelarstatus: \(value)"
                 self?.isPlaying = value.localizedCaseInsensitiveContains("playing")
+                self?.refreshTracks()
             }
         }
         session.onBufferingChanged = { [weak self] value in
@@ -40,10 +42,29 @@ private final class ProbeViewModel: ObservableObject {
         status = "Laddar media…"
         buffering = 0
         isPlaying = false
+        audioTracks = []
+        subtitleTracks = []
         guard session.load(mediaURL: mediaURL, subtitleURL: subtitleURL, autoplay: true) else {
             status = "VLCKit kunde inte skapa media eller bifoga undertexten."
             return
         }
+    }
+
+    func refreshTracks() {
+        audioTracks = session.audioTracks
+        subtitleTracks = session.subtitleTracks
+    }
+
+    func selectAudio(_ track: VLCKitProbeTrack) {
+        session.selectAudioTrack(id: track.id)
+        status = "Valt ljudspår: \(track.name)"
+        refreshTracks()
+    }
+
+    func selectSubtitle(_ track: VLCKitProbeTrack) {
+        session.selectSubtitleTrack(id: track.id)
+        status = "Valt undertextspår: \(track.name)"
+        refreshTracks()
     }
 
     func togglePlayback() {
@@ -55,6 +76,8 @@ private final class ProbeViewModel: ObservableObject {
         session.stop()
         isPlaying = false
         buffering = 0
+        audioTracks = []
+        subtitleTracks = []
         status = "Stoppad"
     }
     private static func validatedURL(_ raw: String) -> URL? {
@@ -110,6 +133,20 @@ struct ProbeContentView: View {
                     model.togglePlayback()
                 }.buttonStyle(.bordered)
                 Button("Stoppa", role: .destructive) { model.stop() }
+                    .buttonStyle(.bordered)
+            }
+            HStack {
+                Menu("Ljudspår (\(model.audioTracks.count))") {
+                    ForEach(model.audioTracks) { track in
+                        Button(track.name) { model.selectAudio(track) }
+                    }
+                }
+                Menu("Undertexter (\(model.subtitleTracks.count))") {
+                    ForEach(model.subtitleTracks) { track in
+                        Button(track.name) { model.selectSubtitle(track) }
+                    }
+                }
+                Button("Uppdatera spår") { model.refreshTracks() }
                     .buttonStyle(.bordered)
             }
             Text(model.status).font(.footnote)
