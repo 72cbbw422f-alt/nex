@@ -1,0 +1,57 @@
+name: VLCKitSpike
+options:
+  deploymentTarget:
+    iOS: "17.0"
+    tvOS: "17.0"
+  createIntermediateGroups: true
+packages:
+  VLCKitBinary:
+    path: ./VLCKitBinary
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CODE_SIGNING_ALLOWED: NO
+    GENERATE_INFOPLIST_FILE: YES
+targets:
+  VLCKitProbe-iOS:
+    type: framework
+    platform: iOS
+    sources: [{path: Sources}]
+    dependencies:
+      - package: VLCKitBinary
+        product: VLCKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nexusstream.spike.vlckit.ios
+        PRODUCT_MODULE_NAME: VLCKitProbe
+  VLCKitProbe-tvOS:
+    type: framework
+    platform: tvOS
+    sources: [{path: Sources}]
+    dependencies:
+      - package: VLCKitBinary
+        product: VLCKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nexusstream.spike.vlckit.tvos
+        PRODUCT_MODULE_NAME: VLCKitProbe
+  NEXUSVLCKitProbe-iOS:
+    type: application
+    platform: iOS
+    sources: [{path: Apps/Shared}, {path: Apps/iOS}]
+    dependencies: [{target: VLCKitProbe-iOS}]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nexusstream.spike.vlckit.host.ios
+        INFOPLIST_KEY_CFBundleDisplayName: NEXUS VLC Test
+        TARGETED_DEVICE_FAMILY: "1,2"
+  NEXUSVLCKitProbe-tvOS:
+    type: application
+    platform: tvOS
+    sources: [{path: Apps/Shared}, {path: Apps/tvOS}]
+    dependencies: [{target: VLCKitProbe-tvOS}]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nexusstream.spike.vlckit.host.tvos
+        INFOPLIST_KEY_CFBundleDisplayName: NEXUS VLC Test
+        TARGETED_DEVICE_FAMILY: "3"
