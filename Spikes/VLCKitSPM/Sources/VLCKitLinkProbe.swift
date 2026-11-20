@@ -46,10 +46,14 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         player.stop()
         player.media = nil
     }
-    public func mediaPlayerStateChanged(_ notification: Notification) {
+}
+
+extension VLCKitProbeSession {
+    public func mediaPlayerStateChanged(_ notification: Notification!) {
         latestState = player.state
         onStateChanged?(latestState)
     }
+
     public func mediaPlayerBuffering(_ notification: Notification!, buffer: Float) {
         latestBuffering = buffer
         onBufferingChanged?(buffer)
