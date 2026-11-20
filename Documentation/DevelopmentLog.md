@@ -670,3 +670,16 @@
 - Explicit user track selection remains available; subtitle-off still deselects all text tracks. The automatic path only activates when a subtitle URL was supplied for the current load.
 - This is not yet CI- or device-verified. The current queued CI run predates this latest automatic-selection commit; a fresh run is required. Actual subtitle rendering remains unverified until the updated IPA is installed and tested.
 - AVPlayer and production targets remain untouched. PR #2 remains Draft and unmerged.
+
+
+## 2026-11-20 — External subtitles verified on iPhone and Apple TV
+
+- User installed and tested the latest unsigned probe packages after FlareStore signing.
+- User supplied screenshots confirming that the Mux HLS stream renders video and that the external Swedish SRT subtitle text is visibly composited on both iPhone and Apple TV.
+- This confirms that automatic external subtitle activation works in the tested SRT scenario on both physical platforms. The earlier issue where the user had to select the track twice is no longer blocking this test.
+- User reports that subtitle legibility is weaker on Apple TV. The supplied Apple TV photo shows the caption visible but with limited contrast/clarity against the video. This is now the next UI/rendering investigation: inspect VLCKit subtitle styling/rendering options and test a more legible outline/shadow or background treatment without obscuring the picture.
+- The iPhone screenshot also shows the caption clearly visible in the test panel's video surface.
+- GitHub Actions run #89 (ID `44820964987`) completed successfully with all 16 steps passing for the automatic-selection source revision `0e1d17d3f6b86e3512d517311edc5b5062e48459`. It built iOS/tvOS simulator and device targets, archived both device targets, packaged both unsigned IPAs, validated the packages and uploaded artifact `nexus-vlckit-probe-unsigned-ipas` (artifact ID `14671209725`, 38,182,520 bytes, SHA-256 `eac3cca6eaa8e85d9fa805b144159d333144a064a97071c032dc6e2324888428`, expires 2026-12-04 21:36:56 UTC).
+- The current branch head before this documentation update is `ec7ffc401567a5addc6c0f05a1bb6b723ee77da9`; the successful run compiled the automatic-selection source commit above, followed by a documentation-only commit.
+- Remaining runtime checks: repeat SRT test from the beginning and verify cue timing throughout the 1:55 fixture; test WebVTT on both devices; test subtitle off/on and track persistence; inspect audio-track switching and embedded subtitles where available; assess longer playback stability and compare against AVPlayer.
+- The test panel remains a technical spike UI, not production NEXUS design. No production target, dependency or AVPlayer path was changed. PR #2 remains open and Draft; no merge was performed.
