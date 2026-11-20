@@ -7,7 +7,7 @@ This spike is separate from all production NEXUS targets.
 - Approximate archive size: 910 MB (unstable upstream build)
 - Targets: iOS/iPadOS and tvOS, Swift 5.9, deployment baseline 17.0
 
-The probe host accepts a permitted media URL and optional SRT/WebVTT sidecar URL. It exposes play, pause, stop and basic player/buffering feedback. The VLCKit adapter sources are compiled directly into each isolated host target so the package module is linked without an intermediate framework target.
+The probe host accepts a permitted media URL and optional SRT/WebVTT sidecar URL. It exposes play, pause, stop, basic player/buffering feedback, audio-track selection and subtitle-track selection. The VLCKit adapter sources are compiled directly into each isolated host target so the package module is linked without an intermediate framework target.
 
 ## Build locally on macOS
 
@@ -20,7 +20,7 @@ xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-tvOS -destina
 
 ## FlareStore test packages
 
-The dedicated workflow `.github/workflows/vlckit-spm-spike.yml` now additionally archives both device targets, packages them as unsigned IPA files, validates the ZIP structure and uploads them as the GitHub Actions artifact `nexus-vlckit-probe-unsigned-ipas`.
+The dedicated workflow `.github/workflows/vlckit-spm-spike.yml` archives both device targets, packages them as unsigned IPA files, validates the ZIP structure and uploads them as the GitHub Actions artifact `nexus-vlckit-probe-unsigned-ipas`.
 
 1. Open the successful workflow run for the current PR head.
 2. Download `nexus-vlckit-probe-unsigned-ipas` and extract the artifact ZIP.
@@ -36,7 +36,7 @@ Use owned or explicitly permitted test media. Record the exact device model, OS 
 - iPhone/iPad: H.264 and HEVC where available; AAC/AC3/E-AC3 test streams; external SRT and WebVTT.
 - Apple TV: repeat the same media and subtitle cases independently; do not infer tvOS behavior from iOS results.
 - Swedish text fixture: verify å, ä, ö, Å, Ä, Ö and punctuation; compare subtitle timing at start, middle and end.
-- Audio/subtitle track switching is deferred: the pinned unstable VLCKit 4.0 binary removed the legacy track-name/index properties. The next CI header inspection must establish the exact replacement API before controls are reintroduced. Do not treat track switching as implemented.
+- Audio/subtitle track controls now use the pinned VLCKit 4.0 API: `audioTracks`, `textTracks`, `trackName`, `trackId`, `isSelected`, `selectedExclusively`, `selectTextTracks` and `deselectAllTextTracks`. The controls are compile-tested only until a fresh CI run and physical-device tests pass.
 - Compare each test case against the existing AVPlayer path using the same source and device.
 
 Compile/link does not prove physical playback, subtitle rendering/synchronization, provider compatibility, performance, signing or LGPL compliance. Do not add this binary to production targets until those gates pass. AVPlayer remains the production engine.
