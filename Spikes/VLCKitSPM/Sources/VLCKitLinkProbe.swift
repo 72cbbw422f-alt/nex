@@ -50,7 +50,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         guard let track = player.audioTracks.first(where: { $0.trackId == id }) else {
             return false
         }
-        track.selectedExclusively = true
+        track.isSelectedExclusively = true
         return true
     }
 
@@ -66,7 +66,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         guard let track = player.textTracks.first(where: { $0.trackId == id }) else {
             return false
         }
-        track.selectedExclusively = true
+        track.isSelectedExclusively = true
         return true
     }
 
