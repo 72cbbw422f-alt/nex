@@ -7,10 +7,6 @@ on:
     paths:
       - "Spikes/VLCKitSPM/**"
       - ".github/workflows/vlckit-spm-spike.yml"
-  pull_request:
-    paths:
-      - "Spikes/VLCKitSPM/**"
-      - ".github/workflows/vlckit-spm-spike.yml"
 permissions:
   contents: read
 concurrency:

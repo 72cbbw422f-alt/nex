@@ -622,3 +622,11 @@
 - PR #2 remains open and draft, based on `project-foundation`; mergeable status was true at verification. No merge was performed.
 - Next gate: sign and install the current artifact on physical iPhone and Apple TV, then execute the documented playback, audio-track, external SRT/WebVTT, Swedish glyph/timing, stability and AVPlayer comparison matrix.
 - Runtime playback, embedded track switching, external subtitle rendering/synchronization, performance, physical-device behavior and LGPL/distribution review remain unverified. AVPlayer remains the production engine; no production playback source or dependency was changed.
+
+
+## 2026-11-20 — CI duplicate-trigger and API naming documentation correction
+
+- The latest documentation-only head caused two identical expensive workflow runs (#80 and #81) because the same-branch push event and pull-request event both triggered the spike workflow. Both were resolving the same pinned ~910 MB VLCKit binary for the same commit.
+- Removed the redundant `pull_request` trigger. The dedicated branch push trigger remains the authoritative CI path for this isolated same-repository PR, and `workflow_dispatch` remains available for manual validation. This avoids duplicate package downloads/builds for each branch update.
+- Corrected the README to distinguish the Objective-C header property `selectedExclusively` from its Swift-imported setter name `isSelectedExclusively`, which is what the source uses and CI has compiled successfully.
+- No runtime source, production target, AVPlayer path or dependency was changed. The workflow-only trigger change will itself be validated by the next single push-triggered run.
