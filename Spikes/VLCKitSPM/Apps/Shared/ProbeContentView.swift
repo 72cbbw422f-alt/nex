@@ -115,14 +115,18 @@ private struct ProbeVideoSurface: UIViewRepresentable {
     let session: VLCKitProbeSession
 
     func makeUIView(context: Context) -> UIView {
-        let view = UIView()
+        let view = UIView(frame: .zero)
         view.backgroundColor = .black
+        view.isOpaque = true
+        view.clipsToBounds = true
         session.attachDrawable(view)
         return view
     }
 
     func updateUIView(_ view: UIView, context: Context) {
-        session.attachDrawable(view)
+        if session.player.drawable as? UIView !== view {
+            session.attachDrawable(view)
+        }
     }
 }
 
@@ -137,8 +141,17 @@ struct ProbeContentView: View {
                 .font(.headline.bold())
                 .foregroundStyle(.purple)
             ProbeVideoSurface(session: model.session)
-                .aspectRatio(16 / 9, contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                #if os(tvOS)
+                .frame(height: 360)
+                #else
+                .frame(height: 220)
+                #endif
                 .background(.black)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.purple.opacity(0.55), lineWidth: 1)
+                }
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             TextField("Medie-URL (http/https/file)", text: $mediaAddress)
                 .textFieldStyle(.plain)
