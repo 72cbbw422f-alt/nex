@@ -124,9 +124,7 @@ private struct ProbeVideoSurface: UIViewRepresentable {
     }
 
     func updateUIView(_ view: UIView, context: Context) {
-        if session.player.drawable as? UIView !== view {
-            session.attachDrawable(view)
-        }
+        session.attachDrawable(view)
     }
 }
 
@@ -135,6 +133,14 @@ struct ProbeContentView: View {
     @State private var mediaAddress = ""
     @State private var subtitleAddress = ""
 
+    private var videoSurfaceHeight: CGFloat {
+        #if os(tvOS)
+        return 360
+        #else
+        return 220
+        #endif
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             Text("NEXUS · VLCKIT TEST")
@@ -142,11 +148,7 @@ struct ProbeContentView: View {
                 .foregroundStyle(.purple)
             ProbeVideoSurface(session: model.session)
                 .frame(maxWidth: .infinity)
-                #if os(tvOS)
-                .frame(height: 360)
-                #else
-                .frame(height: 220)
-                #endif
+                .frame(height: videoSurfaceHeight)
                 .background(.black)
                 .overlay {
                     RoundedRectangle(cornerRadius: 12)
