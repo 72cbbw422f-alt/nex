@@ -36,7 +36,7 @@ Use owned or explicitly permitted test media. Record the exact device model, OS 
 - iPhone/iPad: H.264 and HEVC where available; AAC/AC3/E-AC3 test streams; external SRT and WebVTT.
 - Apple TV: repeat the same media and subtitle cases independently; do not infer tvOS behavior from iOS results.
 - Swedish text fixture: verify å, ä, ö, Å, Ä, Ö and punctuation; compare subtitle timing at start, middle and end.
-- Track selection: enumerate and switch available audio and subtitle tracks; report unavailable tracks rather than assuming support.
+- Audio/subtitle track switching is deferred: the pinned unstable VLCKit 4.0 binary removed the legacy track-name/index properties. The next CI header inspection must establish the exact replacement API before controls are reintroduced. Do not treat track switching as implemented.
 - Compare each test case against the existing AVPlayer path using the same source and device.
 
 Compile/link does not prove physical playback, subtitle rendering/synchronization, provider compatibility, performance, signing or LGPL compliance. Do not add this binary to production targets until those gates pass. AVPlayer remains the production engine.
