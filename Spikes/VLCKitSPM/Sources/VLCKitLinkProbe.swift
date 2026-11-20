@@ -66,7 +66,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         guard let track = player.textTracks.first(where: { $0.trackId == id }) else {
             return false
         }
-        track.isSelectedExclusively = true
+        player.selectTextTracks([track])
         return true
     }
 
@@ -91,7 +91,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public func load(mediaURL: URL, subtitleURL: URL? = nil, autoplay: Bool = false) -> Bool {
         guard let media = VLCMedia(url: mediaURL) else { return false }
         if let subtitleURL {
-            let slave = VLCMediaSlave(url: subtitleURL, type: .subtitle, priority: 0)
+            let slave = VLCMediaSlave(url: subtitleURL, type: .subtitle, priority: 4)
             guard media.addSlave(slave) else { return false }
         }
         load(media, autoplay: autoplay)
