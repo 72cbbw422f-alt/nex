@@ -6,7 +6,13 @@ private final class ProbeViewModel: ObservableObject {
     @Published var status = "Ange en medieadress och tryck på Spela."
     @Published var buffering = 0.0
     @Published var isPlaying = false
+    @Published private(set) var audioTracks: [VLCKitProbeTrack] = []
+    @Published private(set) var subtitleTracks: [VLCKitProbeTrack] = []
     let session = VLCKitProbeSession()
+
+    var subtitlesDisabled: Bool {
+        !subtitleTracks.contains(where: \.isSelected)
+    }
 
     init() {
         session.onStateChanged = { [weak self] state in
@@ -14,11 +20,43 @@ private final class ProbeViewModel: ObservableObject {
                 let value = String(describing: state)
                 self?.status = "Spelarstatus: \(value)"
                 self?.isPlaying = value.localizedCaseInsensitiveContains("playing")
+                self?.refreshTracks()
             }
         }
         session.onBufferingChanged = { [weak self] value in
             Task { @MainActor in self?.buffering = min(max(Double(value) / 100, 0), 1) }
         }
+    }
+
+    func refreshTracks() {
+        audioTracks = session.audioTracks
+        subtitleTracks = session.subtitleTracks
+    }
+
+    func selectAudioTrack(_ id: String) {
+        guard session.selectAudioTrack(id: id) else {
+            status = "Det valda ljudspåret är inte längre tillgängligt."
+            refreshTracks()
+            return
+        }
+        refreshTracks()
+        status = "Ljudspår valt."
+    }
+
+    func disableAudioTrack() {
+        session.disableAudioTrack()
+        refreshTracks()
+        status = "Ljudspår avstängt."
+    }
+
+    func selectSubtitleTrack(_ id: String?) {
+        guard session.selectSubtitleTrack(id: id) else {
+            status = "Den valda undertexten är inte längre tillgänglig."
+            refreshTracks()
+            return
+        }
+        refreshTracks()
+        status = id == nil ? "Undertexter avstängda." : "Undertextspår valt."
     }
 
     func load(media: String, subtitle: String) {
@@ -39,10 +77,13 @@ private final class ProbeViewModel: ObservableObject {
         status = "Laddar media…"
         buffering = 0
         isPlaying = false
+        audioTracks = []
+        subtitleTracks = []
         guard session.load(mediaURL: mediaURL, subtitleURL: subtitleURL, autoplay: true) else {
             status = "VLCKit kunde inte skapa media eller bifoga undertexten."
             return
         }
+        refreshTracks()
     }
 
     func togglePlayback() {
@@ -50,12 +91,16 @@ private final class ProbeViewModel: ObservableObject {
         else { session.play(); status = "Uppspelning begärd" }
         isPlaying.toggle()
     }
+
     func stop() {
         session.stop()
         isPlaying = false
         buffering = 0
+        audioTracks = []
+        subtitleTracks = []
         status = "Stoppad"
     }
+
     private static func validatedURL(_ raw: String) -> URL? {
         let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: value),
@@ -68,12 +113,14 @@ private final class ProbeViewModel: ObservableObject {
 
 private struct ProbeVideoSurface: UIViewRepresentable {
     let session: VLCKitProbeSession
+
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
         view.backgroundColor = .black
         session.attachDrawable(view)
         return view
     }
+
     func updateUIView(_ view: UIView, context: Context) {
         session.attachDrawable(view)
     }
@@ -110,6 +157,49 @@ struct ProbeContentView: View {
                 }.buttonStyle(.bordered)
                 Button("Stoppa", role: .destructive) { model.stop() }
                     .buttonStyle(.bordered)
+            }
+            HStack {
+                Menu {
+                    if model.audioTracks.isEmpty {
+                        Text("Inga ljudspår hittades")
+                    } else {
+                        Button("Inget ljud", systemImage: "speaker.slash") {
+                            model.disableAudioTrack()
+                        }
+                        ForEach(model.audioTracks) { track in
+                            Button {
+                                model.selectAudioTrack(track.trackId)
+                            } label: {
+                                Label(track.name, systemImage: track.isSelected ? "checkmark.circle.fill" : "circle")
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Ljudspår", systemImage: "speaker.wave.2")
+                }
+                .disabled(model.audioTracks.isEmpty)
+
+                Menu {
+                    Button {
+                        model.selectSubtitleTrack(nil)
+                    } label: {
+                        Label("Av", systemImage: model.subtitlesDisabled ? "checkmark.circle.fill" : "circle")
+                    }
+                    ForEach(model.subtitleTracks) { track in
+                        Button {
+                            model.selectSubtitleTrack(track.trackId)
+                        } label: {
+                            Label(track.name, systemImage: track.isSelected ? "checkmark.circle.fill" : "circle")
+                        }
+                    }
+                } label: {
+                    Label("Undertexter", systemImage: "captions.bubble")
+                }
+                Button {
+                    model.refreshTracks()
+                } label: {
+                    Label("Uppdatera spår", systemImage: "arrow.clockwise")
+                }
             }
             Text(model.status).font(.footnote)
             ProgressView(value: model.buffering)
