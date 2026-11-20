@@ -35,6 +35,12 @@ jobs:
       - name: Resolve pinned binary
         working-directory: Spikes/VLCKitSPM
         run: xcodebuild -resolvePackageDependencies -project VLCKitSpike.xcodeproj
+      - name: Inspect resolved VLCKit 4.0 track API headers
+        run: |
+          find "$HOME/Library/Developer/Xcode/DerivedData" -name 'VLCMediaPlayer.h' -o -name 'VLCMediaPlayerTrack.h' | while read header; do
+            echo "===== $header ====="
+            grep -n -E 'track|Track|select|Select|mediaPlayer' "$header" | head -n 160
+          done
       - name: Build iOS simulator host
         working-directory: Spikes/VLCKitSPM
         run: xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
