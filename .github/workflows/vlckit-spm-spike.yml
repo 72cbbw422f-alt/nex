@@ -19,7 +19,7 @@ concurrency:
 jobs:
   resolve-and-build:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode
@@ -47,3 +47,40 @@ jobs:
       - name: Build tvOS device host
         working-directory: Spikes/VLCKitSPM
         run: xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-tvOS -destination 'generic/platform=tvOS' CODE_SIGNING_ALLOWED=NO build
+      - name: Archive unsigned iOS probe
+        working-directory: Spikes/VLCKitSPM
+        run: |
+          xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-iOS -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/NEXUS-VLCKit-iOS.xcarchive" CODE_SIGNING_ALLOWED=NO archive
+      - name: Package iOS IPA for FlareStore signing
+        run: |
+          APP="$RUNNER_TEMP/NEXUS-VLCKit-iOS.xcarchive/Products/Applications/NEXUSVLCKitProbe-iOS.app"
+          test -d "$APP"
+          test -f "$APP/Info.plist"
+          test -x "$APP/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Info.plist")"
+          mkdir -p "$RUNNER_TEMP/ios-payload/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/ios-payload/Payload/"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/ios-payload/Payload" "$RUNNER_TEMP/NEXUS-VLCKit-iOS-unsigned.ipa"
+          unzip -t "$RUNNER_TEMP/NEXUS-VLCKit-iOS-unsigned.ipa"
+      - name: Archive unsigned tvOS probe
+        working-directory: Spikes/VLCKitSPM
+        run: |
+          xcodebuild -project VLCKitSpike.xcodeproj -scheme NEXUSVLCKitProbe-tvOS -destination 'generic/platform=tvOS' -archivePath "$RUNNER_TEMP/NEXUS-VLCKit-tvOS.xcarchive" CODE_SIGNING_ALLOWED=NO archive
+      - name: Package tvOS IPA for FlareStore signing
+        run: |
+          APP="$RUNNER_TEMP/NEXUS-VLCKit-tvOS.xcarchive/Products/Applications/NEXUSVLCKitProbe-tvOS.app"
+          test -d "$APP"
+          test -f "$APP/Info.plist"
+          test -x "$APP/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Info.plist")"
+          mkdir -p "$RUNNER_TEMP/tvos-payload/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/tvos-payload/Payload/"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/tvos-payload/Payload" "$RUNNER_TEMP/NEXUS-VLCKit-tvOS-unsigned.ipa"
+          unzip -t "$RUNNER_TEMP/NEXUS-VLCKit-tvOS-unsigned.ipa"
+      - name: Upload unsigned FlareStore packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-vlckit-probe-unsigned-ipas
+          path: |
+            ${{ runner.temp }}/NEXUS-VLCKit-iOS-unsigned.ipa
+            ${{ runner.temp }}/NEXUS-VLCKit-tvOS-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
