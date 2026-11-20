@@ -7,7 +7,7 @@ This spike is separate from all production NEXUS targets.
 - Approximate archive size: 910 MB (unstable upstream build)
 - Targets: iOS/iPadOS and tvOS, Swift 5.9, deployment baseline 17.0
 
-The probe host accepts a permitted media URL and optional SRT/WebVTT sidecar URL. It exposes play, pause, stop and basic player/buffering feedback.
+The probe host accepts a permitted media URL and optional SRT/WebVTT sidecar URL. It exposes play, pause, stop and basic player/buffering feedback. The VLCKit adapter sources are compiled directly into each isolated host target so the package module is linked without an intermediate framework target.
 
 ## Build locally on macOS
 
