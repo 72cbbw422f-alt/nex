@@ -2,11 +2,6 @@ import Foundation
 import UIKit
 import VLCKit
 
-public struct VLCKitProbeTrack: Identifiable {
-    public let id: Int
-    public let name: String
-}
-
 @MainActor
 public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public let player: VLCMediaPlayer
@@ -45,27 +40,6 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         load(media, autoplay: autoplay)
         return true
     }
-
-    public var audioTracks: [VLCKitProbeTrack] {
-        let names = player.audioTrackNames as? [String] ?? []
-        let indexes = player.audioTrackIndexes as? [NSNumber] ?? []
-        return zip(indexes, names).map { VLCKitProbeTrack(id: $0.0.intValue, name: $0.1) }
-    }
-
-    public var subtitleTracks: [VLCKitProbeTrack] {
-        let names = player.videoSubTitlesNames as? [String] ?? []
-        let indexes = player.videoSubTitlesIndexes as? [NSNumber] ?? []
-        return zip(indexes, names).map { VLCKitProbeTrack(id: $0.0.intValue, name: $0.1) }
-    }
-
-    public func selectAudioTrack(id: Int) {
-        player.currentAudioTrackIndex = Int32(id)
-    }
-
-    public func selectSubtitleTrack(id: Int) {
-        player.currentVideoSubTitleIndex = Int32(id)
-    }
-
     public func play() { player.play() }
     public func pause() { player.pause() }
     public func stop() {
