@@ -588,3 +588,13 @@
 - The new diagnostic workflow revision has not yet produced a recorded run result. Track selection remains unverified and the current probe head is not build-green.
 - Do not sign, distribute or install an IPA until the corrected iOS and tvOS builds and archive/package steps pass.
 - No production playback code or dependency was changed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — Probe build restored to the last known compatible playback surface
+
+- Removed the unverified VLCKit 4.0 audio/subtitle track selection calls from the isolated probe adapter and UI after CI run #63 proved those legacy members are absent from the pinned binary.
+- Kept URL playback, play/pause/stop, buffering feedback and external SRT/WebVTT sidecar attachment intact. Swedish SRT/WebVTT fixtures remain expanded.
+- Updated the README to mark embedded track enumeration/switching as pending exact VLCKit 4.0 header/API inspection. No substitute API has been guessed or presented as working.
+- Added a CI header-inspection step after SwiftPM resolution to expose the actual headers shipped in the pinned XCFramework. Its result is still pending; no new successful run is recorded yet.
+- The previous run #63 failed only at the first iOS simulator compile because of the removed legacy track APIs; IPA/archive steps did not run. The current restored head still requires a fresh complete CI run before any IPA is considered available.
+- AVPlayer remains unchanged in production. No production dependency or player path was altered.
