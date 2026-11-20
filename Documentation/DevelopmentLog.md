@@ -661,3 +661,12 @@
 - This is a source-level correction and improved test fixture, not yet runtime-verified. CI must pass and a new signed iOS/tvOS package must be installed before we can confirm actual subtitle rendering.
 - Next physical test: reload the Mux stream and the updated SRT URL together from the beginning; observe cues at 0:02, 0:15, 0:30, 0:45, 1:00, 1:15, 1:30 and 1:45. Confirm the subtitle menu reports an active selected track and the text is visibly composited over the video. Repeat on both iPhone and Apple TV; then repeat with WebVTT.
 - AVPlayer and all production targets remain unchanged. PR #2 remains Draft and unmerged.
+
+## 2026-11-20 — Automatic external subtitle activation
+
+- User reports the external subtitle entry appears as "Track 1", is not selected at playback start, and requires two manual selections before the selection remains active.
+- This indicates the external text track becomes available asynchronously after playback starts. The previous implementation attached the subtitle slave before playback but only attempted selection when the user opened the subtitle menu.
+- Added a pending external-subtitle selection in `VLCKitProbeSession`. When VLCKit reports a player-state or buffering callback, the session checks whether the text track has appeared and selects the first available text track using `selectTextTracks([track])`. The pending request remains active until a text track is actually available.
+- Explicit user track selection remains available; subtitle-off still deselects all text tracks. The automatic path only activates when a subtitle URL was supplied for the current load.
+- This is not yet CI- or device-verified. The current queued CI run predates this latest automatic-selection commit; a fresh run is required. Actual subtitle rendering remains unverified until the updated IPA is installed and tested.
+- AVPlayer and production targets remain untouched. PR #2 remains Draft and unmerged.
