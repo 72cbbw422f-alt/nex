@@ -95,11 +95,11 @@ struct ProbeContentView: View {
                 .background(.black)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             TextField("Medie-URL (http/https/file)", text: $mediaAddress)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
             TextField("Valfri undertext-URL (.srt/.vtt)", text: $subtitleAddress)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.plain)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
             HStack {
