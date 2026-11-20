@@ -568,3 +568,12 @@
 - No physical device has yet been tested. Audio-track selection controls are not yet exposed in the probe UI; this must be added or otherwise instrumented before that test can be considered complete.
 - FlareStore's current documentation requires signing certificates/provisioning profiles for iPhone/iPad and a separate certificate registered to each Apple TV. Apple TV wireless installation is documented as beta. No certificate files or secrets are stored in GitHub.
 - No production code, dependency or playback path was changed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — VLCKit probe track controls and Swedish subtitle fixtures
+
+- Added probe-level enumeration and selection of VLCKit's available audio tracks and embedded/sidecar subtitle tracks using the documented media-player track index/name APIs.
+- Added separate audio and subtitle menus plus a manual refresh control to the isolated SwiftUI probe. Track controls are test instrumentation only and are not connected to production PlaybackCoordinator.
+- Expanded both SRT and WebVTT fixtures to include lowercase and uppercase Swedish characters (å, ä, ö, Å, Ä, Ö), punctuation and Swedish words.
+- These source changes have not yet passed a fresh Xcode build. API import compatibility with the pinned unstable VLCKit binary must be confirmed by CI before the track controls are considered build-verified.
+- No real playback or subtitle rendering test has been performed. AVPlayer remains the production engine.
