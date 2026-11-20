@@ -611,3 +611,14 @@
 - The new track-selection source/UI changes are subsequent commits and still require a fresh complete CI run. The run #72 artifact must not be treated as containing the new track menus.
 - Physical iPhone and Apple TV playback, SRT/WebVTT rendering and synchronization, audio switching behavior, codec coverage, performance, FlareStore signing/install and LGPL/distribution review remain unverified.
 - No production dependency or playback path was changed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — Latest VLCKit 4.0 track controls build verified
+
+- GitHub Actions run #78 (ID `44788134905`) passed on commit `ff62491248895e62ba0d6ff754995bae334bd872` after correcting the Swift-imported property name from `selectedExclusively` to `isSelectedExclusively`.
+- All 16 workflow steps passed: XcodeGen generation, pinned VLCKit 4.0 resolution and header inspection, iOS/tvOS Simulator builds, generic iOS/tvOS device builds, both unsigned archives, both IPA ZIP validations and artifact upload.
+- The successful run verifies compile/link and packaging of the revision containing the audio/subtitle track menus. It does not verify actual playback or track switching at runtime.
+- Fresh artifact: `nexus-vlckit-probe-unsigned-ipas`, artifact ID `14654759392`, 38,179,643 bytes, SHA-256 `bcc10432c098cd1d375512bb26942060348159a8aa3f6a5b92ed5e2cc1381748`, expires 2026-12-04 18:12:07 UTC. Contains unsigned iOS and tvOS IPA packages; FlareStore signing with the correct platform certificates/profiles is required.
+- PR #2 remains open and draft, based on `project-foundation`; mergeable status was true at verification. No merge was performed.
+- Next gate: sign and install the current artifact on physical iPhone and Apple TV, then execute the documented playback, audio-track, external SRT/WebVTT, Swedish glyph/timing, stability and AVPlayer comparison matrix.
+- Runtime playback, embedded track switching, external subtitle rendering/synchronization, performance, physical-device behavior and LGPL/distribution review remain unverified. AVPlayer remains the production engine; no production playback source or dependency was changed.
