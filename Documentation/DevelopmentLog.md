@@ -683,3 +683,14 @@
 - The current branch head before this documentation update is `ec7ffc401567a5addc6c0f05a1bb6b723ee77da9`; the successful run compiled the automatic-selection source commit above, followed by a documentation-only commit.
 - Remaining runtime checks: repeat SRT test from the beginning and verify cue timing throughout the 1:55 fixture; test WebVTT on both devices; test subtitle off/on and track persistence; inspect audio-track switching and embedded subtitles where available; assess longer playback stability and compare against AVPlayer.
 - The test panel remains a technical spike UI, not production NEXUS design. No production target, dependency or AVPlayer path was changed. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-20 — Subtitle menu state synchronized with automatic selection
+
+- User reports that external SRT subtitles render automatically on both iPhone and Apple TV, while the probe subtitle menu still marks "Av" as selected.
+- Root cause found in the probe UI: the menu's "Av" state was derived exclusively from VLCKit's `track.isSelected`, while automatic selection was requested asynchronously by the session. The view model could therefore display stale/unrefreshed selection metadata even while the external subtitle was visibly rendered.
+- Added explicit session-level `selectedSubtitleTrackID` state. Automatic external selection and manual track selection record the selected track ID; explicit disable, stop, detach and new-media load clear it.
+- Subtitle track snapshots now combine VLCKit's selected flag with the session's most recently requested selected track ID. The UI refreshes track snapshots on both player-state and buffering callbacks, so the menu can update as the asynchronous external track appears.
+- This is a state-consistency correction for the isolated VLCKit probe only. The session-level ID represents the selection request issued to VLCKit; it is not an independent decoder/rendering acknowledgement. The user's physical-device screenshots already verify visible SRT rendering, but the corrected menu state still needs a fresh build and physical-device confirmation.
+- Source and UI commits: `adfc8e3396c57feced5e3cffb52178933e9a70cb` and `b080d6e4913d07c3bc8f1e3faa9c1784a2de9cf8`. A fresh CI run is required; no compile or device result is claimed yet.
+- AVPlayer, production targets and dependencies remain unchanged. PR #2 remains open and Draft; no merge was performed.
