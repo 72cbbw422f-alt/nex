@@ -555,3 +555,16 @@
 - The build log includes a non-blocking Xcode warning that App Intents metadata extraction was skipped because the probe does not depend on AppIntents.framework, plus a GitHub Actions Node.js 20 deprecation warning for actions/checkout@v4. Neither caused the build to fail.
 - No production source, production dependency or playback path was changed. AVPlayer remains the production engine.
 - Next gate: install/run the isolated probe on physical iOS and tvOS hardware with permitted test media, verify playback and sidecar subtitles, then complete the licensing/distribution review before any production engine decision.
+
+
+## 2026-11-20 — FlareStore packaging pipeline added
+
+- Extended the isolated VLCKit GitHub Actions workflow to archive the iOS and tvOS device targets after the existing simulator/device compile checks.
+- Added packaging and structural validation for separate unsigned IPA files: `NEXUS-VLCKit-iOS-unsigned.ipa` and `NEXUS-VLCKit-tvOS-unsigned.ipa`. Each package is checked for the app bundle, Info.plist, executable and valid ZIP contents before upload.
+- Added the `nexus-vlckit-probe-unsigned-ipas` Actions artifact with 14-day retention. The artifact must be signed in FlareStore with the correct platform-specific certificate/profile before installation; it is not itself install-ready.
+- Documented FlareStore import/sign/install steps and a physical-device runtime test matrix in the isolated spike README.
+- Commit: `4600d47fa641db5a97dff2c48a0a23a8e1e6e677` contains the workflow change. Follow-up documentation commits are on `integration/vlckit-spike-refresh`.
+- Validation of the new archive, IPA packaging and artifact upload steps is pending a fresh GitHub Actions run. The earlier run #51 validates only the four generic build destinations and does not contain IPA artifacts.
+- No physical device has yet been tested. Audio-track selection controls are not yet exposed in the probe UI; this must be added or otherwise instrumented before that test can be considered complete.
+- FlareStore's current documentation requires signing certificates/provisioning profiles for iPhone/iPad and a separate certificate registered to each Apple TV. Apple TV wireless installation is documented as beta. No certificate files or secrets are stored in GitHub.
+- No production code, dependency or playback path was changed. AVPlayer remains the production engine.
