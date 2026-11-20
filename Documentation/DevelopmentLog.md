@@ -544,3 +544,14 @@
 
 
 - Adjusted the dedicated spike workflow concurrency policy so an in-flight validation is not cancelled merely because another PR synchronization event arrives. This prevents rapid sequential source/documentation commits from repeatedly cancelling the expensive binary-resolution/build job. The next run should be allowed to finish against its triggering revision.
+
+## 2026-11-20 — VLCKit isolated host build verification
+
+- GitHub Actions run #51 completed successfully for commit `f82654e89cf7351ea4271b4692fdd819b80a149b`.
+- XcodeGen project generation and resolution of the pinned VideoLAN SwiftPM binary completed successfully.
+- All four generic build destinations passed: iOS Simulator, tvOS Simulator, generic iOS device and generic tvOS device. The job completed with success and all ten workflow steps passed.
+- The prior tvOS `.roundedBorder` compile issue and the delegate callback warning correction are therefore covered by this successful compile/link run.
+- This validates project generation, package resolution and compile/link for the four configured destinations only. It does not prove runtime playback, audio output, external SRT/WebVTT subtitle rendering or synchronization, codec compatibility, performance, signing, physical-device behavior or LGPL/distribution compliance.
+- The build log includes a non-blocking Xcode warning that App Intents metadata extraction was skipped because the probe does not depend on AppIntents.framework, plus a GitHub Actions Node.js 20 deprecation warning for actions/checkout@v4. Neither caused the build to fail.
+- No production source, production dependency or playback path was changed. AVPlayer remains the production engine.
+- Next gate: install/run the isolated probe on physical iOS and tvOS hardware with permitted test media, verify playback and sidecar subtitles, then complete the licensing/distribution review before any production engine decision.
