@@ -2,6 +2,13 @@ import Foundation
 import UIKit
 import VLCKit
 
+public struct VLCKitProbeTrack: Identifiable, Equatable {
+    public let id: String
+    public let trackId: String
+    public let name: String
+    public let isSelected: Bool
+}
+
 @MainActor
 public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public let player: VLCMediaPlayer
@@ -16,20 +23,70 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         super.init()
         player.delegate = self
     }
+
+    public var audioTracks: [VLCKitProbeTrack] {
+        player.audioTracks.enumerated().map { index, track in
+            VLCKitProbeTrack(
+                id: "\(track.trackId)-\(index)",
+                trackId: track.trackId,
+                name: track.trackName,
+                isSelected: track.isSelected
+            )
+        }
+    }
+
+    public var subtitleTracks: [VLCKitProbeTrack] {
+        player.textTracks.enumerated().map { index, track in
+            VLCKitProbeTrack(
+                id: "\(track.trackId)-\(index)",
+                trackId: track.trackId,
+                name: track.trackName,
+                isSelected: track.isSelected
+            )
+        }
+    }
+
+    public func selectAudioTrack(id: String) -> Bool {
+        guard let track = player.audioTracks.first(where: { $0.trackId == id }) else {
+            return false
+        }
+        track.selectedExclusively = true
+        return true
+    }
+
+    public func disableAudioTrack() {
+        player.deselectAllAudioTracks()
+    }
+
+    public func selectSubtitleTrack(id: String?) -> Bool {
+        guard let id else {
+            player.deselectAllTextTracks()
+            return true
+        }
+        guard let track = player.textTracks.first(where: { $0.trackId == id }) else {
+            return false
+        }
+        track.selectedExclusively = true
+        return true
+    }
+
     public func attachDrawable(_ view: UIView) {
         drawableView = view
         player.drawable = view
     }
+
     public func detachDrawable() {
         player.stop()
         player.drawable = nil
         drawableView = nil
     }
+
     public func load(_ media: VLCMedia, autoplay: Bool = false) {
         player.stop()
         player.media = media
         if autoplay { player.play() }
     }
+
     @discardableResult
     public func load(mediaURL: URL, subtitleURL: URL? = nil, autoplay: Bool = false) -> Bool {
         guard let media = VLCMedia(url: mediaURL) else { return false }
@@ -40,8 +97,10 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         load(media, autoplay: autoplay)
         return true
     }
+
     public func play() { player.play() }
     public func pause() { player.pause() }
+
     public func stop() {
         player.stop()
         player.media = nil
