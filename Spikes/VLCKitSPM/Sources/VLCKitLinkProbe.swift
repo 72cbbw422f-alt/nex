@@ -46,7 +46,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         player.stop()
         player.media = nil
     }
-    public func mediaPlayerStateChanged(_ notification: Notification!) {
+    public func mediaPlayerStateChanged(_ notification: Notification) {
         latestState = player.state
         onStateChanged?(latestState)
     }
