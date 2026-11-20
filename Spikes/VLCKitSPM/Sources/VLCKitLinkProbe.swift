@@ -13,6 +13,7 @@ public struct VLCKitProbeTrack: Identifiable, Equatable {
 public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
     public let player: VLCMediaPlayer
     private var drawableView: UIView?
+    private var pendingExternalSubtitleSelection = false
     public private(set) var latestState: VLCMediaPlayerState = .stopped
     public private(set) var latestBuffering: Float = 0
     public var onStateChanged: ((VLCMediaPlayerState) -> Void)?
@@ -87,12 +88,23 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         if autoplay { player.play() }
     }
 
+    private func selectPendingExternalSubtitleIfAvailable() {
+        guard pendingExternalSubtitleSelection else { return }
+        guard let track = player.textTracks.first else { return }
+        player.selectTextTracks([track])
+        pendingExternalSubtitleSelection = false
+    }
+
     @discardableResult
     public func load(mediaURL: URL, subtitleURL: URL? = nil, autoplay: Bool = false) -> Bool {
         guard let media = VLCMedia(url: mediaURL) else { return false }
+        pendingExternalSubtitleSelection = subtitleURL != nil
         if let subtitleURL {
             let slave = VLCMediaSlave(url: subtitleURL, type: .subtitle, priority: 4)
-            guard media.addSlave(slave) else { return false }
+            guard media.addSlave(slave) else {
+                pendingExternalSubtitleSelection = false
+                return false
+            }
         }
         load(media, autoplay: autoplay)
         return true
@@ -110,11 +122,13 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
 extension VLCKitProbeSession {
     public func mediaPlayerStateChanged(_ notification: Notification!) {
         latestState = player.state
+        selectPendingExternalSubtitleIfAvailable()
         onStateChanged?(latestState)
     }
 
     public func mediaPlayerBuffering(_ notification: Notification!, buffer: Float) {
         latestBuffering = buffer
+        selectPendingExternalSubtitleIfAvailable()
         onBufferingChanged?(buffer)
     }
 }
