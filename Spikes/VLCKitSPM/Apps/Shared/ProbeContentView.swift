@@ -24,7 +24,10 @@ private final class ProbeViewModel: ObservableObject {
             }
         }
         session.onBufferingChanged = { [weak self] value in
-            Task { @MainActor in self?.buffering = min(max(Double(value) / 100, 0), 1) }
+            Task { @MainActor in
+                self?.buffering = min(max(Double(value) / 100, 0), 1)
+                self?.refreshTracks()
+            }
         }
     }
 
