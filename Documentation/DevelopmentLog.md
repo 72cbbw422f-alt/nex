@@ -630,3 +630,14 @@
 - Removed the redundant `pull_request` trigger. The dedicated branch push trigger remains the authoritative CI path for this isolated same-repository PR, and `workflow_dispatch` remains available for manual validation. This avoids duplicate package downloads/builds for each branch update.
 - Corrected the README to distinguish the Objective-C header property `selectedExclusively` from its Swift-imported setter name `isSelectedExclusively`, which is what the source uses and CI has compiled successfully.
 - No runtime source, production target, AVPlayer path or dependency was changed. The workflow-only trigger change will itself be validated by the next single push-triggered run.
+
+## 2026-11-20 — Single-trigger workflow and fresh IPA package verified
+
+- GitHub Actions run #82 (ID `44813330479`) completed successfully for commit `8bed9be3c42b29418c4887a77515ede7292dff71` after the redundant `pull_request` trigger was removed.
+- All 16 workflow steps passed: XcodeGen generation, pinned VLCKit 4.0 resolution and header inspection, iOS/tvOS Simulator builds, generic iOS/tvOS device builds, both unsigned archives, both IPA ZIP validations and artifact upload.
+- This confirms the workflow-only change is valid and that the single push-triggered run can produce both platform packages. Earlier duplicate runs #80 and #81 also passed all 16 steps.
+- Fresh artifact from run #82: `nexus-vlckit-probe-unsigned-ipas`, artifact ID `14667903769`, 38,179,618 bytes, SHA-256 `a646f51c935d1c81bd55370d7b826214fa64ad559e5f16f05f4c24151d943a12`, expires 2026-12-04 20:46:37 UTC. It contains unsigned iOS and tvOS IPA packages and requires platform-appropriate FlareStore signing before installation.
+- The PR branch's current head `fb3be051fa0721702770c7df71d29fe8fa2294e6` has the same Git tree as the tested run commit (`f00a4bcfd092ef5936720d4704892a6f20f99ee2)); the follow-up commit changes no file content. Thus the artifact corresponds to the current branch content.
+- PR #2 remains open and draft against `project-foundation`; it is mergeable, but has not been merged. No production code or AVPlayer path was changed.
+- Next gate is physical-device validation after FlareStore signing: install on iPhone and Apple TV, test playback, pause/resume/stop, buffering, audio switching, embedded and external SRT/WebVTT subtitles, Swedish glyphs/timing, stability and performance against AVPlayer.
+- Runtime playback, physical-device behavior, actual subtitle/audio switching and LGPL/distribution review remain unverified. AVPlayer remains the production engine.
