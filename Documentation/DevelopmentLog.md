@@ -533,3 +533,11 @@
 - Corrected the state delegate callback parameter from implicitly unwrapped to non-optional `Notification`, matching the Swift-imported protocol requirement and removing the compiler's near-match warning.
 - The first run's failure was a target/module wiring issue, not a package-resolution failure. The follow-up run was cancelled as the branch received subsequent commits; the corrected branch head still requires a fresh complete iOS/tvOS build.
 - No production playback source or dependency was changed. AVPlayer remains the production engine. Physical-device playback, sidecar subtitle behavior and distribution licensing remain unverified.
+
+
+## 2026-11-20 — tvOS probe compile correction
+
+- The next VLCKit CI run successfully resolved the pinned binary and built the iOS Simulator host. The tvOS Simulator host exposed two platform-specific compile errors: SwiftUI's `.roundedBorder` text-field style is unavailable on tvOS.
+- Replaced the shared probe text-field style with the cross-platform `.plain` style so the same input UI compiles on iOS and tvOS.
+- Moved the optional Objective-C VLCKit delegate callback implementations into a class extension and restored the imported implicitly-unwrapped Notification signature to address the compiler's near-match warning.
+- The run stopped at the tvOS Simulator step; device builds were skipped. The latest corrections require a fresh complete CI run. No physical playback, subtitle rendering or production integration is claimed.
