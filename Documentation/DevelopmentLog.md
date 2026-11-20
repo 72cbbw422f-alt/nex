@@ -598,3 +598,16 @@
 - Added a CI header-inspection step after SwiftPM resolution to expose the actual headers shipped in the pinned XCFramework. Its result is still pending; no new successful run is recorded yet.
 - The previous run #63 failed only at the first iOS simulator compile because of the removed legacy track APIs; IPA/archive steps did not run. The current restored head still requires a fresh complete CI run before any IPA is considered available.
 - AVPlayer remains unchanged in production. No production dependency or player path was altered.
+
+
+## 2026-11-20 — VLCKit 4.0 API inspection and track-selection implementation
+
+- GitHub Actions run #72 passed for the prior isolated probe revision `ad26d5047355af2956185932a9f84786e174b214`.
+- Verified XcodeGen generation, pinned VLCKit 4.0 package resolution, public XCFramework header inspection, iOS Simulator build, tvOS Simulator build, generic iOS device build, generic tvOS device build, both device archives, both unsigned IPA ZIP validations and artifact upload. All 16 job steps completed successfully.
+- The workflow header output confirms the new player API: `audioTracks`, `textTracks`, `selectTrackAtIndex(_:type:)`, `selectTextTracks(_:)`, `deselectAllAudioTracks()` and `deselectAllTextTracks()`.
+- Inspected the upstream public track declaration: `VLCMediaPlayerTrack` exposes `trackId`, `trackName`, `isSelected` and `selectedExclusively`. The implementation uses those members and the actual player arrays; no legacy name/index APIs are used.
+- Added adapter-level track enumeration, exclusive audio/subtitle selection and explicit disable operations. Added probe UI menus for audio and subtitle selection plus a manual track refresh control.
+- CI run #72 produced artifact `nexus-vlckit-probe-unsigned-ipas` (artifact ID `14640691735`, 38,161,632 bytes, expires 2026-12-04 14:59:59 UTC). It contains unsigned iOS and tvOS IPA packages from the previous revision. These are not install-ready until signed with the appropriate FlareStore certificates/profiles.
+- The new track-selection source/UI changes are subsequent commits and still require a fresh complete CI run. The run #72 artifact must not be treated as containing the new track menus.
+- Physical iPhone and Apple TV playback, SRT/WebVTT rendering and synchronization, audio switching behavior, codec coverage, performance, FlareStore signing/install and LGPL/distribution review remain unverified.
+- No production dependency or playback path was changed. AVPlayer remains the production engine.
