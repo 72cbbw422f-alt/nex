@@ -704,3 +704,14 @@
 - Follow-up code review found a race: if the user explicitly disabled subtitles before the external track appeared, the pending automatic-selection flag could still select the subtitle later. Fixed in commit `98ccf4a8614fd0c316400878b92e04fff4e6c700`: explicit Off or manual track selection now cancels pending automatic selection. This additional hardening commit has not yet been built or runtime-tested; a new CI run is expected.
 - Physical-device validation is still pending for the updated menu state and manual override. The prior user screenshots verify visible external SRT captions on both iPhone and Apple TV, but do not verify the menu's selected marker.
 - No production target, AVPlayer code or dependency was changed. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-21 — Manual subtitle-off override built and packaged
+
+- GitHub Actions run #92 (ID `44880861789`) completed successfully with all 16 steps for source commit `98ccf4a8614fd0c316400878b92e04fff4e6c700`.
+- Verified: XcodeGen project generation, pinned VLCKit 4.0 resolution/header inspection, iOS and tvOS simulator builds, iOS and tvOS generic device builds, both unsigned archives, both IPA packages and artifact upload.
+- Run #92 artifact: `nexus-vlckit-probe-unsigned-ipas`, ID `14697389683`, 38,182,883 bytes, SHA-256 `6bb332e9d25ff0a7303dbb7e047e40c4a919b67d6d124b60ed2308a7bf682e62`, expires 2026-12-05 07:38:26 UTC. Downloaded locally; ZIP integrity passed. Contents: `NEXUS-VLCKit-tvOS-unsigned.ipa` (18,940,832 bytes) and `NEXUS-VLCKit-iOS-unsigned.ipa` (19,332,198 bytes).
+- The source change cancels pending automatic external subtitle selection when the user explicitly chooses Off or a manual track, preventing a delayed automatic selection from overriding the user's choice. This is compile/build verified but still requires physical-device runtime validation.
+- The previous run #91 verified the session-backed selection marker/menu changes; the current run #92 includes the additional manual-off override.
+- Next physical test: with external SRT loaded, verify menu marks the actual active track; choose Off while the track is loading and confirm captions remain absent; choose the track again and confirm captions return. Repeat on iPhone and Apple TV. Also check the menu after pause/resume and a fresh media load.
+- No production target, AVPlayer code or dependency changed. PR #2 remains open and Draft; no merge was performed.
