@@ -694,3 +694,13 @@
 - This is a state-consistency correction for the isolated VLCKit probe only. The session-level ID represents the selection request issued to VLCKit; it is not an independent decoder/rendering acknowledgement. The user's physical-device screenshots already verify visible SRT rendering, but the corrected menu state still needs a fresh build and physical-device confirmation.
 - Source and UI commits: `adfc8e3396c57feced5e3cffb52178933e9a70cb` and `b080d6e4913d07c3bc8f1e3faa9c1784a2de9cf8`. A fresh CI run is required; no compile or device result is claimed yet.
 - AVPlayer, production targets and dependencies remain unchanged. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-21 — Subtitle selection state build verified; manual override hardened
+
+- GitHub Actions run #90 (ID `44823904986`) passed all 16 steps for session-state commit `adfc8e3396c57feced5e3cffb52178933e9a70cb`.
+- GitHub Actions run #91 (ID `44823912006`) passed all 16 steps for UI commit `b080d6e4913d07c3bc8f1e3faa9c1784a2de9cf8`: iOS/tvOS simulator and generic device builds, both unsigned archives, IPA packaging and artifact upload.
+- Run #91 artifact: `nexus-vlckit-probe-unsigned-ipas`, ID `14674712174`, 38,183,035 bytes, SHA-256 `0e4ada21c6d317e6d614fca05714d6a79f0f8a129832664eb3b740a1adf6dbc8`, expires 2026-12-04 22:14:35 UTC. Downloaded and locally verified: ZIP integrity passed; contains `NEXUS-VLCKit-iOS-unsigned.ipa` (19,332,172 bytes) and `NEXUS-VLCKit-tvOS-unsigned.ipa` (18,940,840 bytes).
+- Follow-up code review found a race: if the user explicitly disabled subtitles before the external track appeared, the pending automatic-selection flag could still select the subtitle later. Fixed in commit `98ccf4a8614fd0c316400878b92e04fff4e6c700`: explicit Off or manual track selection now cancels pending automatic selection. This additional hardening commit has not yet been built or runtime-tested; a new CI run is expected.
+- Physical-device validation is still pending for the updated menu state and manual override. The prior user screenshots verify visible external SRT captions on both iPhone and Apple TV, but do not verify the menu's selected marker.
+- No production target, AVPlayer code or dependency was changed. PR #2 remains open and Draft; no merge was performed.
