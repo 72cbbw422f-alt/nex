@@ -715,3 +715,12 @@
 - The previous run #91 verified the session-backed selection marker/menu changes; the current run #92 includes the additional manual-off override.
 - Next physical test: with external SRT loaded, verify menu marks the actual active track; choose Off while the track is loading and confirm captions remain absent; choose the track again and confirm captions return. Repeat on iPhone and Apple TV. Also check the menu after pause/resume and a fresh media load.
 - No production target, AVPlayer code or dependency changed. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-21 — Explicit subtitle-off state made authoritative
+
+- Follow-up source review identified a remaining UI-state edge case: after an explicit Off action, a stale `track.isSelected` value from VLCKit could still mark the subtitle row as selected because the prior implementation combined the engine flag with the session's selected track ID.
+- Added a session override marker to distinguish "no session decision yet" from an explicit user decision. After automatic/manual selection, the session-selected track ID is authoritative; after explicit Off, no track is marked selected even if VLCKit's reported flag is temporarily stale. The override is cleared on media reset/stop/detach.
+- Source commit: `c1381ee1ae40b75d9961ec1259803ddf634738ac`. This change is not yet built or device-tested. A fresh CI run is expected.
+- Run #92 remains successful for its preceding revision and does not include this latest change.
+- No production target, AVPlayer code or dependency changed. PR #2 remains open and Draft; no merge was performed.
