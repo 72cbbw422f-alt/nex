@@ -514,3 +514,213 @@
 - Added fake-engine tests for both unsupported rejection and supported forwarding.
 - The capability-contract commit passed iOS Simulator build, tvOS Simulator build and iOS unit tests. The external-subtitle contract commit also passed those checks. The latest test-forwarding workflow run ended as a cancelled job and therefore does not validate the two new tests; a fresh CI run is required.
 - No external subtitle is rendered by AVPlayer, and no production VLCKit dependency has been added. Runtime playback and subtitle rendering remain unverified.
+
+
+## 2026-11-20 — VLCKit spike refreshed on current foundation
+
+- The earlier `spike/vlckit-spm` branch had diverged substantially from the current `project-foundation` branch (30 commits ahead and 29 behind at inspection). Its older Roadmap.md would have overwritten newer playback abstraction, Xtream resilience and Live TV work if merged as-is.
+- Created `integration/vlckit-spike-refresh` from the current `project-foundation` head and copied only the isolated VLCKit spike files. Production sources and the current roadmap were left untouched.
+- Added an isolated XcodeGen project, pinned VideoLAN binary package, iOS/tvOS host app entry points, media/subtitle probe session, Swedish SRT/WebVTT fixtures and a dedicated GitHub Actions workflow.
+- The workflow is configured to build iOS Simulator, tvOS Simulator and generic device host targets. It will download the approximately 910 MB unstable upstream binary when the workflow runs.
+- No production dependency or playback path was changed. AVPlayer remains the production engine.
+- This refreshed branch has not yet completed CI. Swift/Xcode compilation, runtime media playback, sidecar subtitle rendering, physical-device behavior and licensing remain unverified.
+
+
+## 2026-11-20 — VLCKit probe build failure analysis and target wiring correction
+
+- The first refreshed VLCKit workflow resolved the pinned SwiftPM binary successfully and generated the Xcode project, but the iOS Simulator build failed because the host app could not resolve the intermediate `VLCKitProbe` framework module.
+- Reworked the isolated XcodeGen project so each iOS/tvOS probe host compiles the adapter source directly and links the pinned VLCKit package product. Removed the unnecessary intermediate framework targets and the corresponding app-level module import.
+- Corrected the state delegate callback parameter from implicitly unwrapped to non-optional `Notification`, matching the Swift-imported protocol requirement and removing the compiler's near-match warning.
+- The first run's failure was a target/module wiring issue, not a package-resolution failure. The follow-up run was cancelled as the branch received subsequent commits; the corrected branch head still requires a fresh complete iOS/tvOS build.
+- No production playback source or dependency was changed. AVPlayer remains the production engine. Physical-device playback, sidecar subtitle behavior and distribution licensing remain unverified.
+
+
+## 2026-11-20 — tvOS probe compile correction
+
+- The next VLCKit CI run successfully resolved the pinned binary and built the iOS Simulator host. The tvOS Simulator host exposed two platform-specific compile errors: SwiftUI's `.roundedBorder` text-field style is unavailable on tvOS.
+- Replaced the shared probe text-field style with the cross-platform `.plain` style so the same input UI compiles on iOS and tvOS.
+- Moved the optional Objective-C VLCKit delegate callback implementations into a class extension and restored the imported implicitly-unwrapped Notification signature to address the compiler's near-match warning.
+- The run stopped at the tvOS Simulator step; device builds were skipped. The latest corrections require a fresh complete CI run. No physical playback, subtitle rendering or production integration is claimed.
+
+
+- Adjusted the dedicated spike workflow concurrency policy so an in-flight validation is not cancelled merely because another PR synchronization event arrives. This prevents rapid sequential source/documentation commits from repeatedly cancelling the expensive binary-resolution/build job. The next run should be allowed to finish against its triggering revision.
+
+## 2026-11-20 — VLCKit isolated host build verification
+
+- GitHub Actions run #51 completed successfully for commit `f82654e89cf7351ea4271b4692fdd819b80a149b`.
+- XcodeGen project generation and resolution of the pinned VideoLAN SwiftPM binary completed successfully.
+- All four generic build destinations passed: iOS Simulator, tvOS Simulator, generic iOS device and generic tvOS device. The job completed with success and all ten workflow steps passed.
+- The prior tvOS `.roundedBorder` compile issue and the delegate callback warning correction are therefore covered by this successful compile/link run.
+- This validates project generation, package resolution and compile/link for the four configured destinations only. It does not prove runtime playback, audio output, external SRT/WebVTT subtitle rendering or synchronization, codec compatibility, performance, signing, physical-device behavior or LGPL/distribution compliance.
+- The build log includes a non-blocking Xcode warning that App Intents metadata extraction was skipped because the probe does not depend on AppIntents.framework, plus a GitHub Actions Node.js 20 deprecation warning for actions/checkout@v4. Neither caused the build to fail.
+- No production source, production dependency or playback path was changed. AVPlayer remains the production engine.
+- Next gate: install/run the isolated probe on physical iOS and tvOS hardware with permitted test media, verify playback and sidecar subtitles, then complete the licensing/distribution review before any production engine decision.
+
+
+## 2026-11-20 — FlareStore packaging pipeline added
+
+- Extended the isolated VLCKit GitHub Actions workflow to archive the iOS and tvOS device targets after the existing simulator/device compile checks.
+- Added packaging and structural validation for separate unsigned IPA files: `NEXUS-VLCKit-iOS-unsigned.ipa` and `NEXUS-VLCKit-tvOS-unsigned.ipa`. Each package is checked for the app bundle, Info.plist, executable and valid ZIP contents before upload.
+- Added the `nexus-vlckit-probe-unsigned-ipas` Actions artifact with 14-day retention. The artifact must be signed in FlareStore with the correct platform-specific certificate/profile before installation; it is not itself install-ready.
+- Documented FlareStore import/sign/install steps and a physical-device runtime test matrix in the isolated spike README.
+- Commit: `4600d47fa641db5a97dff2c48a0a23a8e1e6e677` contains the workflow change. Follow-up documentation commits are on `integration/vlckit-spike-refresh`.
+- Validation of the new archive, IPA packaging and artifact upload steps is pending a fresh GitHub Actions run. The earlier run #51 validates only the four generic build destinations and does not contain IPA artifacts.
+- No physical device has yet been tested. Audio-track selection controls are not yet exposed in the probe UI; this must be added or otherwise instrumented before that test can be considered complete.
+- FlareStore's current documentation requires signing certificates/provisioning profiles for iPhone/iPad and a separate certificate registered to each Apple TV. Apple TV wireless installation is documented as beta. No certificate files or secrets are stored in GitHub.
+- No production code, dependency or playback path was changed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — VLCKit probe track controls and Swedish subtitle fixtures
+
+- Added probe-level enumeration and selection of VLCKit's available audio tracks and embedded/sidecar subtitle tracks using the documented media-player track index/name APIs.
+- Added separate audio and subtitle menus plus a manual refresh control to the isolated SwiftUI probe. Track controls are test instrumentation only and are not connected to production PlaybackCoordinator.
+- Expanded both SRT and WebVTT fixtures to include lowercase and uppercase Swedish characters (å, ä, ö, Å, Ä, Ö), punctuation and Swedish words.
+- These source changes have not yet passed a fresh Xcode build. API import compatibility with the pinned unstable VLCKit binary must be confirmed by CI before the track controls are considered build-verified.
+- No real playback or subtitle rendering test has been performed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — VLCKit 4.0 track API mismatch found in CI
+
+- Fresh GitHub Actions run #63 (44750855997) for PR #2 passed XcodeGen and pinned SwiftPM binary resolution, then failed at the iOS Simulator compile.
+- The compiler confirmed that the pinned VLCKit 4.0 artifact does not expose the legacy audioTrackNames, audioTrackIndexes, videoSubTitlesNames, videoSubTitlesIndexes, currentAudioTrackIndex or currentVideoSubTitleIndex members used by the first track-control pass.
+- This is an API-version mismatch in the probe adapter, not a package-resolution or linker failure. The IPA archive and artifact steps were correctly skipped after the failed compile.
+- Added a temporary CI inspection step to print the actual public VLCMediaPlayer and track header declarations from the resolved binary. This is required to implement against the exact pinned 4.0 API rather than guessing from older documentation.
+- The new diagnostic workflow revision has not yet produced a recorded run result. Track selection remains unverified and the current probe head is not build-green.
+- Do not sign, distribute or install an IPA until the corrected iOS and tvOS builds and archive/package steps pass.
+- No production playback code or dependency was changed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — Probe build restored to the last known compatible playback surface
+
+- Removed the unverified VLCKit 4.0 audio/subtitle track selection calls from the isolated probe adapter and UI after CI run #63 proved those legacy members are absent from the pinned binary.
+- Kept URL playback, play/pause/stop, buffering feedback and external SRT/WebVTT sidecar attachment intact. Swedish SRT/WebVTT fixtures remain expanded.
+- Updated the README to mark embedded track enumeration/switching as pending exact VLCKit 4.0 header/API inspection. No substitute API has been guessed or presented as working.
+- Added a CI header-inspection step after SwiftPM resolution to expose the actual headers shipped in the pinned XCFramework. Its result is still pending; no new successful run is recorded yet.
+- The previous run #63 failed only at the first iOS simulator compile because of the removed legacy track APIs; IPA/archive steps did not run. The current restored head still requires a fresh complete CI run before any IPA is considered available.
+- AVPlayer remains unchanged in production. No production dependency or player path was altered.
+
+
+## 2026-11-20 — VLCKit 4.0 API inspection and track-selection implementation
+
+- GitHub Actions run #72 passed for the prior isolated probe revision `ad26d5047355af2956185932a9f84786e174b214`.
+- Verified XcodeGen generation, pinned VLCKit 4.0 package resolution, public XCFramework header inspection, iOS Simulator build, tvOS Simulator build, generic iOS device build, generic tvOS device build, both device archives, both unsigned IPA ZIP validations and artifact upload. All 16 job steps completed successfully.
+- The workflow header output confirms the new player API: `audioTracks`, `textTracks`, `selectTrackAtIndex(_:type:)`, `selectTextTracks(_:)`, `deselectAllAudioTracks()` and `deselectAllTextTracks()`.
+- Inspected the upstream public track declaration: `VLCMediaPlayerTrack` exposes `trackId`, `trackName`, `isSelected` and `selectedExclusively`. The implementation uses those members and the actual player arrays; no legacy name/index APIs are used.
+- Added adapter-level track enumeration, exclusive audio/subtitle selection and explicit disable operations. Added probe UI menus for audio and subtitle selection plus a manual track refresh control.
+- CI run #72 produced artifact `nexus-vlckit-probe-unsigned-ipas` (artifact ID `14640691735`, 38,161,632 bytes, expires 2026-12-04 14:59:59 UTC). It contains unsigned iOS and tvOS IPA packages from the previous revision. These are not install-ready until signed with the appropriate FlareStore certificates/profiles.
+- The new track-selection source/UI changes are subsequent commits and still require a fresh complete CI run. The run #72 artifact must not be treated as containing the new track menus.
+- Physical iPhone and Apple TV playback, SRT/WebVTT rendering and synchronization, audio switching behavior, codec coverage, performance, FlareStore signing/install and LGPL/distribution review remain unverified.
+- No production dependency or playback path was changed. AVPlayer remains the production engine.
+
+
+## 2026-11-20 — Latest VLCKit 4.0 track controls build verified
+
+- GitHub Actions run #78 (ID `44788134905`) passed on commit `ff62491248895e62ba0d6ff754995bae334bd872` after correcting the Swift-imported property name from `selectedExclusively` to `isSelectedExclusively`.
+- All 16 workflow steps passed: XcodeGen generation, pinned VLCKit 4.0 resolution and header inspection, iOS/tvOS Simulator builds, generic iOS/tvOS device builds, both unsigned archives, both IPA ZIP validations and artifact upload.
+- The successful run verifies compile/link and packaging of the revision containing the audio/subtitle track menus. It does not verify actual playback or track switching at runtime.
+- Fresh artifact: `nexus-vlckit-probe-unsigned-ipas`, artifact ID `14654759392`, 38,179,643 bytes, SHA-256 `bcc10432c098cd1d375512bb26942060348159a8aa3f6a5b92ed5e2cc1381748`, expires 2026-12-04 18:12:07 UTC. Contains unsigned iOS and tvOS IPA packages; FlareStore signing with the correct platform certificates/profiles is required.
+- PR #2 remains open and draft, based on `project-foundation`; mergeable status was true at verification. No merge was performed.
+- Next gate: sign and install the current artifact on physical iPhone and Apple TV, then execute the documented playback, audio-track, external SRT/WebVTT, Swedish glyph/timing, stability and AVPlayer comparison matrix.
+- Runtime playback, embedded track switching, external subtitle rendering/synchronization, performance, physical-device behavior and LGPL/distribution review remain unverified. AVPlayer remains the production engine; no production playback source or dependency was changed.
+
+
+## 2026-11-20 — CI duplicate-trigger and API naming documentation correction
+
+- The latest documentation-only head caused two identical expensive workflow runs (#80 and #81) because the same-branch push event and pull-request event both triggered the spike workflow. Both were resolving the same pinned ~910 MB VLCKit binary for the same commit.
+- Removed the redundant `pull_request` trigger. The dedicated branch push trigger remains the authoritative CI path for this isolated same-repository PR, and `workflow_dispatch` remains available for manual validation. This avoids duplicate package downloads/builds for each branch update.
+- Corrected the README to distinguish the Objective-C header property `selectedExclusively` from its Swift-imported setter name `isSelectedExclusively`, which is what the source uses and CI has compiled successfully.
+- No runtime source, production target, AVPlayer path or dependency was changed. The workflow-only trigger change will itself be validated by the next single push-triggered run.
+
+## 2026-11-20 — Single-trigger workflow and fresh IPA package verified
+
+- GitHub Actions run #82 (ID `44813330479`) completed successfully for commit `8bed9be3c42b29418c4887a77515ede7292dff71` after the redundant `pull_request` trigger was removed.
+- All 16 workflow steps passed: XcodeGen generation, pinned VLCKit 4.0 resolution and header inspection, iOS/tvOS Simulator builds, generic iOS/tvOS device builds, both unsigned archives, both IPA ZIP validations and artifact upload.
+- This confirms the workflow-only change is valid and that the single push-triggered run can produce both platform packages. Earlier duplicate runs #80 and #81 also passed all 16 steps.
+- Fresh artifact from run #82: `nexus-vlckit-probe-unsigned-ipas`, artifact ID `14667903769`, 38,179,618 bytes, SHA-256 `a646f51c935d1c81bd55370d7b826214fa64ad559e5f16f05f4c24151d943a12`, expires 2026-12-04 20:46:37 UTC. It contains unsigned iOS and tvOS IPA packages and requires platform-appropriate FlareStore signing before installation.
+- The PR branch's current head `fb3be051fa0721702770c7df71d29fe8fa2294e6` has the same Git tree as the tested run commit (`f00a4bcfd092ef5936720d4704892a6f20f99ee2)); the follow-up commit changes no file content. Thus the artifact corresponds to the current branch content.
+- PR #2 remains open and draft against `project-foundation`; it is mergeable, but has not been merged. No production code or AVPlayer path was changed.
+- Next gate is physical-device validation after FlareStore signing: install on iPhone and Apple TV, test playback, pause/resume/stop, buffering, audio switching, embedded and external SRT/WebVTT subtitles, Swedish glyphs/timing, stability and performance against AVPlayer.
+- Runtime playback, physical-device behavior, actual subtitle/audio switching and LGPL/distribution review remain unverified. AVPlayer remains the production engine.
+
+## 2026-11-20 — VLCKit probe video surface layout correction
+
+- User reported that the physical iPhone probe produced audio but no visible picture. The supplied screenshot shows the playback controls and audio output but does not establish whether the tested HLS playlist itself contains a video rendition.
+- Reviewed the current SwiftUI host and drawable adapter. The UIKit video surface had no explicit height; its size depended on the representable's intrinsic sizing while embedded in a vertical stack. The black drawable also had no visible boundary against the dark app background.
+- Updated the probe surface to use explicit platform-specific bounds (220 pt on iOS/iPadOS and 360 pt on tvOS), an opaque clipped UIKit view, and a subtle violet outline so the drawable region is visibly identifiable.
+- The UIViewRepresentable continues to attach the actual UIView to VLCMediaPlayer; no fake video surface or AVPlayer fallback was introduced.
+- Source change is committed on `integration/vlckit-spike-refresh`. A fresh CI build is required before the updated IPA can be installed. This is a layout/rendering-surface correction only; it does not prove the underlying stream contains a video track or that VLCKit can decode its video codec.
+- Next verification: confirm the drawable is visible on iPhone, then test the same URL in a known-good player and inspect whether the HLS master/media playlist exposes a video variant. If audio continues with a visible drawable but no picture, capture VLCKit media/video-track metadata and compare the stream codec/profile.
+- AVPlayer production playback path remains unchanged. No production target or dependency was modified.
+
+## 2026-11-20 — External subtitle test improved after iPhone and Apple TV reports
+
+- User confirmed that the same Mux HLS stream now renders both picture and audio on iPhone and Apple TV, but no subtitle text was visible on either device.
+- The Apple TV screenshot shows the app status message "Undertextspår valt." This only reflected that a track object was found and a selection request was issued; the previous code did not explicitly call the VLCKit 4.0 `selectTextTracks` API for selection, so that status was not proof of rendered subtitles.
+- The original SRT/WebVTT fixtures only contained cues during the first 11 seconds. This made the test easy to miss if the user opened the subtitle menu after playback had progressed. Both fixtures have now been extended with Swedish test cues through 1:55.
+- External subtitle slaves now use priority 4 (highest VLCKit media-slave priority) instead of 0 (lowest). Track selection now calls `player.selectTextTracks([track])`, matching the explicit track-selection API available in the pinned VLCKit 4.0 headers. Subtitle disable still calls `deselectAllTextTracks()`.
+- This is a source-level correction and improved test fixture, not yet runtime-verified. CI must pass and a new signed iOS/tvOS package must be installed before we can confirm actual subtitle rendering.
+- Next physical test: reload the Mux stream and the updated SRT URL together from the beginning; observe cues at 0:02, 0:15, 0:30, 0:45, 1:00, 1:15, 1:30 and 1:45. Confirm the subtitle menu reports an active selected track and the text is visibly composited over the video. Repeat on both iPhone and Apple TV; then repeat with WebVTT.
+- AVPlayer and all production targets remain unchanged. PR #2 remains Draft and unmerged.
+
+## 2026-11-20 — Automatic external subtitle activation
+
+- User reports the external subtitle entry appears as "Track 1", is not selected at playback start, and requires two manual selections before the selection remains active.
+- This indicates the external text track becomes available asynchronously after playback starts. The previous implementation attached the subtitle slave before playback but only attempted selection when the user opened the subtitle menu.
+- Added a pending external-subtitle selection in `VLCKitProbeSession`. When VLCKit reports a player-state or buffering callback, the session checks whether the text track has appeared and selects the first available text track using `selectTextTracks([track])`. The pending request remains active until a text track is actually available.
+- Explicit user track selection remains available; subtitle-off still deselects all text tracks. The automatic path only activates when a subtitle URL was supplied for the current load.
+- This is not yet CI- or device-verified. The current queued CI run predates this latest automatic-selection commit; a fresh run is required. Actual subtitle rendering remains unverified until the updated IPA is installed and tested.
+- AVPlayer and production targets remain untouched. PR #2 remains Draft and unmerged.
+
+
+## 2026-11-20 — External subtitles verified on iPhone and Apple TV
+
+- User installed and tested the latest unsigned probe packages after FlareStore signing.
+- User supplied screenshots confirming that the Mux HLS stream renders video and that the external Swedish SRT subtitle text is visibly composited on both iPhone and Apple TV.
+- This confirms that automatic external subtitle activation works in the tested SRT scenario on both physical platforms. The earlier issue where the user had to select the track twice is no longer blocking this test.
+- User reports that subtitle legibility is weaker on Apple TV. The supplied Apple TV photo shows the caption visible but with limited contrast/clarity against the video. This is now the next UI/rendering investigation: inspect VLCKit subtitle styling/rendering options and test a more legible outline/shadow or background treatment without obscuring the picture.
+- The iPhone screenshot also shows the caption clearly visible in the test panel's video surface.
+- GitHub Actions run #89 (ID `44820964987`) completed successfully with all 16 steps passing for the automatic-selection source revision `0e1d17d3f6b86e3512d517311edc5b5062e48459`. It built iOS/tvOS simulator and device targets, archived both device targets, packaged both unsigned IPAs, validated the packages and uploaded artifact `nexus-vlckit-probe-unsigned-ipas` (artifact ID `14671209725`, 38,182,520 bytes, SHA-256 `eac3cca6eaa8e85d9fa805b144159d333144a064a97071c032dc6e2324888428`, expires 2026-12-04 21:36:56 UTC).
+- The current branch head before this documentation update is `ec7ffc401567a5addc6c0f05a1bb6b723ee77da9`; the successful run compiled the automatic-selection source commit above, followed by a documentation-only commit.
+- Remaining runtime checks: repeat SRT test from the beginning and verify cue timing throughout the 1:55 fixture; test WebVTT on both devices; test subtitle off/on and track persistence; inspect audio-track switching and embedded subtitles where available; assess longer playback stability and compare against AVPlayer.
+- The test panel remains a technical spike UI, not production NEXUS design. No production target, dependency or AVPlayer path was changed. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-20 — Subtitle menu state synchronized with automatic selection
+
+- User reports that external SRT subtitles render automatically on both iPhone and Apple TV, while the probe subtitle menu still marks "Av" as selected.
+- Root cause found in the probe UI: the menu's "Av" state was derived exclusively from VLCKit's `track.isSelected`, while automatic selection was requested asynchronously by the session. The view model could therefore display stale/unrefreshed selection metadata even while the external subtitle was visibly rendered.
+- Added explicit session-level `selectedSubtitleTrackID` state. Automatic external selection and manual track selection record the selected track ID; explicit disable, stop, detach and new-media load clear it.
+- Subtitle track snapshots now combine VLCKit's selected flag with the session's most recently requested selected track ID. The UI refreshes track snapshots on both player-state and buffering callbacks, so the menu can update as the asynchronous external track appears.
+- This is a state-consistency correction for the isolated VLCKit probe only. The session-level ID represents the selection request issued to VLCKit; it is not an independent decoder/rendering acknowledgement. The user's physical-device screenshots already verify visible SRT rendering, but the corrected menu state still needs a fresh build and physical-device confirmation.
+- Source and UI commits: `adfc8e3396c57feced5e3cffb52178933e9a70cb` and `b080d6e4913d07c3bc8f1e3faa9c1784a2de9cf8`. A fresh CI run is required; no compile or device result is claimed yet.
+- AVPlayer, production targets and dependencies remain unchanged. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-21 — Subtitle selection state build verified; manual override hardened
+
+- GitHub Actions run #90 (ID `44823904986`) passed all 16 steps for session-state commit `adfc8e3396c57feced5e3cffb52178933e9a70cb`.
+- GitHub Actions run #91 (ID `44823912006`) passed all 16 steps for UI commit `b080d6e4913d07c3bc8f1e3faa9c1784a2de9cf8`: iOS/tvOS simulator and generic device builds, both unsigned archives, IPA packaging and artifact upload.
+- Run #91 artifact: `nexus-vlckit-probe-unsigned-ipas`, ID `14674712174`, 38,183,035 bytes, SHA-256 `0e4ada21c6d317e6d614fca05714d6a79f0f8a129832664eb3b740a1adf6dbc8`, expires 2026-12-04 22:14:35 UTC. Downloaded and locally verified: ZIP integrity passed; contains `NEXUS-VLCKit-iOS-unsigned.ipa` (19,332,172 bytes) and `NEXUS-VLCKit-tvOS-unsigned.ipa` (18,940,840 bytes).
+- Follow-up code review found a race: if the user explicitly disabled subtitles before the external track appeared, the pending automatic-selection flag could still select the subtitle later. Fixed in commit `98ccf4a8614fd0c316400878b92e04fff4e6c700`: explicit Off or manual track selection now cancels pending automatic selection. This additional hardening commit has not yet been built or runtime-tested; a new CI run is expected.
+- Physical-device validation is still pending for the updated menu state and manual override. The prior user screenshots verify visible external SRT captions on both iPhone and Apple TV, but do not verify the menu's selected marker.
+- No production target, AVPlayer code or dependency was changed. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-21 — Manual subtitle-off override built and packaged
+
+- GitHub Actions run #92 (ID `44880861789`) completed successfully with all 16 steps for source commit `98ccf4a8614fd0c316400878b92e04fff4e6c700`.
+- Verified: XcodeGen project generation, pinned VLCKit 4.0 resolution/header inspection, iOS and tvOS simulator builds, iOS and tvOS generic device builds, both unsigned archives, both IPA packages and artifact upload.
+- Run #92 artifact: `nexus-vlckit-probe-unsigned-ipas`, ID `14697389683`, 38,182,883 bytes, SHA-256 `6bb332e9d25ff0a7303dbb7e047e40c4a919b67d6d124b60ed2308a7bf682e62`, expires 2026-12-05 07:38:26 UTC. Downloaded locally; ZIP integrity passed. Contents: `NEXUS-VLCKit-tvOS-unsigned.ipa` (18,940,832 bytes) and `NEXUS-VLCKit-iOS-unsigned.ipa` (19,332,198 bytes).
+- The source change cancels pending automatic external subtitle selection when the user explicitly chooses Off or a manual track, preventing a delayed automatic selection from overriding the user's choice. This is compile/build verified but still requires physical-device runtime validation.
+- The previous run #91 verified the session-backed selection marker/menu changes; the current run #92 includes the additional manual-off override.
+- Next physical test: with external SRT loaded, verify menu marks the actual active track; choose Off while the track is loading and confirm captions remain absent; choose the track again and confirm captions return. Repeat on iPhone and Apple TV. Also check the menu after pause/resume and a fresh media load.
+- No production target, AVPlayer code or dependency changed. PR #2 remains open and Draft; no merge was performed.
+
+
+## 2026-11-21 — Explicit subtitle-off state made authoritative
+
+- Follow-up source review identified a remaining UI-state edge case: after an explicit Off action, a stale `track.isSelected` value from VLCKit could still mark the subtitle row as selected because the prior implementation combined the engine flag with the session's selected track ID.
+- Added a session override marker to distinguish "no session decision yet" from an explicit user decision. After automatic/manual selection, the session-selected track ID is authoritative; after explicit Off, no track is marked selected even if VLCKit's reported flag is temporarily stale. The override is cleared on media reset/stop/detach.
+- Source commit: `c1381ee1ae40b75d9961ec1259803ddf634738ac`. This change is not yet built or device-tested. A fresh CI run is expected.
+- Run #92 remains successful for its preceding revision and does not include this latest change.
+- No production target, AVPlayer code or dependency changed. PR #2 remains open and Draft; no merge was performed.
