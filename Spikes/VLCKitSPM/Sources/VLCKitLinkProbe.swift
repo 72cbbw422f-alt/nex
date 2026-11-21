@@ -62,6 +62,8 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
 
     public func selectSubtitleTrack(id: String?) -> Bool {
         guard let id else {
+            // An explicit user choice must override a pending automatic selection.
+            pendingExternalSubtitleSelection = false
             player.deselectAllTextTracks()
             selectedSubtitleTrackID = nil
             return true
@@ -69,6 +71,7 @@ public final class VLCKitProbeSession: NSObject, VLCMediaPlayerDelegate {
         guard let track = player.textTracks.first(where: { $0.trackId == id }) else {
             return false
         }
+        pendingExternalSubtitleSelection = false
         player.selectTextTracks([track])
         selectedSubtitleTrackID = track.trackId
         return true
